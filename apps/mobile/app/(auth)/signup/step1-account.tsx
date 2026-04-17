@@ -1,0 +1,470 @@
+import { useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
+import { useRouter } from 'expo-router';
+import { saveSignupData } from '@/lib/signup-store';
+
+const C = {
+  bg: '#0F1B33',
+  card: '#182744',
+  cardBorder: '#243555',
+  inputBg: '#1A2D4D',
+  inputBorder: '#243555',
+  primary: '#3B5BDB',
+  success: '#1EB06A',
+  text: '#E0E4EA',
+  sub: '#8893A7',
+  error: '#E5423A',
+  white: '#FFFFFF',
+};
+
+function ProgressBar({ step }: { step: number }) {
+  return (
+    <View style={styles.progressRow}>
+      {[1, 2, 3].map((s) => (
+        <View
+          key={s}
+          style={[
+            styles.progressDot,
+            s <= step ? styles.progressDotActive : styles.progressDotInactive,
+          ]}
+        />
+      ))}
+    </View>
+  );
+}
+
+export default function SignupStep1Screen() {
+  const router = useRouter();
+
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
+
+  const [agreeAll, setAgreeAll] = useState(false);
+  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [agreePrivacy, setAgreePrivacy] = useState(false);
+  const [agreeMarketing, setAgreeMarketing] = useState(false);
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  const handleAgreeAll = () => {
+    const next = !agreeAll;
+    setAgreeAll(next);
+    setAgreeTerms(next);
+    setAgreePrivacy(next);
+    setAgreeMarketing(next);
+  };
+
+  const handleIndividualAgree = (
+    setter: (v: boolean) => void,
+    current: boolean,
+    others: boolean[]
+  ) => {
+    const next = !current;
+    setter(next);
+    const allChecked = others.every(Boolean) && next;
+    setAgreeAll(allChecked);
+  };
+
+  const validate = (): boolean => {
+    const e: Record<string, string> = {};
+
+    if (!name.trim()) e.name = '이름을 입력해주세요';
+    if (!phone.trim()) e.phone = '전화번호를 입력해주세요';
+    else if (!/^01[0-9]{8,9}$/.test(phone.replace(/-/g, '')))
+      e.phone = '올바른 전화번호를 입력해주세요';
+
+    if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+      e.email = '올바른 이메일 형식을 입력해주세요';
+
+    if (!username.trim()) e.username = '아이디를 입력해주세요';
+    else if (username.trim().length < 4)
+      e.username = '아이디는 4자 이상이어야 합니다';
+
+    if (!password) e.password = '비밀번호를 입력해주세요';
+    else if (password.length < 6)
+      e.password = '비밀번호는 6자 이상이어야 합니다';
+
+    if (!passwordConfirm) e.passwordConfirm = '비밀번호 확인을 입력해주세요';
+    else if (password !== passwordConfirm)
+      e.passwordConfirm = '비밀번호가 일치하지 않습니다';
+
+    if (!agreeTerms) e.terms = '서비스 이용약관에 동의해주세요';
+    if (!agreePrivacy) e.privacy = '개인정보 수집·이용에 동의해주세요';
+
+    setErrors(e);
+    setTouched({
+      name: true,
+      phone: true,
+      email: true,
+      username: true,
+      password: true,
+      passwordConfirm: true,
+    });
+    return Object.keys(e).length === 0;
+  };
+
+  const handleNext = async () => {
+    if (validate()) {
+      await saveSignupData({
+        name,
+        phone,
+        email: email || `${username}@villatolk.app`,
+        password,
+      });
+      router.push('/(auth)/signup/step2-villa');
+    }
+  };
+
+  const renderInput = (
+    label: string,
+    value: string,
+    onChangeText: (t: string) => void,
+    field: string,
+    options?: {
+      placeholder?: string;
+      keyboardType?: 'default' | 'phone-pad' | 'email-address';
+      secureTextEntry?: boolean;
+      optional?: boolean;
+    }
+  ) => (
+    <View style={styles.inputGroup}>
+      <Text style={styles.label}>
+        {label}
+        {options?.optional && <Text style={styles.optionalTag}> (선택)</Text>}
+      </Text>
+      <TextInput
+        style={[
+          styles.input,
+          touched[field] && errors[field] ? styles.inputError : null,
+        ]}
+        value={value}
+        onChangeText={(t) => {
+          onChangeText(t);
+          if (errors[field]) {
+            setErrors((prev) => {
+              const next = { ...prev };
+              delete next[field];
+              return next;
+            });
+          }
+        }}
+        onBlur={() => setTouched((prev) => ({ ...prev, [field]: true }))}
+        placeholder={options?.placeholder || ''}
+        placeholderTextColor={C.sub}
+        keyboardType={options?.keyboardType || 'default'}
+        secureTextEntry={options?.secureTextEntry}
+        autoCapitalize="none"
+      />
+      {touched[field] && errors[field] && (
+        <Text style={styles.errorText}>{errors[field]}</Text>
+      )}
+    </View>
+  );
+
+  const renderCheckbox = (
+    label: string,
+    checked: boolean,
+    onPress: () => void,
+    isAll?: boolean,
+    hasError?: boolean
+  ) => (
+    <TouchableOpacity
+      style={[styles.checkRow, isAll && styles.checkRowAll]}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
+      <View
+        style={[
+          styles.checkbox,
+          checked && styles.checkboxChecked,
+          hasError && styles.checkboxError,
+        ]}
+      >
+        {checked && <Text style={styles.checkmark}>✓</Text>}
+      </View>
+      <Text style={[styles.checkLabel, isAll && styles.checkLabelAll]}>
+        {label}
+      </Text>
+    </TouchableOpacity>
+  );
+
+  return (
+    <KeyboardAvoidingView
+      style={styles.flex}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        <ProgressBar step={1} />
+
+        <Text style={styles.stepLabel}>STEP 1 / 3</Text>
+        <Text style={styles.title}>관리자 계정 만들기</Text>
+        <Text style={styles.subtitle}>
+          빌라 건물주·관리 담당자 전용입니다
+        </Text>
+
+        <View style={styles.card}>
+          {renderInput('이름', name, setName, 'name', {
+            placeholder: '홍길동',
+          })}
+          {renderInput('전화번호', phone, setPhone, 'phone', {
+            placeholder: '01012345678',
+            keyboardType: 'phone-pad',
+          })}
+          {renderInput('이메일', email, setEmail, 'email', {
+            placeholder: 'example@email.com',
+            keyboardType: 'email-address',
+            optional: true,
+          })}
+          {renderInput('아이디', username, setUsername, 'username', {
+            placeholder: '4자 이상',
+          })}
+          {renderInput('비밀번호', password, setPassword, 'password', {
+            placeholder: '6자 이상',
+            secureTextEntry: true,
+          })}
+          {renderInput(
+            '비밀번호 확인',
+            passwordConfirm,
+            setPasswordConfirm,
+            'passwordConfirm',
+            {
+              placeholder: '비밀번호를 다시 입력',
+              secureTextEntry: true,
+            }
+          )}
+        </View>
+
+        <View style={styles.termsCard}>
+          {renderCheckbox('전체 동의', agreeAll, handleAgreeAll, true)}
+          <View style={styles.termsDivider} />
+          {renderCheckbox(
+            '[필수] 서비스 이용약관',
+            agreeTerms,
+            () =>
+              handleIndividualAgree(setAgreeTerms, agreeTerms, [
+                agreePrivacy,
+                agreeMarketing,
+              ]),
+            false,
+            !!errors.terms
+          )}
+          {renderCheckbox(
+            '[필수] 개인정보 수집·이용',
+            agreePrivacy,
+            () =>
+              handleIndividualAgree(setAgreePrivacy, agreePrivacy, [
+                agreeTerms,
+                agreeMarketing,
+              ]),
+            false,
+            !!errors.privacy
+          )}
+          {renderCheckbox(
+            '[선택] 마케팅 수신',
+            agreeMarketing,
+            () =>
+              handleIndividualAgree(setAgreeMarketing, agreeMarketing, [
+                agreeTerms,
+                agreePrivacy,
+              ])
+          )}
+          {(errors.terms || errors.privacy) && (
+            <Text style={styles.errorText}>
+              {errors.terms || errors.privacy}
+            </Text>
+          )}
+        </View>
+
+        <TouchableOpacity
+          style={styles.primaryButton}
+          onPress={handleNext}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.primaryButtonText}>다음 → 빌라 등록</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.linkButton}
+          onPress={() => router.replace('/(auth)/login')}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.linkText}>← 로그인으로</Text>
+        </TouchableOpacity>
+
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+}
+
+const styles = StyleSheet.create({
+  flex: { flex: 1, backgroundColor: C.bg },
+  container: { flex: 1, backgroundColor: C.bg },
+  contentContainer: { padding: 24, paddingTop: 56 },
+
+  progressRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 24,
+  },
+  progressDot: {
+    flex: 1,
+    height: 4,
+    borderRadius: 2,
+  },
+  progressDotActive: { backgroundColor: C.primary },
+  progressDotInactive: { backgroundColor: C.cardBorder },
+
+  stepLabel: {
+    fontSize: 11,
+    color: C.primary,
+    fontWeight: '700',
+    marginBottom: 4,
+    letterSpacing: 1,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: C.white,
+    marginBottom: 6,
+  },
+  subtitle: {
+    fontSize: 13,
+    color: C.sub,
+    lineHeight: 20,
+    marginBottom: 24,
+  },
+
+  card: {
+    backgroundColor: C.card,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: C.cardBorder,
+    padding: 20,
+    marginBottom: 16,
+  },
+
+  inputGroup: { marginBottom: 16 },
+  label: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: C.text,
+    marginBottom: 8,
+  },
+  optionalTag: {
+    fontSize: 11,
+    fontWeight: '400',
+    color: C.sub,
+  },
+  input: {
+    backgroundColor: C.inputBg,
+    borderWidth: 1,
+    borderColor: C.inputBorder,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 15,
+    color: C.text,
+  },
+  inputError: {
+    borderColor: C.error,
+  },
+  errorText: {
+    fontSize: 12,
+    color: C.error,
+    marginTop: 6,
+  },
+
+  termsCard: {
+    backgroundColor: C.card,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: C.cardBorder,
+    padding: 20,
+    marginBottom: 24,
+  },
+  termsDivider: {
+    height: 1,
+    backgroundColor: C.cardBorder,
+    marginVertical: 12,
+  },
+  checkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+  },
+  checkRowAll: {
+    paddingVertical: 4,
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 1.5,
+    borderColor: C.cardBorder,
+    backgroundColor: C.inputBg,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+  checkboxChecked: {
+    backgroundColor: C.primary,
+    borderColor: C.primary,
+  },
+  checkboxError: {
+    borderColor: C.error,
+  },
+  checkmark: {
+    color: C.white,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  checkLabel: {
+    fontSize: 14,
+    color: C.text,
+  },
+  checkLabelAll: {
+    fontWeight: '700',
+    fontSize: 15,
+  },
+
+  primaryButton: {
+    backgroundColor: C.primary,
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  primaryButtonText: {
+    color: C.white,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+
+  linkButton: {
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  linkText: {
+    color: C.sub,
+    fontSize: 14,
+  },
+});

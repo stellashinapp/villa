@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "빌라톡",
+    "slug": "villatolk",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "andnew",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0F1B33"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "kr.andnew.villatolk",
+      "infoPlist": {
+        "NSCameraUsageDescription": "사진 첨부를 위해 카메라 접근이 필요합니다",
+        "NSPhotoLibraryUsageDescription": "사진 첨부를 위해 갤러리 접근이 필요합니다"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0F1B33"
+      },
+      "package": "kr.andnew.villatolk",
+      "googleServicesFile": "./google-services.json"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store"
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "YOUR_EAS_PROJECT_ID"
+      }
+    }
+  }
+}

@@ -1,0 +1,40 @@
+// 관리자 다크 테마
+export const adminTheme = {
+  bg: '#0F1B33',
+  surface: '#182744',
+  card: '#182744',
+  border: '#243555',
+  text: '#E0E4EA',
+  textSub: '#8893A7',
+  primary: '#2558D6',
+  primaryLight: '#E8EEFB',
+  accent: '#FF6434',
+  ok: '#1EB06A',
+  okLight: '#E6F8F0',
+  warn: '#F0A722',
+  warnLight: '#FEF6E6',
+  err: '#E5423A',
+  errLight: '#FDF0EF',
+} as const;
+
+// 입주민 라이트 테마
+export const residentTheme = {
+  bg: '#F3F4F8',
+  surface: '#FFFFFF',
+  card: '#FFFFFF',
+  border: '#EAEBEF',
+  text: '#181A20',
+  textSub: '#7C7F87',
+  muted: '#B8BBC2',
+  primary: '#2558D6',
+  primaryLight: '#E8EEFB',
+  primaryDark: '#1A3FA0',
+  accent: '#FF6434',
+  accentLight: '#FFF0EA',
+  ok: '#1EB06A',
+  okLight: '#E6F8F0',
+  warn: '#F0A722',
+  warnLight: '#FEF6E6',
+  err: '#E5423A',
+  errLight: '#FDF0EF',
+} as const;

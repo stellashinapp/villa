@@ -1,0 +1,83 @@
+- generic [active] [ref=e1]:
+  - complementary [ref=e2]:
+    - generic [ref=e3]:
+      - heading "ANDNEW" [level=1] [ref=e4]
+      - text: ADMIN CONSOLE
+    - navigation [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]: OVERVIEW
+        - link "📊 대시보드" [ref=e8] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e9]: 📊
+          - text: 대시보드
+      - generic [ref=e10]:
+        - generic [ref=e11]: MANAGEMENT
+        - link "👤 관리자 관리" [ref=e12] [cursor=pointer]:
+          - /url: /admins
+          - generic [ref=e13]: 👤
+          - text: 관리자 관리
+        - link "🏘️ 빌라 관리" [ref=e14] [cursor=pointer]:
+          - /url: /villas
+          - generic [ref=e15]: 🏘️
+          - text: 빌라 관리
+        - link "👥 입주민" [ref=e16] [cursor=pointer]:
+          - /url: /residents
+          - generic [ref=e17]: 👥
+          - text: 입주민
+      - generic [ref=e18]:
+        - generic [ref=e19]: REVENUE
+        - link "📈 구독·매출" [ref=e20] [cursor=pointer]:
+          - /url: /subscriptions
+          - generic [ref=e21]: 📈
+          - text: 구독·매출
+        - link "💳 결제 내역" [ref=e22] [cursor=pointer]:
+          - /url: /payments
+          - generic [ref=e23]: 💳
+          - text: 결제 내역
+      - generic [ref=e24]:
+        - generic [ref=e25]: SUPPORT
+        - link "💬 관리자 문의" [ref=e26] [cursor=pointer]:
+          - /url: /inquiries
+          - generic [ref=e27]: 💬
+          - text: 관리자 문의
+        - link "📢 공지 발송" [ref=e28] [cursor=pointer]:
+          - /url: /notices
+          - generic [ref=e29]: 📢
+          - text: 공지 발송
+      - generic [ref=e30]:
+        - generic [ref=e31]: SYSTEM
+        - link "⚙️ 설정" [ref=e32] [cursor=pointer]:
+          - /url: /settings
+          - generic [ref=e33]: ⚙️
+          - text: 설정
+  - main [ref=e34]:
+    - generic [ref=e35]:
+      - generic [ref=e36]: ANDNEW Admin
+      - textbox "관리자, 빌라명 검색..." [ref=e37]
+    - generic [ref=e39]:
+      - generic [ref=e40]:
+        - generic [ref=e41]:
+          - generic [ref=e42]: 총 관리자
+          - generic [ref=e43]: "-"
+        - generic [ref=e44]:
+          - generic [ref=e45]: 등록 빌라
+          - generic [ref=e46]: "-"
+        - generic [ref=e47]:
+          - generic [ref=e48]: 총 세대
+          - generic [ref=e49]: "-"
+        - generic [ref=e50]:
+          - generic [ref=e51]: MRR
+          - generic [ref=e52]: "-"
+      - generic [ref=e53]:
+        - generic [ref=e54]:
+          - heading "MRR 추이" [level=4] [ref=e55]
+          - generic [ref=e56]: 차트 영역
+        - generic [ref=e57]:
+          - heading "플랜 분포" [level=4] [ref=e58]
+          - generic [ref=e59]: 차트 영역
+      - generic [ref=e60]:
+        - heading "⚠️ 주의 항목" [level=3] [ref=e62]
+        - generic [ref=e63]: 데이터 연동 후 표시됩니다
+  - button "Open Next.js Dev Tools" [ref=e69] [cursor=pointer]:
+    - img [ref=e70]
+  - alert [ref=e73]
