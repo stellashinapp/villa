@@ -19,8 +19,8 @@ const STATUS_STYLE: Record<string, { label: string; cls: string }> = {
   active: { label: '활성', cls: 'bg-okL text-ok' },
   past_due: { label: '결제실패', cls: 'bg-errL text-err' },
   pending_cancel: { label: '해지예정', cls: 'bg-warnL text-warn' },
-  cancelled: { label: '해지됨', cls: 'bg-white/10 text-t3' },
-  none: { label: '미가입', cls: 'bg-white/10 text-t3' },
+  cancelled: { label: '해지됨', cls: 'bg-bg text-t3' },
+  none: { label: '미가입', cls: 'bg-bg text-t3' },
 };
 
 function formatPhone(p: string | null) {
@@ -147,7 +147,7 @@ export default async function AdminsPage() {
                   const st = STATUS_STYLE[a.status];
                   return (
                     <Link key={a.id} href={`/admins/${a.id}`} legacyBehavior>
-                      <tr className="border-b border-border last:border-0 hover:bg-white/[.03] cursor-pointer transition-colors">
+                      <tr className="border-b border-border last:border-0 hover:bg-priL cursor-pointer transition-colors">
                         <td className="px-5 py-3.5 font-semibold text-t1">{a.name}</td>
                         <td className="px-5 py-3.5 text-t2">{a.phone || '-'}</td>
                         <td className="px-5 py-3.5 text-right text-t2">{a.villas}</td>

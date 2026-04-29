@@ -128,7 +128,7 @@ export default async function ResidentsPage() {
                   const room = r.units?.ho_number ?? '-';
                   const isPaid = paidIds.has(r.id);
                   return (
-                    <tr key={r.id} className="border-b border-border last:border-0 hover:bg-white/[.03] transition-colors">
+                    <tr key={r.id} className="border-b border-border last:border-0 hover:bg-priL transition-colors">
                       <td className="px-5 py-3.5 font-semibold text-t1">{r.name}</td>
                       <td className="px-5 py-3.5 text-t2">{formatPhone(r.phone)}</td>
                       <td className="px-5 py-3.5 text-t2">{villa}</td>

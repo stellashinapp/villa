@@ -19,9 +19,25 @@ export default function ParkingScreen() {
     );
   }
 
-  const myCars = villa.parking.filter(p => p.ho === resident.ho);
-  const residentCars = villa.parking.filter(p => p.type === 'resident');
-  const visitorCars = villa.parking.filter(p => p.type === 'visitor');
+  // 만료된 방문차량은 화면에서 숨김 (cron에서 정리 전이라도 UI 일관성)
+  const nowMs = Date.now();
+  const isAlive = (p: typeof villa.parking[0]) =>
+    p.type === 'resident' || !p.expiresAt || new Date(p.expiresAt).getTime() > nowMs;
+  const aliveParking = villa.parking.filter(isAlive);
+  const myCars = aliveParking.filter(p => p.ho === resident.ho);
+  const residentCars = aliveParking.filter(p => p.type === 'resident');
+  const visitorCars = aliveParking.filter(p => p.type === 'visitor');
+
+  const fmtRemaining = (iso?: string) => {
+    if (!iso) return null;
+    const ms = new Date(iso).getTime() - nowMs;
+    if (ms <= 0) return '만료됨';
+    const h = Math.floor(ms / 3600 / 1000);
+    const m = Math.floor((ms / 60 / 1000) % 60);
+    if (h >= 24) return `${Math.floor(h / 24)}일 ${h % 24}시간 남음`;
+    if (h > 0) return `${h}시간 ${m}분 남음`;
+    return `${m}분 남음`;
+  };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 100 }}>
@@ -65,6 +81,9 @@ export default function ParkingScreen() {
                 <Text style={styles.carHo}>{car.ho}</Text>
                 {car.memo ? <Text style={styles.carMemo}>{car.memo}</Text> : null}
               </View>
+              {car.type === 'visitor' && car.expiresAt && (
+                <Text style={styles.expiresText}>⏱ {fmtRemaining(car.expiresAt)}</Text>
+              )}
             </View>
           ))
         )}
@@ -112,6 +131,9 @@ export default function ParkingScreen() {
                 <Text style={styles.carHo}>{car.ho}</Text>
                 {car.memo ? <Text style={styles.carMemo}>{car.memo}</Text> : null}
               </View>
+              {car.expiresAt && (
+                <Text style={styles.expiresText}>⏱ {fmtRemaining(car.expiresAt)}</Text>
+              )}
             </View>
           ))
         )}
@@ -120,16 +142,32 @@ export default function ParkingScreen() {
   );
 }
 
+const DURATIONS = [
+  { label: '3시간', hours: 3 },
+  { label: '6시간', hours: 6 },
+  { label: '하루', hours: 24 },
+  { label: '3일', hours: 72 },
+];
+
 function VisitorForm({ villaId, ho }: { villaId: string; ho: string }) {
   const [plate, setPlate] = useState('');
   const [memo, setMemo] = useState('');
+  const [hours, setHours] = useState(24);
 
   function handleRegister() {
     if (!plate.trim()) { Alert.alert('알림', '차량번호를 입력하세요'); return; }
-    addParking(villaId, ho, plate.trim(), 'visitor', memo.trim() || `${ho} 방문차량`);
+    const expiresAt = new Date(Date.now() + hours * 3600 * 1000).toISOString();
+    addParking(
+      villaId, ho, plate.trim(), 'visitor',
+      memo.trim() || `${ho} 방문차량`,
+      expiresAt,
+    );
     setPlate('');
     setMemo('');
-    Alert.alert('등록 완료', '방문차량이 등록되었습니다');
+    Alert.alert(
+      '등록 완료',
+      `방문차량이 등록되었습니다.\n\n${DURATIONS.find(d => d.hours === hours)?.label ?? hours + '시간'} 후 자동 만료됩니다.`,
+    );
   }
 
   return (
@@ -144,6 +182,20 @@ function VisitorForm({ villaId, ho }: { villaId: string; ho: string }) {
           value={plate}
           onChangeText={setPlate}
         />
+        <Text style={styles.formLabel}>주차 시간 *</Text>
+        <View style={styles.durationRow}>
+          {DURATIONS.map(d => (
+            <TouchableOpacity
+              key={d.hours}
+              style={[styles.durationBtn, hours === d.hours && styles.durationBtnActive]}
+              onPress={() => setHours(d.hours)}
+            >
+              <Text style={[styles.durationBtnText, hours === d.hours && styles.durationBtnTextActive]}>
+                {d.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
         <Text style={styles.formLabel}>메모 (선택)</Text>
         <TextInput
           style={styles.formInput}
@@ -224,4 +276,15 @@ const styles = StyleSheet.create({
   },
   registerBtn: { backgroundColor: '#4A6CF7', borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 14 },
   registerBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+
+  durationRow: { flexDirection: 'row', gap: 6, marginBottom: 4 },
+  durationBtn: {
+    flex: 1, paddingVertical: 10, borderRadius: 10,
+    borderWidth: 1, borderColor: '#E5E7EB', backgroundColor: '#F0F2F6',
+    alignItems: 'center',
+  },
+  durationBtnActive: { backgroundColor: '#3454D1', borderColor: '#3454D1' },
+  durationBtnText: { fontSize: 12, fontWeight: '700', color: '#6B7280' },
+  durationBtnTextActive: { color: '#FFFFFF' },
+  expiresText: { fontSize: 11, color: '#F39C12', fontWeight: '700', marginTop: 6 },
 });

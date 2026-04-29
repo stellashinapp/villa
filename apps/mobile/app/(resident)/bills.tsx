@@ -34,6 +34,36 @@ export default function BillsScreen() {
   const perUnit = currentMonth ? Math.round(total / villa.totalUnits) : 0;
   const isPaid = currentMonth ? !!currentMonth.paid[resident.ho] : false;
 
+  // 수선충당금 누적 (published + closed 모든 월에서 항목명에 '수선충당금'/'수선'/'장기수선' 포함)
+  const reservePerUnit = villa.billMonths
+    .filter(m => m.status !== 'draft')
+    .reduce((sum, m) => {
+      const reserveItems = m.items.filter(i =>
+        i.name.includes('수선충당금') || i.name.includes('장기수선') || /수선/.test(i.name),
+      );
+      const reserveTotal = reserveItems.reduce((s, i) => s + i.amount, 0);
+      return sum + (villa.totalUnits > 0 ? Math.round(reserveTotal / villa.totalUnits) : 0);
+    }, 0);
+  const reserveMonths = villa.billMonths.filter(m =>
+    m.status !== 'draft' && m.items.some(i => /수선/.test(i.name)),
+  ).length;
+
+  const METHOD_KO: Record<string, string> = {
+    bank_transfer: '계좌이체',
+    toss: '토스결제',
+    card: '카드',
+    cash: '현금',
+  };
+  const fmtPaidMeta = (m: { paidInfo?: Record<string, { method?: string; paidAt?: string }> }, ho: string) => {
+    const info = m.paidInfo?.[ho];
+    if (!info) return null;
+    const methodLabel = info.method ? (METHOD_KO[info.method] ?? info.method) : null;
+    const dateLabel = info.paidAt
+      ? new Date(info.paidAt).toLocaleDateString('ko-KR', { year: '2-digit', month: '2-digit', day: '2-digit' })
+      : null;
+    return [dateLabel, methodLabel].filter(Boolean).join(' · ');
+  };
+
   function handlePay() {
     if (!currentMonth) return;
     Alert.alert('납부 방법', `${currentMonth.label} 관리비 ${perUnit.toLocaleString()}원`, [
@@ -41,7 +71,7 @@ export default function BillsScreen() {
       {
         text: '계좌이체 (기존)',
         onPress: () => {
-          confirmPayment(villa!.id, currentMonth.id, resident!.ho);
+          confirmPayment(villa!.id, currentMonth.id, resident!.ho, 'bank_transfer');
           Alert.alert('납부 완료', '계좌이체로 납부 처리되었습니다');
         },
       },
@@ -108,6 +138,17 @@ export default function BillsScreen() {
         <Text style={styles.accountNumber}>{villa.account}</Text>
       </View>
 
+      {/* 수선충당금 누적 */}
+      {reservePerUnit > 0 && (
+        <View style={styles.reserveCard}>
+          <View>
+            <Text style={styles.reserveLabel}>수선충당금 누적</Text>
+            <Text style={styles.reserveSub}>{reserveMonths}개월간 적립 · 세대당</Text>
+          </View>
+          <Text style={styles.reserveAmount}>{fmt(reservePerUnit)}원</Text>
+        </View>
+      )}
+
       {/* Bill Items */}
       {currentMonth && currentMonth.items.length > 0 && (
         <View style={styles.section}>
@@ -139,11 +180,13 @@ export default function BillsScreen() {
             const mTotal = m.items.reduce((s, i) => s + i.amount, 0);
             const mPerUnit = Math.round(mTotal / villa.totalUnits);
             const mPaid = !!m.paid[resident.ho];
+            const meta = mPaid ? fmtPaidMeta(m, resident.ho) : null;
             return (
               <View key={m.id} style={styles.prevCard}>
-                <View>
+                <View style={{ flex: 1 }}>
                   <Text style={styles.prevMonth}>{m.label}</Text>
                   <Text style={styles.prevAmount}>{fmt(mPerUnit)}원</Text>
+                  {meta && <Text style={styles.prevMeta}>{meta}</Text>}
                 </View>
                 <View style={[styles.badge, mPaid ? styles.badgePaid : styles.badgeUnpaid]}>
                   <Text style={[styles.badgeText, mPaid ? styles.badgePaidText : styles.badgeUnpaidText]}>
@@ -259,4 +302,21 @@ const styles = StyleSheet.create({
   },
   prevMonth: { fontSize: 14, fontWeight: '600', color: '#1A1D26', marginBottom: 2 },
   prevAmount: { fontSize: 13, color: '#6B7280' },
+  prevMeta: { fontSize: 11, color: '#9CA3AF', marginTop: 4 },
+
+  reserveCard: {
+    marginHorizontal: 16,
+    backgroundColor: '#FFF7ED',
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#FED7AA',
+  },
+  reserveLabel: { color: '#C2410C', fontSize: 13, fontWeight: '700' },
+  reserveSub: { color: '#9A3412', fontSize: 11, marginTop: 2 },
+  reserveAmount: { color: '#9A3412', fontSize: 16, fontWeight: '900' },
 });

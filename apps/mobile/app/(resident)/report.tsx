@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
-import { store, subscribe, sendMessage } from '@/lib/store';
+import { store, subscribe, sendMessage, addResidentReply } from '@/lib/store';
 
 export default function ReportScreen() {
   const [_, setTick] = useState(0);
@@ -18,6 +18,7 @@ export default function ReportScreen() {
   const resident = store.loggedResident;
 
   const [message, setMessage] = useState('');
+  const [replyTexts, setReplyTexts] = useState<Record<string, string>>({});
 
   if (!villa || !resident) {
     return (
@@ -78,35 +79,75 @@ export default function ReportScreen() {
             <Text style={styles.emptyCardSub}>관리자에게 건의사항을 보내보세요</Text>
           </View>
         ) : (
-          myMessages.map(msg => (
-            <View key={msg.id} style={styles.threadCard}>
-              {/* My message */}
-              <View style={[styles.messageBubble, styles.residentBubble]}>
-                <View style={styles.messageHeader}>
-                  <Text style={[styles.messageFrom, styles.residentFrom]}>나</Text>
-                  <Text style={styles.messageDate}>{msg.date}</Text>
-                </View>
-                <Text style={styles.messageBody}>{msg.text}</Text>
-              </View>
-
-              {/* Admin replies */}
-              {msg.replies.map((reply, idx) => (
-                <View key={idx} style={[styles.messageBubble, styles.adminBubble, { marginTop: 8 }]}>
+          myMessages.map(msg => {
+            const myName = resident!.name;
+            const replyText = replyTexts[msg.id] ?? '';
+            return (
+              <View key={msg.id} style={styles.threadCard}>
+                {/* My original message */}
+                <View style={[styles.messageBubble, styles.residentBubble]}>
                   <View style={styles.messageHeader}>
-                    <Text style={[styles.messageFrom, styles.adminFrom]}>{reply.from}</Text>
-                    <Text style={styles.messageDate}>{reply.date}</Text>
+                    <Text style={[styles.messageFrom, styles.residentFrom]}>나</Text>
+                    <Text style={styles.messageDate}>{msg.date}</Text>
                   </View>
-                  <Text style={styles.messageBody}>{reply.text}</Text>
+                  <Text style={styles.messageBody}>{msg.text}</Text>
                 </View>
-              ))}
 
-              {msg.replies.length === 0 && (
-                <View style={styles.pendingRow}>
-                  <Text style={styles.pendingText}>답변 대기 중</Text>
-                </View>
-              )}
-            </View>
-          ))
+                {/* Replies (admin/resident mixed) */}
+                {msg.replies.map((reply, idx) => {
+                  const isMine = reply.from === myName;
+                  return (
+                    <View
+                      key={idx}
+                      style={[
+                        styles.messageBubble,
+                        isMine ? styles.residentBubble : styles.adminBubble,
+                        { marginTop: 8 },
+                      ]}
+                    >
+                      <View style={styles.messageHeader}>
+                        <Text style={[styles.messageFrom, isMine ? styles.residentFrom : styles.adminFrom]}>
+                          {isMine ? '나' : reply.from}
+                        </Text>
+                        <Text style={styles.messageDate}>{reply.date}</Text>
+                      </View>
+                      <Text style={styles.messageBody}>{reply.text}</Text>
+                    </View>
+                  );
+                })}
+
+                {msg.replies.length === 0 && (
+                  <View style={styles.pendingRow}>
+                    <Text style={styles.pendingText}>답변 대기 중</Text>
+                  </View>
+                )}
+
+                {/* 추가 답글 입력 (관리자가 한 번이라도 답하면 활성화) */}
+                {msg.replies.length > 0 && (
+                  <View style={styles.replyInputRow}>
+                    <TextInput
+                      style={styles.replyInput}
+                      placeholder="추가 답글 입력..."
+                      placeholderTextColor="#9CA3AF"
+                      value={replyText}
+                      onChangeText={(t) => setReplyTexts(prev => ({ ...prev, [msg.id]: t }))}
+                    />
+                    <TouchableOpacity
+                      style={styles.replySendBtn}
+                      onPress={() => {
+                        const t = replyText.trim();
+                        if (!t) { Alert.alert('알림', '답글 내용을 입력하세요'); return; }
+                        addResidentReply(villa!.id, msg.id, t, myName);
+                        setReplyTexts(prev => ({ ...prev, [msg.id]: '' }));
+                      }}
+                    >
+                      <Text style={styles.replySendText}>전송</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
+            );
+          })
         )}
       </View>
     </ScrollView>
@@ -206,4 +247,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   pendingText: { fontSize: 12, color: '#9CA3AF', fontWeight: '600' },
+
+  replyInputRow: {
+    flexDirection: 'row',
+    gap: 6,
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#E8EBF0',
+  },
+  replyInput: {
+    flex: 1,
+    backgroundColor: '#F5F6FA',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    fontSize: 13,
+    color: '#1A1D26',
+  },
+  replySendBtn: {
+    backgroundColor: '#3454D1',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  replySendText: { color: '#FFFFFF', fontSize: 12, fontWeight: '700' },
 });

@@ -6,7 +6,7 @@ import { router } from 'expo-router';
 import {
   store, subscribe,
   createBillMonth, addBillItem, removeBillItem,
-  publishBill, confirmPayment,
+  publishBill, confirmPayment, copyBillItemsFromPrevious, closeBillMonth,
 } from '@/lib/store';
 
 const C = {
@@ -99,6 +99,35 @@ export default function VillaBillsScreen() {
     ]);
   };
 
+  const handleClose = () => {
+    if (!currentMonth) return;
+    if (currentMonth.status !== 'published') {
+      Alert.alert('알림', '고지된 월만 마감할 수 있습니다.');
+      return;
+    }
+    if (unpaidCount > 0) {
+      Alert.alert(
+        '미납자 있음',
+        `${currentMonth.label}에 ${unpaidCount}세대 미납이 남아있습니다.\n그래도 마감하시겠습니까?\n\n마감 후에도 미납자는 누적 미납 통계에 그대로 남습니다.`,
+        [
+          { text: '취소', style: 'cancel' },
+          { text: '마감', style: 'destructive', onPress: () => {
+            closeBillMonth(id!, currentMonth.id);
+            Alert.alert('마감 완료', `${currentMonth.label} 관리비가 마감 처리되었습니다.`);
+          }},
+        ],
+      );
+      return;
+    }
+    Alert.alert('관리비 마감', `${currentMonth.label} 관리비를 마감하시겠습니까?`, [
+      { text: '취소', style: 'cancel' },
+      { text: '마감', onPress: () => {
+        closeBillMonth(id!, currentMonth.id);
+        Alert.alert('마감 완료', `${currentMonth.label} 관리비가 마감 처리되었습니다.`);
+      }},
+    ]);
+  };
+
   const handleConfirmPayment = (ho: string) => {
     if (!currentMonth) return;
     Alert.alert('납부 확인', `${ho} 납부를 확인하시겠습니까?`, [
@@ -175,7 +204,26 @@ export default function VillaBillsScreen() {
       </View>
 
       {/* 관리비 항목 */}
-      <Text style={s.sectionTitle}>관리비 항목</Text>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, marginBottom: 8 }}>
+        <Text style={[s.sectionTitle, { marginBottom: 0, paddingHorizontal: 0 }]}>관리비 항목</Text>
+        {items.length === 0 && (
+          <TouchableOpacity
+            style={{ backgroundColor: '#E8EEFB', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 }}
+            onPress={() => {
+              Alert.alert('전월 항목 복사', '직전 월의 항목과 금액을 그대로 복사합니다.', [
+                { text: '취소', style: 'cancel' },
+                { text: '복사', onPress: () => {
+                  const n = copyBillItemsFromPrevious(id!, currentMonth.id);
+                  if (n > 0) Alert.alert('복사 완료', `${n}개 항목을 가져왔습니다. 금액은 필요 시 수정하세요.`);
+                  else Alert.alert('알림', '복사할 이전 월 항목이 없습니다.');
+                }},
+              ]);
+            }}
+          >
+            <Text style={{ color: C.pri, fontSize: 11, fontWeight: '700' }}>↻ 전월 항목 복사</Text>
+          </TouchableOpacity>
+        )}
+      </View>
       {items.map((item, i) => (
         <View key={i} style={s.card}>
           <View style={s.itemRow}>
@@ -236,10 +284,22 @@ export default function VillaBillsScreen() {
         );
       })}
 
-      {/* 고지 발송 버튼 */}
-      <TouchableOpacity style={s.publishBtn} onPress={handlePublish}>
-        <Text style={s.publishBtnText}>관리비 고지 발송</Text>
-      </TouchableOpacity>
+      {/* 고지/마감 버튼 */}
+      {currentMonth.status === 'draft' && (
+        <TouchableOpacity style={s.publishBtn} onPress={handlePublish}>
+          <Text style={s.publishBtnText}>관리비 고지 발송</Text>
+        </TouchableOpacity>
+      )}
+      {currentMonth.status === 'published' && (
+        <TouchableOpacity style={[s.publishBtn, { backgroundColor: C.sub }]} onPress={handleClose}>
+          <Text style={s.publishBtnText}>이번 월 마감</Text>
+        </TouchableOpacity>
+      )}
+      {currentMonth.status === 'closed' && (
+        <View style={[s.publishBtn, { backgroundColor: '#E5E7EB' }]}>
+          <Text style={[s.publishBtnText, { color: C.sub }]}>마감됨</Text>
+        </View>
+      )}
     </ScrollView>
   );
 }

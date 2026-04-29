@@ -13,6 +13,8 @@ type Villa = {
   payRate: number;
   residents: number;
   region: string;
+  overdueAmount: number;
+  overdueUnits: number;
 };
 
 const PLANS = ['전체', '소형', '인기', '대형'];
@@ -38,16 +40,18 @@ export default function VillasTable({ villas }: { villas: Villa[] }) {
   const totalUnits = villas.reduce((s, v) => s + v.units, 0);
   const lowPayVillas = villas.filter((v) => v.payRate > 0 && v.payRate < 80).length;
   const avgUnits = totalVillas > 0 ? (totalUnits / totalVillas).toFixed(1) : '0';
+  const totalOverdueAmount = villas.reduce((s, v) => s + (v.overdueAmount ?? 0), 0);
 
   return (
     <div>
       <h2 className="text-lg font-bold mb-5">빌라 관리</h2>
 
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-5 gap-4 mb-6">
         {[
           { label: '총 빌라', value: `${totalVillas}개`, color: 'text-pri' },
           { label: '총 세대', value: `${totalUnits}세대`, color: 'text-ok' },
           { label: '미납률 높은 빌라', value: `${lowPayVillas}개`, color: 'text-err' },
+          { label: '누적 미납 총액', value: `${totalOverdueAmount.toLocaleString()}원`, color: 'text-err' },
           { label: '평균 세대/빌라', value: avgUnits, color: 'text-[#4DA6FF]' },
         ].map((k) => (
           <div key={k.label} className="bg-card border border-border rounded-[10px] p-5">
@@ -79,15 +83,16 @@ export default function VillasTable({ villas }: { villas: Villa[] }) {
                 <th className="text-left px-5 py-3 font-medium">플랜</th>
                 <th className="text-right px-5 py-3 font-medium">월가격</th>
                 <th className="text-right px-5 py-3 font-medium">납부율</th>
+                <th className="text-right px-5 py-3 font-medium">누적 미납</th>
                 <th className="text-right px-5 py-3 font-medium">입주민수</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
-                <tr><td colSpan={8} className="px-5 py-10 text-center text-t3">{villas.length === 0 ? '등록된 빌라가 없습니다' : '검색 결과가 없습니다'}</td></tr>
+                <tr><td colSpan={9} className="px-5 py-10 text-center text-t3">{villas.length === 0 ? '등록된 빌라가 없습니다' : '검색 결과가 없습니다'}</td></tr>
               ) : (
                 filtered.map((v) => (
-                  <tr key={v.id} className="border-b border-border last:border-0 hover:bg-white/[.03] transition-colors">
+                  <tr key={v.id} className="border-b border-border last:border-0 hover:bg-priL transition-colors">
                     <td className="px-5 py-3.5 font-semibold text-t1">{v.name}</td>
                     <td className="px-5 py-3.5 text-t2">{v.address}</td>
                     <td className="px-5 py-3.5 text-t2">{v.admin}</td>
@@ -99,6 +104,16 @@ export default function VillasTable({ villas }: { villas: Villa[] }) {
                     <td className="px-5 py-3.5 text-right">
                       {v.payRate > 0 ? (
                         <span className={v.payRate >= 90 ? 'text-ok' : v.payRate >= 80 ? 'text-warn' : 'text-err'}>{v.payRate}%</span>
+                      ) : (
+                        <span className="text-t3">-</span>
+                      )}
+                    </td>
+                    <td className="px-5 py-3.5 text-right">
+                      {v.overdueAmount > 0 ? (
+                        <span className="text-err font-semibold">
+                          {v.overdueAmount.toLocaleString()}원
+                          <span className="text-t3 font-normal text-xs ml-1">({v.overdueUnits}세대)</span>
+                        </span>
                       ) : (
                         <span className="text-t3">-</span>
                       )}

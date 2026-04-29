@@ -81,6 +81,7 @@ export interface BillMonth {
   status: 'draft' | 'published' | 'closed';
   items: { name: string; amount: number }[];
   paid: Record<string, boolean>; // ho → paid
+  paidInfo?: Record<string, { method?: string; paidAt?: string }>; // ho → 납부 메타
 }
 
 export interface Notice {
@@ -89,6 +90,7 @@ export interface Notice {
   body: string;
   date: string;
   isNew: boolean;
+  isPinned?: boolean;
 }
 
 export interface Message {
@@ -107,6 +109,7 @@ export interface ParkingItem {
   plate: string;
   type: 'resident' | 'visitor';
   memo?: string;
+  expiresAt?: string; // ISO timestamp; 방문차량 자동 만료 처리에 사용
 }
 
 export interface Post {
@@ -243,6 +246,23 @@ export function createBillMonth(villaId: string, yearMonth: string, label: strin
   })());
 }
 
+// 전월 항목 복사 (관리자 노가다 방지)
+export function copyBillItemsFromPrevious(villaId: string, monthId: string): number {
+  const villa = store.villas.find(v => v.id === villaId);
+  if (!villa) return 0;
+  const target = villa.billMonths.find(m => m.id === monthId);
+  if (!target) return 0;
+  // 대상 월보다 이전 + 항목이 있는 가장 최근 월
+  const prev = [...villa.billMonths]
+    .filter(m => m.id !== monthId && m.items.length > 0 && m.yearMonth < target.yearMonth)
+    .sort((a, b) => b.yearMonth.localeCompare(a.yearMonth))[0];
+  if (!prev) return 0;
+  // 이미 항목이 있으면 덮어쓰지 않음
+  if (target.items.length > 0) return 0;
+  prev.items.forEach(it => addBillItem(villaId, monthId, it.name, it.amount));
+  return prev.items.length;
+}
+
 // 관리비 항목 추가
 export function addBillItem(villaId: string, monthId: string, name: string, amount: number) {
   const villa = store.villas.find(v => v.id === villaId);
@@ -323,13 +343,30 @@ export function publishBill(villaId: string, monthId: string) {
   })());
 }
 
+// 관리비 월 마감 (published → closed)
+export function closeBillMonth(villaId: string, monthId: string) {
+  const villa = store.villas.find(v => v.id === villaId);
+  if (!villa) return;
+  const month = villa.billMonths.find(m => m.id === monthId);
+  if (!month) return;
+  month.status = 'closed';
+  notify();
+  bgWrite('closeBillMonth', (async () => {
+    const { supabase } = await import('./supabase');
+    if (monthId.length < 32) return;
+    await supabase.from('bill_months').update({ status: 'closed' }).eq('id', monthId);
+  })());
+}
+
 // 납부 처리
-export function confirmPayment(villaId: string, monthId: string, ho: string) {
+export function confirmPayment(villaId: string, monthId: string, ho: string, method: string = 'bank_transfer') {
   const villa = store.villas.find(v => v.id === villaId);
   if (!villa) return;
   const month = villa.billMonths.find(m => m.id === monthId);
   if (!month) return;
   month.paid[ho] = true;
+  if (!month.paidInfo) month.paidInfo = {};
+  month.paidInfo[ho] = { method, paidAt: new Date().toISOString() };
   notify();
   bgWrite('confirmPayment', (async () => {
     const { supabase } = await import('./supabase');
@@ -344,9 +381,43 @@ export function confirmPayment(villaId: string, monthId: string, ho: string) {
     await supabase.from('payments').update({
       is_paid: true,
       paid_at: new Date().toISOString(),
-      method: 'bank_transfer',
+      method,
       confirmed_by: store.admin.name ?? 'admin',
     }).eq('bill_month_id', monthId).eq('unit_id', unitRow.id);
+  })());
+}
+
+// 입주민 이사 처리 (호실은 유지하고 이름/전화 비움 + Supabase status='moved_out')
+export function moveOutResident(villaId: string, ho: string) {
+  const villa = store.villas.find(v => v.id === villaId);
+  if (!villa) return;
+  const unit = villa.units.find(u => u.ho === ho);
+  if (!unit) return;
+  const prevPhone = unit.phone;
+  const prevName = unit.name;
+  unit.name = '';
+  unit.phone = '';
+  notify();
+  bgWrite('moveOutResident', (async () => {
+    const { supabase } = await import('./supabase');
+    const normalized = (prevPhone ?? '').replace(/\D/g, '');
+    if (!normalized) return;
+    const { data: unitRow } = await supabase
+      .from('units')
+      .select('id')
+      .eq('villa_id', villaId)
+      .eq('ho_number', ho)
+      .maybeSingle();
+    if (!unitRow) return;
+    await supabase
+      .from('residents')
+      .update({
+        status: 'moved_out',
+        move_out_date: new Date().toISOString().slice(0, 10),
+      })
+      .eq('unit_id', unitRow.id)
+      .eq('phone', normalized)
+      .eq('name', prevName);
   })());
 }
 
@@ -355,7 +426,7 @@ export function addNotice(villaId: string, title: string, body: string) {
   const villa = store.villas.find(v => v.id === villaId);
   if (!villa) return;
   const localId = genId();
-  villa.notices.unshift({ id: localId, title, body, date: now(), isNew: true });
+  villa.notices.unshift({ id: localId, title, body, date: now(), isNew: true, isPinned: false });
   notify();
   bgWrite('addNotice', (async () => {
     const { supabase } = await import('./supabase');
@@ -364,6 +435,55 @@ export function addNotice(villaId: string, title: string, body: string) {
       const n = villa.notices.find(x => x.id === localId);
       if (n) { n.id = data.id; notify(); }
     }
+  })());
+}
+
+// 공지 수정
+export function updateNotice(villaId: string, noticeId: string, title: string, body: string) {
+  const villa = store.villas.find(v => v.id === villaId);
+  if (!villa) return;
+  const n = villa.notices.find(x => x.id === noticeId);
+  if (!n) return;
+  n.title = title;
+  n.body = body;
+  notify();
+  bgWrite('updateNotice', (async () => {
+    const { supabase } = await import('./supabase');
+    if (noticeId.length < 32) return;
+    await supabase.from('notices').update({ title, body }).eq('id', noticeId);
+  })());
+}
+
+// 공지 삭제
+export function removeNotice(villaId: string, noticeId: string) {
+  const villa = store.villas.find(v => v.id === villaId);
+  if (!villa) return;
+  villa.notices = villa.notices.filter(x => x.id !== noticeId);
+  notify();
+  bgWrite('removeNotice', (async () => {
+    const { supabase } = await import('./supabase');
+    if (noticeId.length < 32) return;
+    await supabase.from('notices').delete().eq('id', noticeId);
+  })());
+}
+
+// 공지 고정/해제 토글
+export function togglePinNotice(villaId: string, noticeId: string) {
+  const villa = store.villas.find(v => v.id === villaId);
+  if (!villa) return;
+  const n = villa.notices.find(x => x.id === noticeId);
+  if (!n) return;
+  n.isPinned = !n.isPinned;
+  // 고정 공지는 위로 정렬
+  villa.notices.sort((a, b) => {
+    if (!!b.isPinned !== !!a.isPinned) return Number(!!b.isPinned) - Number(!!a.isPinned);
+    return 0;
+  });
+  notify();
+  bgWrite('togglePinNotice', (async () => {
+    const { supabase } = await import('./supabase');
+    if (noticeId.length < 32) return;
+    await supabase.from('notices').update({ is_pinned: n.isPinned ?? false }).eq('id', noticeId);
   })());
 }
 
@@ -412,6 +532,7 @@ export function replyMessage(villaId: string, msgId: string, text: string) {
   notify();
   bgWrite('replyMessage', (async () => {
     const { supabase } = await import('./supabase');
+    if (msgId.length < 32) return;
     await supabase.from('message_replies').insert({
       message_id: msgId,
       text,
@@ -422,12 +543,41 @@ export function replyMessage(villaId: string, msgId: string, text: string) {
   })());
 }
 
+// 입주민 추가 답글 (입주민 → 관리자, 같은 thread)
+export function addResidentReply(villaId: string, msgId: string, text: string, fromName: string) {
+  const villa = store.villas.find(v => v.id === villaId);
+  if (!villa) return;
+  const msg = villa.messages.find(m => m.id === msgId);
+  if (!msg) return;
+  msg.replies.push({ text, from: fromName, date: now() });
+  msg.read = false; // 관리자가 다시 확인해야 함
+  notify();
+  bgWrite('addResidentReply', (async () => {
+    const { supabase } = await import('./supabase');
+    if (msgId.length < 32) return;
+    await supabase.from('message_replies').insert({
+      message_id: msgId,
+      text,
+      author_type: 'resident',
+      author_name: fromName,
+    });
+    await supabase.from('messages').update({ is_read: false }).eq('id', msgId);
+  })());
+}
+
 // 주차 등록
-export function addParking(villaId: string, ho: string, plate: string, type: 'resident' | 'visitor', memo?: string) {
+export function addParking(
+  villaId: string,
+  ho: string,
+  plate: string,
+  type: 'resident' | 'visitor',
+  memo?: string,
+  expiresAt?: string,
+) {
   const villa = store.villas.find(v => v.id === villaId);
   if (!villa) return;
   const localId = genId();
-  villa.parking.push({ id: localId, ho, plate, type, memo });
+  villa.parking.push({ id: localId, ho, plate, type, memo, expiresAt });
   notify();
   bgWrite('addParking', (async () => {
     const { supabase } = await import('./supabase');
@@ -438,6 +588,7 @@ export function addParking(villaId: string, ho: string, plate: string, type: 're
       plate_number: plate,
       vehicle_type: type,
       memo: memo ?? null,
+      expires_at: expiresAt ?? null,
     }).select().single();
     if (data) {
       const p = villa.parking.find(x => x.id === localId);
@@ -554,8 +705,8 @@ export function loadDemoData() {
       },
     ],
     notices: [
-      { id: 'n1', title: '3월 관리비 정산 안내', body: '3월 관리비가 정산되었습니다. 세대별 109,625원이며, 25일까지 납부 부탁드립니다.\n\n납부계좌: 국민 123-456-789012', date: '03.08', isNew: true },
-      { id: 'n2', title: '외벽 도색 공사 안내', body: '3/15~3/20 외벽 도색 공사가 진행됩니다.\n공사 시간: 오전 9시 ~ 오후 6시', date: '03.05', isNew: false },
+      { id: 'n1', title: '3월 관리비 정산 안내', body: '3월 관리비가 정산되었습니다. 세대별 109,625원이며, 25일까지 납부 부탁드립니다.\n\n납부계좌: 국민 123-456-789012', date: '03.08', isNew: true, isPinned: false },
+      { id: 'n2', title: '외벽 도색 공사 안내', body: '3/15~3/20 외벽 도색 공사가 진행됩니다.\n공사 시간: 오전 9시 ~ 오후 6시', date: '03.05', isNew: false, isPinned: false },
     ],
     messages: [
       { id: 'm1', from: '301호', fromName: '정다은', text: '3층 복도 전등이 깜빡여요. 수리 부탁드립니다.', date: '03.09', read: false, replies: [] },

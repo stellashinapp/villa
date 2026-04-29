@@ -71,7 +71,7 @@ export default async function NoticesPage() {
                   const villa = n.villas?.name ?? '-';
                   const admin = n.villas?.admins?.name ?? n.villas?.admins?.email ?? '-';
                   return (
-                    <tr key={n.id} className="border-b border-border last:border-0 hover:bg-white/[.03] transition-colors">
+                    <tr key={n.id} className="border-b border-border last:border-0 hover:bg-priL transition-colors">
                       <td className="px-5 py-3.5 text-t2 whitespace-nowrap">{new Date(n.created_at).toLocaleString('ko-KR')}</td>
                       <td className="px-5 py-3.5 font-semibold text-t1">{n.title}</td>
                       <td className="px-5 py-3.5 text-t2">{villa}</td>

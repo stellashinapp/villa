@@ -94,7 +94,7 @@ export default async function InquiriesPage() {
                   const replyCount = m.message_replies?.length ?? 0;
                   const isResolved = replyCount > 0;
                   return (
-                    <tr key={m.id} className="border-b border-border last:border-0 hover:bg-white/[.03] transition-colors">
+                    <tr key={m.id} className="border-b border-border last:border-0 hover:bg-priL transition-colors">
                       <td className="px-5 py-3.5 text-t2 whitespace-nowrap">{new Date(m.created_at).toLocaleString('ko-KR')}</td>
                       <td className="px-5 py-3.5 text-t2">{villa}</td>
                       <td className="px-5 py-3.5 text-t2">{ho}</td>

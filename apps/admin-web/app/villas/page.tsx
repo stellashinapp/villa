@@ -42,7 +42,7 @@ export default async function VillasPage() {
 
   const unitIds = rows.flatMap((v) => (v.units ?? []).map((u) => u.id));
 
-  const [{ data: residents }, { data: items }, { data: payments }] = await Promise.all([
+  const [{ data: residents }, { data: items }, { data: payments }, { data: overdueRows }] = await Promise.all([
     unitIds.length > 0
       ? supabase.from('residents').select('unit_id').in('unit_id', unitIds).eq('status', 'active')
       : Promise.resolve({ data: [] as { unit_id: string }[] }),
@@ -50,6 +50,10 @@ export default async function VillasPage() {
     unitIds.length > 0
       ? supabase.from('payments').select('unit_id, is_paid, bill_month_id, bill_months!inner(villa_id)').in('unit_id', unitIds)
       : Promise.resolve({ data: [] as Array<{ unit_id: string; is_paid: boolean; bill_months: { villa_id: string } }> }),
+    supabase
+      .from('villa_overdue_summary')
+      .select('villa_id, overdue_amount_total, overdue_unit_count, overdue_bill_count')
+      .returns<Array<{ villa_id: string; overdue_amount_total: number; overdue_unit_count: number; overdue_bill_count: number }>>(),
   ]);
 
   const residentsByUnit = new Map<string, number>();
@@ -77,11 +81,21 @@ export default async function VillasPage() {
 
   const PLAN_KO: Record<string, string> = { small: '소형', popular: '인기', large: '대형' };
 
+  const overdueByVilla = new Map<string, { amount: number; units: number; bills: number }>();
+  (overdueRows ?? []).forEach((r) => {
+    overdueByVilla.set(r.villa_id, {
+      amount: r.overdue_amount_total ?? 0,
+      units: r.overdue_unit_count ?? 0,
+      bills: r.overdue_bill_count ?? 0,
+    });
+  });
+
   const enriched = rows.map((v) => {
     const units = v.units?.length ?? v.total_units ?? 0;
     const residentCount = (v.units ?? []).reduce((s, u) => s + (residentsByUnit.get(u.id) ?? 0), 0);
     const planInfo = planByVilla.get(v.id);
     const payRate = payRateByVilla.get(v.id) ?? 0;
+    const overdue = overdueByVilla.get(v.id) ?? { amount: 0, units: 0, bills: 0 };
     return {
       id: v.id,
       name: v.name,
@@ -93,6 +107,8 @@ export default async function VillasPage() {
       payRate,
       residents: residentCount,
       region: v.address.split(' ')[1] ?? '-',
+      overdueAmount: overdue.amount,
+      overdueUnits: overdue.units,
     };
   });
 

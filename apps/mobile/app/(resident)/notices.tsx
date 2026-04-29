@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput } from 'react-native';
 import { store, subscribe } from '@/lib/store';
 
 export default function NoticesScreen() {
@@ -8,6 +8,8 @@ export default function NoticesScreen() {
 
   const villa = store.villas.find(v => v.id === store.loggedVillaId);
   const resident = store.loggedResident;
+
+  const [query, setQuery] = useState('');
 
   if (!villa || !resident) {
     return (
@@ -19,7 +21,18 @@ export default function NoticesScreen() {
     );
   }
 
-  const notices = villa.notices;
+  const q = query.trim().toLowerCase();
+  const filtered = q
+    ? villa.notices.filter(n =>
+        n.title.toLowerCase().includes(q) || n.body.toLowerCase().includes(q),
+      )
+    : villa.notices;
+
+  // 고정 공지가 위에 오도록 정렬 (sync.ts에서 이미 정렬되지만 안전망)
+  const notices = [...filtered].sort((a, b) => {
+    if (!!b.isPinned !== !!a.isPinned) return Number(!!b.isPinned) - Number(!!a.isPinned);
+    return 0;
+  });
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 100 }}>
@@ -28,17 +41,38 @@ export default function NoticesScreen() {
         <Text style={styles.headerSub}>{villa.name}</Text>
       </View>
 
-      {notices.length === 0 ? (
+      {villa.notices.length > 0 && (
+        <View style={styles.searchWrap}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="공지 제목/내용 검색"
+            placeholderTextColor="#9CA3AF"
+            value={query}
+            onChangeText={setQuery}
+          />
+        </View>
+      )}
+
+      {villa.notices.length === 0 ? (
         <View style={styles.emptyNotice}>
           <Text style={styles.emptyNoticeTitle}>공지사항이 없습니다</Text>
           <Text style={styles.emptyNoticeSub}>새로운 공지가 등록되면 여기에 표시됩니다</Text>
         </View>
+      ) : notices.length === 0 ? (
+        <View style={styles.emptyNotice}>
+          <Text style={styles.emptyNoticeTitle}>검색 결과가 없습니다</Text>
+        </View>
       ) : (
         <View style={styles.list}>
           {notices.map(notice => (
-            <View key={notice.id} style={styles.card}>
+            <View key={notice.id} style={[styles.card, notice.isPinned && styles.pinnedCard]}>
               <View style={styles.cardHeader}>
-                {notice.isNew && (
+                {notice.isPinned && (
+                  <View style={styles.pinnedBadge}>
+                    <Text style={styles.pinnedBadgeText}>📌 고정</Text>
+                  </View>
+                )}
+                {notice.isNew && !notice.isPinned && (
                   <View style={styles.newBadge}>
                     <Text style={styles.newBadgeText}>NEW</Text>
                   </View>
@@ -97,4 +131,24 @@ const styles = StyleSheet.create({
   cardDate: { fontSize: 12, color: '#9CA3AF' },
   cardTitle: { fontSize: 15, fontWeight: '800', color: '#1A1D26', marginBottom: 8 },
   cardBody: { fontSize: 13, color: '#6B7280', lineHeight: 20 },
+
+  searchWrap: { paddingHorizontal: 16, marginBottom: 12 },
+  searchInput: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E8EBF0',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: '#1A1D26',
+  },
+  pinnedCard: { borderColor: '#FF6B35', borderWidth: 1.5 },
+  pinnedBadge: {
+    backgroundColor: 'rgba(255,107,53,0.12)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  pinnedBadgeText: { color: '#FF6B35', fontSize: 10, fontWeight: '800' },
 });

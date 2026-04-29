@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert 
 import { useState, useEffect } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import { router } from 'expo-router';
-import { store, subscribe, addNotice } from '@/lib/store';
+import { store, subscribe, addNotice, updateNotice, removeNotice, togglePinNotice } from '@/lib/store';
 
 const C = {
   bg: '#F5F6FA',
@@ -26,6 +26,10 @@ export default function VillaNoticesScreen() {
 
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editBody, setEditBody] = useState('');
 
   if (!villa) {
     return (
@@ -87,16 +91,74 @@ export default function VillaNoticesScreen() {
             <Text style={s.emptyText}>등록된 공지가 없습니다</Text>
           </View>
         )}
-        {villa.notices.map(n => (
-          <View key={n.id} style={s.card}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-              {n.isNew && <View style={s.newBadge}><Text style={s.newBadgeText}>NEW</Text></View>}
-              <Text style={s.noticeDate}>{n.date}</Text>
+        {villa.notices.map(n => {
+          const isEditing = editingId === n.id;
+          return (
+            <View key={n.id} style={[s.card, n.isPinned && { borderColor: C.accent, borderWidth: 1.5 }]}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                {n.isPinned && (
+                  <View style={[s.newBadge, { backgroundColor: 'rgba(255,107,53,0.12)' }]}>
+                    <Text style={s.newBadgeText}>📌 고정</Text>
+                  </View>
+                )}
+                {n.isNew && !n.isPinned && <View style={s.newBadge}><Text style={s.newBadgeText}>NEW</Text></View>}
+                <Text style={s.noticeDate}>{n.date}</Text>
+                <View style={{ flex: 1 }} />
+                <TouchableOpacity onPress={() => togglePinNotice(id!, n.id)}>
+                  <Text style={s.actionText}>{n.isPinned ? '고정해제' : '고정'}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => {
+                  if (isEditing) {
+                    setEditingId(null);
+                  } else {
+                    setEditingId(n.id);
+                    setEditTitle(n.title);
+                    setEditBody(n.body);
+                  }
+                }}>
+                  <Text style={s.actionText}>{isEditing ? '취소' : '수정'}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => {
+                  Alert.alert('공지 삭제', `"${n.title}" 공지를 삭제하시겠습니까?`, [
+                    { text: '취소', style: 'cancel' },
+                    { text: '삭제', style: 'destructive', onPress: () => removeNotice(id!, n.id) },
+                  ]);
+                }}>
+                  <Text style={[s.actionText, { color: '#E74C3C' }]}>삭제</Text>
+                </TouchableOpacity>
+              </View>
+
+              {isEditing ? (
+                <>
+                  <TextInput style={s.input} value={editTitle} onChangeText={setEditTitle} placeholder="제목" placeholderTextColor={C.muted} />
+                  <TextInput
+                    style={[s.input, { height: 100, textAlignVertical: 'top', marginTop: 8 }]}
+                    multiline value={editBody} onChangeText={setEditBody}
+                    placeholder="내용" placeholderTextColor={C.muted}
+                  />
+                  <TouchableOpacity
+                    style={s.submitBtn}
+                    onPress={() => {
+                      const t = editTitle.trim();
+                      const b = editBody.trim();
+                      if (!t || !b) { Alert.alert('오류', '제목과 내용을 입력하세요'); return; }
+                      updateNotice(id!, n.id, t, b);
+                      setEditingId(null);
+                      Alert.alert('수정 완료', '공지가 수정되었습니다');
+                    }}
+                  >
+                    <Text style={s.submitBtnText}>저장</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  <Text style={s.noticeTitle}>{n.title}</Text>
+                  <Text style={s.noticeBody}>{n.body}</Text>
+                </>
+              )}
             </View>
-            <Text style={s.noticeTitle}>{n.title}</Text>
-            <Text style={s.noticeBody}>{n.body}</Text>
-          </View>
-        ))}
+          );
+        })}
       </View>
     </ScrollView>
   );
@@ -119,4 +181,5 @@ const s = StyleSheet.create({
   noticeBody: { fontSize: 13, color: C.sub, lineHeight: 20 },
   empty: { alignItems: 'center', padding: 30 },
   emptyText: { color: C.muted, fontSize: 14 },
+  actionText: { fontSize: 12, color: C.pri, fontWeight: '600' },
 });

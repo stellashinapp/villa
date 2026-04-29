@@ -118,7 +118,7 @@ export default function AdminDetailPage() {
             </thead>
             <tbody>
               {admin.villas.map((v, i) => (
-                <tr key={i} className="border-b border-border last:border-0 hover:bg-white/[.03] transition-colors">
+                <tr key={i} className="border-b border-border last:border-0 hover:bg-priL transition-colors">
                   <td className="px-5 py-3.5 font-semibold text-t1">{v.name}</td>
                   <td className="px-5 py-3.5 text-t2">{v.address}</td>
                   <td className="px-5 py-3.5 text-right text-t2">{v.units}</td>

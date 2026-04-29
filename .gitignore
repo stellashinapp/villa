@@ -9,6 +9,7 @@ out/
 dist/
 build/
 .turbo/
+tsconfig.tsbuildinfo
 
 # Expo
 .expo/
@@ -52,3 +53,6 @@ supabase/.temp/
 .claude/settings.local.json
 
 .vercel
+
+# Playwright MCP test artifacts
+.playwright-mcp/

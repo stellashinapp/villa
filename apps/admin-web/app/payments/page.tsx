@@ -17,7 +17,7 @@ type Row = {
 const STATUS_KO: Record<Row['status'], { label: string; cls: string }> = {
   success: { label: '성공', cls: 'bg-okL text-ok' },
   failed: { label: '실패', cls: 'bg-errL text-err' },
-  refunded: { label: '환불', cls: 'bg-white/10 text-t3' },
+  refunded: { label: '환불', cls: 'bg-bg text-t3' },
 };
 
 export const dynamic = 'force-dynamic';
@@ -105,7 +105,7 @@ export default async function PaymentsPage() {
                   const villaCount = p.subscriptions?.subscription_items?.length ?? 0;
                   const st = STATUS_KO[p.status];
                   return (
-                    <tr key={p.id} className="border-b border-border last:border-0 hover:bg-white/[.03] transition-colors">
+                    <tr key={p.id} className="border-b border-border last:border-0 hover:bg-priL transition-colors">
                       <td className="px-5 py-3.5 text-t2">{new Date(p.created_at).toLocaleDateString('ko-KR')}</td>
                       <td className="px-5 py-3.5 font-semibold text-t1">{admin?.name ?? admin?.email ?? '-'}</td>
                       <td className="px-5 py-3.5 text-t2">구독료 ({villaCount} 빌라)</td>

@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert 
 import { useState, useEffect } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import { router } from 'expo-router';
-import { store, subscribe, registerResident } from '@/lib/store';
+import { store, subscribe, registerResident, moveOutResident } from '@/lib/store';
 
 const C = {
   bg: '#F5F6FA',
@@ -79,12 +79,38 @@ export default function VillaResidentsScreen() {
                 <Text style={[s.resInfo, { color: C.accent }]}>미등록</Text>
               )}
             </View>
-            <TouchableOpacity
-              style={s.editBtn}
-              onPress={() => editingHo === u.ho ? setEditingHo(null) : startEditing(u.ho, u.name, u.phone)}
-            >
-              <Text style={s.editBtnText}>{u.name ? '수정' : '등록'}</Text>
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', gap: 6 }}>
+              <TouchableOpacity
+                style={s.editBtn}
+                onPress={() => editingHo === u.ho ? setEditingHo(null) : startEditing(u.ho, u.name, u.phone)}
+              >
+                <Text style={s.editBtnText}>{u.name ? '수정' : '등록'}</Text>
+              </TouchableOpacity>
+              {u.name && (
+                <TouchableOpacity
+                  style={s.moveOutBtn}
+                  onPress={() => {
+                    Alert.alert(
+                      '이사 처리',
+                      `${u.ho} ${u.name}님을 이사 처리하시겠습니까?\n\n호실 정보는 비워지고, 새 입주민을 등록할 수 있습니다.\n과거 납부 이력은 보존됩니다.`,
+                      [
+                        { text: '취소', style: 'cancel' },
+                        {
+                          text: '이사 처리',
+                          style: 'destructive',
+                          onPress: () => {
+                            moveOutResident(id!, u.ho);
+                            Alert.alert('완료', `${u.ho} 이사 처리되었습니다.`);
+                          },
+                        },
+                      ],
+                    );
+                  }}
+                >
+                  <Text style={s.moveOutBtnText}>이사</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
 
           {editingHo === u.ho && (
@@ -136,6 +162,8 @@ const s = StyleSheet.create({
   resInfo: { fontSize: 12, color: C.sub, marginTop: 2 },
   editBtn: { backgroundColor: '#F0F2F6', borderWidth: 1, borderColor: C.border, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 6 },
   editBtnText: { fontSize: 11, color: C.sub, fontWeight: '600' },
+  moveOutBtn: { backgroundColor: '#FEF2F2', borderWidth: 1, borderColor: '#FECACA', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 6 },
+  moveOutBtnText: { fontSize: 11, color: '#E74C3C', fontWeight: '700' },
   editArea: { marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: C.border },
   editRow: { flexDirection: 'row', gap: 6, marginBottom: 8 },
   input: { backgroundColor: C.inputBg, borderWidth: 1, borderColor: C.inputBorder, borderRadius: 10, padding: 10, fontSize: 13, color: C.text },

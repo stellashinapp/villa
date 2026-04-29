@@ -271,7 +271,31 @@ function StatsDashboard({ villas }: { villas: typeof store.villas }) {
     const unpaidCount = pub ? regUnits.filter((u) => !pub.paid[u.ho]).length : 0;
     const unreadMsg = v.messages.filter((m) => !m.read).length;
     const pendingMsg = v.messages.filter((m) => m.replies.length === 0).length;
-    return { id: v.id, name: v.name, unpaidCount, unreadMsg, pendingMsg };
+
+    // 누적 미납: published + closed 모든 월에서 호실별 미납 횟수/금액 집계
+    const overdueByHo: Record<string, { count: number; amount: number }> = {};
+    v.billMonths
+      .filter((b) => b.status !== 'draft')
+      .forEach((b) => {
+        const monthTotal = b.items.reduce((s: number, i: { amount: number }) => s + i.amount, 0);
+        const perUnit = regUnits.length > 0 ? Math.round(monthTotal / v.units.length) : 0;
+        regUnits.forEach((u) => {
+          if (!b.paid[u.ho]) {
+            const cur = overdueByHo[u.ho] ?? { count: 0, amount: 0 };
+            cur.count += 1;
+            cur.amount += perUnit;
+            overdueByHo[u.ho] = cur;
+          }
+        });
+      });
+    const chronicUnpaid = Object.entries(overdueByHo)
+      .filter(([, v]) => v.count >= 2)
+      .map(([ho, v]) => ({ ho, cnt: v.count, amount: v.amount }))
+      .sort((a, b) => b.cnt - a.cnt);
+    const totalOverdueCount = Object.values(overdueByHo).reduce((s, v) => s + v.count, 0);
+    const totalOverdueAmount = Object.values(overdueByHo).reduce((s, v) => s + v.amount, 0);
+
+    return { id: v.id, name: v.name, unpaidCount, unreadMsg, pendingMsg, chronicUnpaid, totalOverdueCount, totalOverdueAmount };
   });
 
   const totalRegisteredResidents = villas.reduce(
@@ -316,12 +340,55 @@ function StatsDashboard({ villas }: { villas: typeof store.villas }) {
       </View>
 
       {villaStats.filter((v) => v.unpaidCount > 0).length > 0 && (
-        <View style={{ backgroundColor: '#fff', borderWidth: 1, borderColor: '#E8EBF0', borderRadius: 12, padding: 14 }}>
-          <Text style={{ fontSize: 12, color: '#6B7280', marginBottom: 8 }}>빌라별 미납</Text>
+        <View style={{ backgroundColor: '#fff', borderWidth: 1, borderColor: '#E8EBF0', borderRadius: 12, padding: 14, marginBottom: 10 }}>
+          <Text style={{ fontSize: 12, color: '#6B7280', marginBottom: 8 }}>빌라별 미납 (이번달)</Text>
           {villaStats.filter((v) => v.unpaidCount > 0).map((v) => (
             <View key={v.id} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
               <Text style={{ fontSize: 13, color: '#1A1D26', fontWeight: '600' }}>{v.name}</Text>
               <Text style={{ fontSize: 13, color: '#E74C3C', fontWeight: '800' }}>{v.unpaidCount}세대</Text>
+            </View>
+          ))}
+        </View>
+      )}
+
+      {villaStats.some((v) => v.totalOverdueAmount > 0) && (
+        <View style={{ backgroundColor: '#FFF7ED', borderWidth: 1, borderColor: '#FED7AA', borderRadius: 12, padding: 14, marginBottom: 10 }}>
+          <Text style={{ fontSize: 12, color: '#C2410C', fontWeight: '700', marginBottom: 8 }}>💰 누적 미납 금액 (전체 기간)</Text>
+          {villaStats.filter((v) => v.totalOverdueAmount > 0).map((v) => (
+            <View key={v.id} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
+              <Text style={{ fontSize: 13, color: '#1A1D26', fontWeight: '600' }}>{v.name}</Text>
+              <View style={{ alignItems: 'flex-end' }}>
+                <Text style={{ fontSize: 13, color: '#C2410C', fontWeight: '800' }}>{formatCurrency(v.totalOverdueAmount)}</Text>
+                <Text style={{ fontSize: 10, color: '#9CA3AF' }}>{v.totalOverdueCount}건 미납</Text>
+              </View>
+            </View>
+          ))}
+          <View style={{ marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: '#FED7AA', flexDirection: 'row', justifyContent: 'space-between' }}>
+            <Text style={{ fontSize: 13, color: '#1A1D26', fontWeight: '800' }}>합계</Text>
+            <Text style={{ fontSize: 14, color: '#C2410C', fontWeight: '900' }}>
+              {formatCurrency(villaStats.reduce((s, v) => s + v.totalOverdueAmount, 0))}
+            </Text>
+          </View>
+        </View>
+      )}
+
+      {villaStats.some((v) => v.chronicUnpaid.length > 0) && (
+        <View style={{ backgroundColor: '#fff', borderWidth: 1, borderColor: '#FECACA', borderRadius: 12, padding: 14 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+            <Text style={{ fontSize: 12, color: '#E74C3C', fontWeight: '700' }}>⚠️ 상습 미납 (2회 이상)</Text>
+          </View>
+          {villaStats.filter((v) => v.chronicUnpaid.length > 0).map((v) => (
+            <View key={v.id} style={{ paddingVertical: 4 }}>
+              <Text style={{ fontSize: 12, color: '#6B7280', marginBottom: 4 }}>{v.name}</Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                {v.chronicUnpaid.map((c) => (
+                  <View key={c.ho} style={{ backgroundColor: '#FEF2F2', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 }}>
+                    <Text style={{ fontSize: 11, color: '#E74C3C', fontWeight: '700' }}>
+                      {c.ho} · {c.cnt}회 · {formatCurrency(c.amount)}
+                    </Text>
+                  </View>
+                ))}
+              </View>
             </View>
           ))}
         </View>

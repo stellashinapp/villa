@@ -24,9 +24,9 @@ type VillaRaw = {
   account_bank: string | null; account_number: string | null;
   units: Array<{ id: string; ho_number: string; floor: number | null; residents: Array<{ name: string; phone: string; status: string }> }>;
   bill_months: Array<{ id: string; year_month: string; label: string | null; status: 'draft' | 'published' | 'closed'; bill_items: Array<{ name: string; amount: number }> }>;
-  notices: Array<{ id: string; title: string; body: string; created_at: string }>;
+  notices: Array<{ id: string; title: string; body: string; created_at: string; is_pinned?: boolean }>;
   messages: Array<{ id: string; text: string; is_read: boolean; created_at: string; unit_id: string | null; resident_id: string | null; message_replies: Array<{ text: string; author_type: string; author_name: string | null; created_at: string }> }>;
-  parking: Array<{ id: string; plate_number: string; vehicle_type: 'resident' | 'visitor'; memo: string | null; unit_id: string | null }>;
+  parking: Array<{ id: string; plate_number: string; vehicle_type: 'resident' | 'visitor'; memo: string | null; unit_id: string | null; expires_at?: string | null }>;
   posts?: Array<{ id: string; title: string | null; body: string; likes: number; created_at: string; resident_id: string | null; comments: Array<{ text: string; created_at: string; resident_id: string | null }> }>;
   subscription_items: Array<{ plan: string; price: number }>;
 };
@@ -64,7 +64,11 @@ function toVilla(v: VillaRaw, paymentMap: Map<string, Set<string>>): Villa {
     body: n.body,
     date: FMT_DATE(n.created_at),
     isNew: IS_NEW(n.created_at),
-  })).sort((a, b) => b.id.localeCompare(a.id));
+    isPinned: !!n.is_pinned,
+  })).sort((a, b) => {
+    if (!!b.isPinned !== !!a.isPinned) return Number(!!b.isPinned) - Number(!!a.isPinned);
+    return b.id.localeCompare(a.id);
+  });
 
   const messages = (v.messages ?? []).map((m) => ({
     id: m.id,
@@ -86,6 +90,7 @@ function toVilla(v: VillaRaw, paymentMap: Map<string, Set<string>>): Villa {
     plate: p.plate_number,
     type: p.vehicle_type,
     memo: p.memo ?? undefined,
+    expiresAt: p.expires_at ?? undefined,
   }));
 
   const community = (v.posts ?? []).map((p) => ({
@@ -157,7 +162,7 @@ export async function syncAdminFromSupabase() {
       id, name, address, total_units, units_per_floor, account_bank, account_number,
       units ( id, ho_number, floor, residents ( name, phone, status ) ),
       bill_months ( id, year_month, label, status, bill_items ( name, amount ) ),
-      notices ( id, title, body, created_at ),
+      notices ( id, title, body, created_at, is_pinned ),
       messages ( id, text, is_read, created_at, unit_id, resident_id, message_replies ( text, author_type, author_name, created_at ) ),
       parking ( id, plate_number, vehicle_type, memo, unit_id ),
       subscription_items!inner ( plan, price )
@@ -175,7 +180,7 @@ export async function syncAdminFromSupabase() {
         id, name, address, total_units, units_per_floor, account_bank, account_number,
         units ( id, ho_number, floor, residents ( name, phone, status ) ),
         bill_months ( id, year_month, label, status, bill_items ( name, amount ) ),
-        notices ( id, title, body, created_at ),
+        notices ( id, title, body, created_at, is_pinned ),
         messages ( id, text, is_read, created_at, unit_id, resident_id, message_replies ( text, author_type, author_name, created_at ) ),
         parking ( id, plate_number, vehicle_type, memo, unit_id )
       `)
@@ -240,7 +245,7 @@ export async function syncResidentFromSupabase(phone: string, name: string): Pro
       id, name, address, total_units, units_per_floor, account_bank, account_number,
       units ( id, ho_number, floor, residents ( name, phone, status ) ),
       bill_months ( id, year_month, label, status, bill_items ( name, amount ) ),
-      notices ( id, title, body, created_at ),
+      notices ( id, title, body, created_at, is_pinned ),
       messages ( id, text, is_read, created_at, unit_id, resident_id, message_replies ( text, author_type, author_name, created_at ) ),
       parking ( id, plate_number, vehicle_type, memo, unit_id )
     `)

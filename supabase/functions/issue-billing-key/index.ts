@@ -15,13 +15,25 @@ serve(async (req) => {
   }
 
   try {
-    const { authKey, customerKey, adminId } = await req.json();
+    const { authKey, customerKey, adminId, cardExpiryYear, cardExpiryMonth } = await req.json();
 
     if (!authKey || !customerKey || !adminId) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
+    }
+
+    // 카드 만료월 정규화 (프론트에서 "MM/YY" 또는 숫자로 받음)
+    let expiryYear: number | null = null;
+    let expiryMonth: number | null = null;
+    if (cardExpiryYear != null && cardExpiryMonth != null) {
+      const y = Number(cardExpiryYear);
+      const m = Number(cardExpiryMonth);
+      if (Number.isFinite(y) && Number.isFinite(m) && m >= 1 && m <= 12) {
+        expiryYear = y < 100 ? 2000 + y : y;
+        expiryMonth = m;
+      }
     }
 
     const secretKey = Deno.env.get('TOSS_BILLING_SECRET_KEY') ?? Deno.env.get('TOSS_SECRET_KEY')!;
@@ -68,6 +80,9 @@ serve(async (req) => {
           billing_key: tossData.billingKey,
           card_brand: cardBrand,
           card_last4: cardLast4,
+          card_expiry_year: expiryYear,
+          card_expiry_month: expiryMonth,
+          card_expiry_alerted_at: null,
           status: existingSub.status === 'trialing' ? 'active' : existingSub.status,
           updated_at: new Date().toISOString(),
         })
@@ -78,6 +93,8 @@ serve(async (req) => {
         billing_key: tossData.billingKey,
         card_brand: cardBrand,
         card_last4: cardLast4,
+        card_expiry_year: expiryYear,
+        card_expiry_month: expiryMonth,
         status: 'active',
         billing_day: new Date().getDate(),
         current_period_start: new Date().toISOString(),
