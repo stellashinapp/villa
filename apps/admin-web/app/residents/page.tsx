@@ -1,30 +1,98 @@
-export default function ResidentsPage() {
-  const RESIDENTS = [
-    { id: 1, name: '홍길동', phone: '010-1111-2222', villa: '선릉 파크빌', room: '101호', admin: '김철수', status: '납부' as const },
-    { id: 2, name: '김나영', phone: '010-2222-3333', villa: '선릉 파크빌', room: '202호', admin: '김철수', status: '납부' as const },
-    { id: 3, name: '이준혁', phone: '010-3333-4444', villa: '역삼 그린빌', room: '305호', admin: '김철수', status: '미납' as const },
-    { id: 4, name: '박서연', phone: '010-4444-5555', villa: '강남 힐스테이트', room: '501호', admin: '박영희', status: '납부' as const },
-    { id: 5, name: '최현우', phone: '010-5555-6666', villa: '잠실 레이크빌', room: '102호', admin: '박영희', status: '납부' as const },
-    { id: 6, name: '정민지', phone: '010-6666-7777', villa: '서초 브라운빌', room: '401호', admin: '박영희', status: '미납' as const },
-    { id: 7, name: '강도윤', phone: '010-7777-8888', villa: '성북 아트빌', room: '203호', admin: '이민호', status: '납부' as const },
-    { id: 8, name: '윤서준', phone: '010-8888-9999', villa: '노원 스카이', room: '702호', admin: '정수진', status: '납부' as const },
-    { id: 9, name: '장하은', phone: '010-9999-0000', villa: '마포 하늘빌', room: '303호', admin: '박영희', status: '미납' as const },
-    { id: 10, name: '오지호', phone: '010-0000-1111', villa: '용산 센트럴', room: '604호', admin: '박영희', status: '납부' as const },
-  ];
+import { createServerClient } from '@/lib/supabase-server';
 
-  const total = RESIDENTS.length;
-  const paid = RESIDENTS.filter((r) => r.status === '납부').length;
+type Row = {
+  id: string;
+  name: string;
+  phone: string;
+  status: 'active' | 'moved_out';
+  units: {
+    ho_number: string;
+    villas: {
+      name: string;
+      admins: { name: string | null; email: string } | null;
+    } | null;
+  } | null;
+};
+
+export const dynamic = 'force-dynamic';
+
+function formatPhone(p: string) {
+  const digits = (p ?? '').replace(/\D/g, '');
+  if (digits.length === 11) return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+  if (digits.length === 10) return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+  return p;
+}
+
+export default async function ResidentsPage() {
+  const supabase = createServerClient();
+
+  const { data: residents, error } = await supabase
+    .from('residents')
+    .select(`
+      id, name, phone, status,
+      units:unit_id (
+        ho_number,
+        villas:villa_id (
+          name,
+          admins:admin_id ( name, email )
+        )
+      )
+    `)
+    .order('created_at', { ascending: false })
+    .limit(500)
+    .returns<Row[]>();
+
+  if (error) {
+    return (
+      <div>
+        <h2 className="text-lg font-bold mb-5">입주민</h2>
+        <div className="bg-errL text-err border border-err/30 rounded-[10px] p-5 text-sm">
+          조회 실패: {error.message}
+        </div>
+      </div>
+    );
+  }
+
+  const rows = residents ?? [];
+
+  const ids = rows.map((r) => r.id);
+  let paidIds = new Set<string>();
+  if (ids.length > 0) {
+    const { data: recentPayments } = await supabase
+      .from('payments')
+      .select(`
+        unit_id,
+        is_paid,
+        bill_months!inner ( year_month )
+      `)
+      .order('bill_months(year_month)', { ascending: false });
+
+    const latestPaidByUnit = new Map<string, boolean>();
+    (recentPayments ?? []).forEach((p) => {
+      if (!latestPaidByUnit.has(p.unit_id)) {
+        latestPaidByUnit.set(p.unit_id, p.is_paid);
+      }
+    });
+
+    rows.forEach((r) => {
+      const unitId = (r as unknown as { unit_id?: string }).unit_id;
+      if (unitId && latestPaidByUnit.get(unitId)) paidIds.add(r.id);
+    });
+  }
+
+  const active = rows.filter((r) => r.status === 'active');
+  const total = active.length;
+  const paid = active.filter((r) => paidIds.has(r.id)).length;
   const unpaid = total - paid;
 
   return (
     <div>
       <h2 className="text-lg font-bold mb-5">입주민</h2>
 
-      {/* KPI */}
       <div className="grid grid-cols-3 gap-4 mb-6">
         {[
           { label: '총 입주민', value: `${total}명`, color: 'text-pri' },
-          { label: '관리비 납부', value: `${paid}명`, color: 'text-ok' },
+          { label: '이번달 납부', value: `${paid}명`, color: 'text-ok' },
           { label: '미납', value: `${unpaid}명`, color: 'text-err' },
         ].map((k) => (
           <div key={k.label} className="bg-card border border-border rounded-[10px] p-5">
@@ -34,40 +102,47 @@ export default function ResidentsPage() {
         ))}
       </div>
 
-      {/* Table */}
       <div className="bg-card border border-border rounded-[10px] overflow-hidden">
         <div className="px-5 py-4 border-b border-border">
-          <h3 className="text-sm font-bold">입주민 목록</h3>
+          <h3 className="text-sm font-bold">입주민 목록 (최근 500명)</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border text-t3 text-xs">
                 <th className="text-left px-5 py-3 font-medium">이름</th>
-                <th className="text-left px-5 py-3 font-medium">전화번호</th>
+                <th className="text-left px-5 py-3 font-medium">연락처</th>
                 <th className="text-left px-5 py-3 font-medium">빌라</th>
                 <th className="text-left px-5 py-3 font-medium">호실</th>
                 <th className="text-left px-5 py-3 font-medium">관리자</th>
-                <th className="text-left px-5 py-3 font-medium">관리비 상태</th>
+                <th className="text-left px-5 py-3 font-medium">상태</th>
               </tr>
             </thead>
             <tbody>
-              {RESIDENTS.map((r) => (
-                <tr key={r.id} className="border-b border-border last:border-0 hover:bg-white/[.03] transition-colors">
-                  <td className="px-5 py-3.5 font-semibold text-t1">{r.name}</td>
-                  <td className="px-5 py-3.5 text-t2">{r.phone}</td>
-                  <td className="px-5 py-3.5 text-t2">{r.villa}</td>
-                  <td className="px-5 py-3.5 text-t2">{r.room}</td>
-                  <td className="px-5 py-3.5 text-t2">{r.admin}</td>
-                  <td className="px-5 py-3.5">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                      r.status === '납부' ? 'bg-okL text-ok' : 'bg-errL text-err'
-                    }`}>
-                      {r.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+              {active.length === 0 ? (
+                <tr><td colSpan={6} className="px-5 py-10 text-center text-t3">등록된 입주민이 없습니다</td></tr>
+              ) : (
+                active.map((r) => {
+                  const villa = r.units?.villas?.name ?? '-';
+                  const admin = r.units?.villas?.admins?.name ?? r.units?.villas?.admins?.email ?? '-';
+                  const room = r.units?.ho_number ?? '-';
+                  const isPaid = paidIds.has(r.id);
+                  return (
+                    <tr key={r.id} className="border-b border-border last:border-0 hover:bg-white/[.03] transition-colors">
+                      <td className="px-5 py-3.5 font-semibold text-t1">{r.name}</td>
+                      <td className="px-5 py-3.5 text-t2">{formatPhone(r.phone)}</td>
+                      <td className="px-5 py-3.5 text-t2">{villa}</td>
+                      <td className="px-5 py-3.5 text-t2">{room}호</td>
+                      <td className="px-5 py-3.5 text-t2">{admin}</td>
+                      <td className="px-5 py-3.5">
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${isPaid ? 'bg-okL text-ok' : 'bg-errL text-err'}`}>
+                          {isPaid ? '납부' : '미납'}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>

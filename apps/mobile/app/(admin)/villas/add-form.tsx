@@ -1,0 +1,509 @@
+import { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  TextInput,
+  Alert,
+  Modal,
+} from 'react-native';
+import { router } from 'expo-router';
+import { addVilla, store } from '@/lib/store';
+
+const C = {
+  bg: '#F5F6FA', card: '#FFFFFF', border: '#E8EBF0',
+  inputBg: '#F0F2F6', inputBorder: '#E5E7EB',
+  pri: '#4A6CF7', priL: '#E8EEFB',
+  text: '#1A1D26', sub: '#6B7280', muted: '#9CA3AF',
+  ok: '#4CAF50', err: '#E74C3C',
+};
+
+interface UnitData { name: string; }
+interface FloorData { label: string; displayLabel: string; units: UnitData[]; }
+
+function makeUnits(floorLabel: string, count: number): UnitData[] {
+  return Array.from({ length: count }, (_, i) => ({
+    name: `${floorLabel}${String(i + 1).padStart(2, '0')}호`,
+  }));
+}
+
+export default function AddVillaFormScreen() {
+  const [name, setName] = useState('');
+  const [address, setAddress] = useState('');
+  const [bank, setBank] = useState('');
+  const [accountNumber, setAccountNumber] = useState('');
+  const [expandedFloor, setExpandedFloor] = useState<number | null>(null);
+
+  const [floors, setFloors] = useState<FloorData[]>([
+    { label: '1', displayLabel: '1층', units: makeUnits('1', 2) },
+    { label: '2', displayLabel: '2층', units: makeUnits('2', 2) },
+    { label: '3', displayLabel: '3층', units: makeUnits('3', 2) },
+    { label: '4', displayLabel: '4층', units: makeUnits('4', 2) },
+  ]);
+
+  const [newFloorLabel, setNewFloorLabel] = useState('');
+  const totalUnits = floors.reduce((sum, f) => sum + f.units.length, 0);
+
+  const plan = totalUnits <= 8 ? { name: '소형', price: 30000, range: '6~8세대' }
+    : totalUnits <= 15 ? { name: '인기', price: 50000, range: '9~15세대' }
+    : { name: '대형', price: 70000, range: '16~30세대' };
+
+  // 층 추가
+  function addFloor(label: string, displayLabel: string) {
+    if (floors.find(f => f.label === label)) {
+      Alert.alert('알림', '이미 추가된 층입니다');
+      return;
+    }
+    const newFloor: FloorData = { label, displayLabel, units: makeUnits(label, 2) };
+
+    // 지하층은 맨 앞, 일반층은 정렬
+    const updated = [...floors, newFloor].sort((a, b) => {
+      const aNum = a.label.startsWith('B') ? -parseInt(a.label.slice(1)) : parseInt(a.label) || 999;
+      const bNum = b.label.startsWith('B') ? -parseInt(b.label.slice(1)) : parseInt(b.label) || 999;
+      return aNum - bNum;
+    });
+    setFloors(updated);
+  }
+
+  function addCustomFloor() {
+    const label = newFloorLabel.trim();
+    if (!label) { Alert.alert('알림', '층 이름을 입력하세요'); return; }
+    const displayLabel = label.startsWith('B') ? `지하${label.slice(1)}층` : `${label}층`;
+    addFloor(label, displayLabel);
+    setNewFloorLabel('');
+  }
+
+  // 층 삭제
+  function removeFloor(idx: number) {
+    Alert.alert('층 삭제', `${floors[idx].displayLabel}을 삭제하시겠습니까?`, [
+      { text: '취소' },
+      { text: '삭제', style: 'destructive', onPress: () => setFloors(floors.filter((_, i) => i !== idx)) },
+    ]);
+  }
+
+  // 세대 추가
+  function addUnit(floorIdx: number) {
+    const updated = [...floors];
+    const floor = updated[floorIdx];
+    const num = floor.units.length + 1;
+    floor.units.push({ name: `${floor.label}${String(num).padStart(2, '0')}호` });
+    setFloors(updated);
+  }
+
+  // 세대 삭제
+  function removeUnit(floorIdx: number, unitIdx: number) {
+    const updated = [...floors];
+    updated[floorIdx].units.splice(unitIdx, 1);
+    setFloors(updated);
+  }
+
+  // 호실 이름 변경
+  function renameUnit(floorIdx: number, unitIdx: number, newName: string) {
+    const updated = [...floors];
+    updated[floorIdx].units[unitIdx].name = newName;
+    setFloors(updated);
+  }
+
+  const [submitted, setSubmitted] = useState(false);
+
+  const [errors, setErrors] = useState<string[]>([]);
+  const [showCostPopup, setShowCostPopup] = useState(false);
+
+  // 기존 빌라 비용
+  const currentVillas = store.villas;
+  const currentTotal = currentVillas.reduce((s, v) => s + v.price, 0);
+  const newTotal = currentTotal + plan.price;
+  const villaCount = currentVillas.length + 1;
+  const discRate = villaCount >= 20 ? 0.4 : villaCount >= 10 ? 0.3 : villaCount >= 5 ? 0.2 : 0;
+  const finalTotal = Math.round(newTotal * (1 - discRate));
+
+  function doRegister() {
+    setShowCostPopup(false);
+    setSubmitted(true);
+
+    const accountStr = bank.trim() && accountNumber.trim() ? `${bank.trim()} ${accountNumber.trim()}` : '';
+    addVilla({
+      name: name.trim(),
+      address: address.trim(),
+      totalUnits,
+      unitsPerFloor: Math.max(1, Math.round(totalUnits / floors.length)),
+      account: accountStr,
+    });
+
+    const newVilla = store.villas[store.villas.length - 1];
+    Alert.alert(
+      '🎉 등록 완료!',
+      `${name.trim()} (${totalUnits}세대)가 등록되었습니다.\n\n다음 단계:\n1. 입주민 정보 등록\n2. 관리비 항목 설정\n3. 관리비 고지 발송`,
+      [
+        { text: '홈으로', onPress: () => router.replace('/(admin)/home') },
+        { text: '빌라 설정', onPress: () => router.replace(`/(admin)/villas/${newVilla?.id || ''}`) },
+      ]
+    );
+  }
+
+  function handleSubmit() {
+    if (submitted) return;
+
+    // 필드별 에러 체크
+    const errs: string[] = [];
+    if (!name.trim()) errs.push('name');
+    if (!address.trim()) errs.push('address');
+    if (totalUnits === 0) errs.push('units');
+
+    if (errs.length > 0) {
+      setErrors(errs);
+      return;
+    }
+
+    setErrors([]);
+
+    setShowCostPopup(true);
+  }
+
+  // 다음 층 번호 계산
+  const maxFloor = Math.max(0, ...floors.filter(f => !f.label.startsWith('B') && !isNaN(parseInt(f.label))).map(f => parseInt(f.label)));
+
+  return (
+    <ScrollView style={s.container} contentContainerStyle={{ paddingBottom: 60 }}>
+      <View style={s.header}>
+        <TouchableOpacity onPress={() => router.back()}>
+          <Text style={s.backText}>← 돌아가기</Text>
+        </TouchableOpacity>
+        <Text style={s.title}>빌라 등록</Text>
+      </View>
+
+      {/* 기본 정보 */}
+      <View style={s.section}>
+        <Text style={s.label}>빌라 이름 *</Text>
+        <TextInput style={[s.input, errors.includes('name') && s.inputError]} placeholder="예: 해피빌라" placeholderTextColor={C.muted} value={name} onChangeText={(t) => { setName(t); setErrors(e => e.filter(x => x !== 'name')); }} />
+        {errors.includes('name') && <Text style={s.errorText}>빌라 이름을 입력해주세요</Text>}
+
+        <Text style={s.label}>주소 *</Text>
+        <TextInput style={[s.input, errors.includes('address') && s.inputError]} placeholder="서울 마포구 연남동 123-4" placeholderTextColor={C.muted} value={address} onChangeText={(t) => { setAddress(t); setErrors(e => e.filter(x => x !== 'address')); }} />
+        {errors.includes('address') && <Text style={s.errorText}>주소를 입력해주세요</Text>}
+
+        <Text style={s.label}>관리비 입금 은행</Text>
+        <TextInput style={s.input} placeholder="예: 국민, 신한, 우리, 하나" placeholderTextColor={C.muted} value={bank} onChangeText={setBank} />
+
+        <Text style={s.label}>계좌번호</Text>
+        <TextInput style={s.input} placeholder="예: 123-456-789012" placeholderTextColor={C.muted} value={accountNumber} onChangeText={setAccountNumber} keyboardType="number-pad" />
+      </View>
+
+      {/* 층별 세대 관리 */}
+      <View style={s.section}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+          <Text style={s.sectionTitle}>층별 세대 설정</Text>
+          <Text style={{ fontSize: 15, fontWeight: '900', color: C.pri }}>총 {totalUnits}세대</Text>
+        </View>
+        <Text style={s.hint}>각 층을 눌러서 호실 이름을 직접 수정할 수 있습니다</Text>
+        {errors.includes('units') && <Text style={s.errorText}>세대를 1개 이상 추가해주세요</Text>}
+
+        {floors.map((floor, fIdx) => (
+          <View key={fIdx} style={s.floorCard}>
+            {/* 층 헤더 */}
+            <TouchableOpacity
+              style={s.floorHeader}
+              onPress={() => setExpandedFloor(expandedFloor === fIdx ? null : fIdx)}
+              activeOpacity={0.7}
+            >
+              <View style={s.floorLabelBox}>
+                <Text style={s.floorLabelText}>{floor.displayLabel}</Text>
+              </View>
+              <Text style={s.floorUnitCount}>{floor.units.length}세대</Text>
+
+              <View style={s.unitControl}>
+                <TouchableOpacity style={s.unitBtn} onPress={() => { if (floor.units.length > 0) removeUnit(fIdx, floor.units.length - 1); }}>
+                  <Text style={s.unitBtnText}>−</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={s.unitBtn} onPress={() => addUnit(fIdx)}>
+                  <Text style={s.unitBtnText}>+</Text>
+                </TouchableOpacity>
+              </View>
+
+              <TouchableOpacity onPress={() => removeFloor(fIdx)}>
+                <Text style={{ fontSize: 16, color: C.muted }}>✕</Text>
+              </TouchableOpacity>
+            </TouchableOpacity>
+
+            {/* 확장: 호실 이름 편집 */}
+            {expandedFloor === fIdx && (
+              <View style={s.unitsEditor}>
+                <Text style={{ fontSize: 12, color: C.sub, marginBottom: 8 }}>호실 이름을 탭하여 수정하세요</Text>
+                <View style={s.unitChips}>
+                  {floor.units.map((unit, uIdx) => (
+                    <View key={uIdx} style={s.unitEditRow}>
+                      <TextInput
+                        style={s.unitEditInput}
+                        value={unit.name}
+                        onChangeText={(t) => renameUnit(fIdx, uIdx, t)}
+                        selectTextOnFocus
+                      />
+                      <TouchableOpacity onPress={() => removeUnit(fIdx, uIdx)}>
+                        <Text style={{ fontSize: 14, color: C.err }}>✕</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                  <TouchableOpacity style={s.addUnitBtn} onPress={() => addUnit(fIdx)}>
+                    <Text style={s.addUnitBtnText}>+ 호실 추가</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+          </View>
+        ))}
+
+        {/* 층 추가 영역 */}
+        <View style={s.addFloorSection}>
+          <View style={s.quickBtns}>
+            {!floors.find(f => f.label === 'B1') && (
+              <TouchableOpacity style={s.quickBtn} onPress={() => addFloor('B1', '지하1층')}>
+                <Text style={s.quickBtnText}>+ 지하1층</Text>
+              </TouchableOpacity>
+            )}
+            {!floors.find(f => f.label === 'B2') && floors.find(f => f.label === 'B1') && (
+              <TouchableOpacity style={s.quickBtn} onPress={() => addFloor('B2', '지하2층')}>
+                <Text style={s.quickBtnText}>+ 지하2층</Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity style={s.quickBtn} onPress={() => addFloor(String(maxFloor + 1), `${maxFloor + 1}층`)}>
+              <Text style={s.quickBtnText}>+ {maxFloor + 1}층</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={s.addFloorRow}>
+            <TextInput
+              style={[s.input, { flex: 1, marginBottom: 0 }]}
+              placeholder="직접 입력 (예: B3, 옥탑, 상가)"
+              placeholderTextColor={C.muted}
+              value={newFloorLabel}
+              onChangeText={setNewFloorLabel}
+            />
+            <TouchableOpacity style={s.addFloorBtn} onPress={addCustomFloor}>
+              <Text style={s.addFloorBtnText}>추가</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+
+      {/* 플랜 + 전체 호실 미리보기 */}
+      {totalUnits > 0 && (
+        <View style={s.section}>
+          <View style={s.planCard}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <View>
+                <Text style={s.planName}>{plan.name} 플랜</Text>
+                <Text style={s.planRange}>{plan.range}</Text>
+              </View>
+              <Text style={s.planPrice}>월 {plan.price.toLocaleString()}원</Text>
+            </View>
+            <View style={s.trialBanner}>
+              <Text style={s.trialText}>🎉 첫 1개월 무료</Text>
+            </View>
+          </View>
+
+          <Text style={[s.sectionTitle, { marginTop: 16 }]}>전체 호실 미리보기 ({totalUnits}개)</Text>
+          <Text style={{ fontSize: 12, color: C.sub, marginBottom: 8, paddingHorizontal: 0 }}>호실 이름을 탭하여 수정할 수 있습니다</Text>
+          <View style={s.previewGrid}>
+            {floors.map((floor, fIdx) => (
+              <View key={fIdx} style={s.previewFloor}>
+                <Text style={s.previewFloorLabel}>{floor.displayLabel}</Text>
+                <View style={s.previewUnits}>
+                  {floor.units.map((unit, uIdx) => (
+                    <View key={uIdx} style={s.previewChipEdit}>
+                      <TextInput
+                        style={s.previewChipInput}
+                        value={unit.name}
+                        onChangeText={(t) => renameUnit(fIdx, uIdx, t)}
+                        selectTextOnFocus
+                      />
+                    </View>
+                  ))}
+                </View>
+              </View>
+            ))}
+          </View>
+        </View>
+      )}
+
+      {/* 비용 안내 팝업 */}
+      <Modal visible={showCostPopup} transparent animationType="slide">
+        <View style={s.modalBg}>
+          <View style={s.modalCard}>
+            <Text style={s.modalTitle}>비용 안내</Text>
+
+            <View style={s.costSection}>
+              <Text style={s.costLabel}>현재 구독</Text>
+              {currentVillas.map(v => (
+                <View key={v.id} style={s.costRow}>
+                  <Text style={s.costName}>{v.name} ({v.plan})</Text>
+                  <Text style={s.costPrice}>{v.price.toLocaleString()}원</Text>
+                </View>
+              ))}
+              {currentVillas.length === 0 && <Text style={s.costEmpty}>등록된 빌라 없음</Text>}
+            </View>
+
+            <View style={s.costDivider} />
+
+            <View style={s.costSection}>
+              <Text style={s.costLabel}>새 빌라 추가</Text>
+              <View style={s.costRow}>
+                <Text style={s.costName}>{name.trim() || '새 빌라'} ({plan.name}·{totalUnits}세대)</Text>
+                <Text style={[s.costPrice, { color: C.pri }]}>+{plan.price.toLocaleString()}원</Text>
+              </View>
+            </View>
+
+            <View style={s.costDivider} />
+
+            {discRate > 0 && (
+              <View style={s.costRow}>
+                <Text style={[s.costName, { color: C.ok }]}>볼륨 할인 ({Math.round(discRate * 100)}%)</Text>
+                <Text style={[s.costPrice, { color: C.ok }]}>-{(newTotal - finalTotal).toLocaleString()}원</Text>
+              </View>
+            )}
+
+            <View style={[s.costRow, { marginTop: 8 }]}>
+              <Text style={s.costTotalLabel}>예상 월 합계</Text>
+              <Text style={s.costTotalPrice}>{finalTotal.toLocaleString()}원</Text>
+            </View>
+
+            <View style={{ gap: 8, marginTop: 20 }}>
+              <TouchableOpacity style={s.submitBtn} onPress={doRegister}>
+                <Text style={s.submitBtnText}>확인, 등록하기</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={s.cancelBtn} onPress={() => setShowCostPopup(false)}>
+                <Text style={s.cancelBtnText}>취소</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* 등록 버튼 */}
+      <View style={{ paddingHorizontal: 20, marginTop: 16 }}>
+        <TouchableOpacity style={[s.submitBtn, submitted && { opacity: 0.5 }]} onPress={handleSubmit} disabled={submitted}>
+          <Text style={s.submitBtnText}>등록하기</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={s.cancelBtn} onPress={() => router.back()}>
+          <Text style={s.cancelBtnText}>취소</Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
+  );
+}
+
+const s = StyleSheet.create({
+  container: { flex: 1, backgroundColor: C.bg },
+  header: { paddingHorizontal: 20, paddingTop: 56, paddingBottom: 8 },
+  backText: { fontSize: 14, color: C.pri, fontWeight: '600', marginBottom: 12 },
+  title: { fontSize: 22, fontWeight: '900', color: C.text },
+
+  section: { paddingHorizontal: 20, marginTop: 20 },
+  sectionTitle: { fontSize: 15, fontWeight: '800', color: C.text },
+  hint: { fontSize: 12, color: C.sub, marginBottom: 14, lineHeight: 18 },
+
+  label: { fontSize: 13, fontWeight: '700', color: '#374151', marginBottom: 6, marginTop: 14 },
+  input: {
+    backgroundColor: C.inputBg, borderWidth: 1, borderColor: C.inputBorder,
+    borderRadius: 12, padding: 14, fontSize: 15, color: C.text, marginBottom: 4,
+  },
+  inputError: {
+    borderColor: C.err, borderWidth: 1.5, backgroundColor: '#FEF2F2',
+  },
+  errorText: {
+    fontSize: 12, color: C.err, fontWeight: '600', marginBottom: 8, marginLeft: 4,
+  },
+
+  // 층 카드
+  floorCard: {
+    backgroundColor: C.card, borderWidth: 1, borderColor: C.border,
+    borderRadius: 14, marginBottom: 8, overflow: 'hidden',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.03, shadowRadius: 4, elevation: 1,
+  },
+  floorHeader: {
+    flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12,
+  },
+  floorLabelBox: {
+    backgroundColor: C.priL, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6, minWidth: 65, alignItems: 'center',
+  },
+  floorLabelText: { fontSize: 13, fontWeight: '700', color: C.pri },
+  floorUnitCount: { fontSize: 14, fontWeight: '700', color: C.text, flex: 1 },
+
+  unitControl: { flexDirection: 'row', gap: 6 },
+  unitBtn: {
+    width: 30, height: 30, borderRadius: 15, backgroundColor: C.inputBg,
+    alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: C.inputBorder,
+  },
+  unitBtnText: { fontSize: 16, fontWeight: '700', color: C.text },
+
+  // 호실 편집 (확장)
+  unitsEditor: {
+    padding: 12, paddingTop: 0, borderTopWidth: 1, borderTopColor: C.border,
+    backgroundColor: '#FAFBFD',
+  },
+  unitChips: { gap: 6 },
+  unitEditRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+  },
+  unitEditInput: {
+    flex: 1, backgroundColor: C.card, borderWidth: 1, borderColor: C.inputBorder,
+    borderRadius: 8, padding: 10, fontSize: 14, color: C.text,
+  },
+  addUnitBtn: {
+    backgroundColor: C.priL, borderRadius: 8, padding: 10, alignItems: 'center', marginTop: 4,
+  },
+  addUnitBtnText: { fontSize: 13, fontWeight: '700', color: C.pri },
+
+  // 층 추가
+  addFloorSection: { marginTop: 12 },
+  quickBtns: { flexDirection: 'row', gap: 8, marginBottom: 10, flexWrap: 'wrap' },
+  quickBtn: { backgroundColor: C.priL, borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8 },
+  quickBtnText: { fontSize: 12, fontWeight: '700', color: C.pri },
+  addFloorRow: { flexDirection: 'row', gap: 8 },
+  addFloorBtn: { backgroundColor: C.pri, borderRadius: 12, paddingHorizontal: 16, justifyContent: 'center' },
+  addFloorBtnText: { color: '#fff', fontSize: 13, fontWeight: '700' },
+
+  // 플랜 카드
+  planCard: {
+    backgroundColor: C.card, borderWidth: 1, borderColor: C.border, borderRadius: 14, padding: 16,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2,
+  },
+  planName: { fontSize: 16, fontWeight: '800', color: C.text },
+  planRange: { fontSize: 12, color: C.sub, marginTop: 2 },
+  planPrice: { fontSize: 18, fontWeight: '900', color: C.pri },
+  trialBanner: { backgroundColor: 'rgba(76,175,80,0.08)', borderRadius: 8, padding: 10, marginTop: 12, alignItems: 'center' },
+  trialText: { fontSize: 13, fontWeight: '700', color: C.ok },
+
+  // 호실 미리보기
+  previewGrid: { marginTop: 10, gap: 8 },
+  previewFloor: {
+    backgroundColor: C.card, borderWidth: 1, borderColor: C.border, borderRadius: 10, padding: 12,
+  },
+  previewFloorLabel: { fontSize: 12, fontWeight: '700', color: C.pri, marginBottom: 6 },
+  previewUnits: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  previewChip: { backgroundColor: C.inputBg, borderRadius: 6, paddingHorizontal: 10, paddingVertical: 5 },
+  previewChipText: { fontSize: 12, fontWeight: '600', color: C.text },
+  previewChipEdit: { backgroundColor: C.card, borderRadius: 8, borderWidth: 1, borderColor: C.inputBorder },
+  previewChipInput: { fontSize: 13, fontWeight: '600', color: C.text, paddingHorizontal: 10, paddingVertical: 6, minWidth: 60, textAlign: 'center' },
+
+  // 버튼
+  // Modal
+  modalBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+  modalCard: { backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40 },
+  modalTitle: { fontSize: 20, fontWeight: '900', color: C.text, marginBottom: 16 },
+  costSection: { marginBottom: 4 },
+  costLabel: { fontSize: 12, fontWeight: '700', color: C.sub, marginBottom: 8 },
+  costRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4 },
+  costName: { fontSize: 14, color: C.text },
+  costPrice: { fontSize: 14, fontWeight: '700', color: C.text },
+  costEmpty: { fontSize: 13, color: C.muted },
+  costDivider: { height: 1, backgroundColor: C.border, marginVertical: 12 },
+  costTotalLabel: { fontSize: 15, fontWeight: '800', color: C.text },
+  costTotalPrice: { fontSize: 20, fontWeight: '900', color: C.pri },
+
+  submitBtn: { backgroundColor: C.pri, borderRadius: 14, paddingVertical: 17, alignItems: 'center' },
+  submitBtnText: { color: '#fff', fontSize: 16, fontWeight: '800' },
+  cancelBtn: { paddingVertical: 14, alignItems: 'center', marginTop: 8 },
+  cancelBtnText: { color: C.sub, fontSize: 14, fontWeight: '600' },
+});

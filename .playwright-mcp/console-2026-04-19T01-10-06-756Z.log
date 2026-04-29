@@ -1,0 +1,139 @@
+[     204ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:34298
+[     245ms] [LOG] Running application "main" with appParams:
+ {rootTag: #root, hydrate: undefined} 
+Development-level warnings: ON.
+Performance optimizations: OFF. @ http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:77214
+[     258ms] [WARNING] "shadow*" style props are deprecated. Use "boxShadow". @ http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:40935
+[    3541ms] [WARNING] Blocked aria-hidden on an element because its descendant retained focus. The focus must not be hidden from assistive technology users. Avoid using aria-hidden on a focused element or its ancestor. Consider using the inert attribute instead, which will also prevent focus. For more details, see the aria-hidden section of the WAI-ARIA specification at https://w3c.github.io/aria/#aria-hidden.
+Element with focus: <div.css-view-175oi2r r-transitionProperty-1i6wzkk r-userSelect-lrvibr r-cursor-1loqt21 r-touchAction-1otgn73 r-alignItems-1awozwy r-backgroundColor-1ib0ag2 r-borderRadius-t23y2h r-paddingBlock-iaysbf>
+Ancestor with aria-hidden: <div.css-view-175oi2r r-flex-13awgt0 r-bottom-1p0dtai r-left-1d2f490 r-position-u8s1d r-right-zchlnj r-top-ipm5af> @ http://localhost:8081/resident-login:0
+[   23658ms] [WARNING] props.pointerEvents is deprecated. Use style.pointerEvents @ http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:40935
+[  186311ms] ReferenceError: VisitorForm is not defined
+    at ParkingScreen (http://localhost:8081/apps\mobile\app\(resident)\parking.bundle//&platform=web&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable&dev=true&minify=false&modulesOnly=true&runModule=false&shallow=true:166:57)
+    at renderWithHooks (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:22002:24)
+    at updateFunctionComponent (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:25574:26)
+    at beginWork (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:27293:22)
+    at HTMLUnknownElement.callCallback (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:12258:20)
+    at Object.invokeGuardedCallbackDev (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:12302:22)
+    at invokeGuardedCallback (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:12359:37)
+    at beginWork$1 (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:32262:13)
+    at performUnitOfWork (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:31510:18)
+    at workLoopSync (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:31433:11)
+    at renderRootSync (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:31406:13)
+    at performSyncWorkOnRoot (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:31098:26)
+    at flushSyncCallbacks (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:19095:28)
+    at flushSync (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:31202:13)
+    at Object.scheduleRefresh (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:32553:11)
+    at http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:966:23
+    at Set.forEach (<anonymous>)
+    at Object.performReactRefresh (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:958:32)
+    at Object.performReactRefresh (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:722:27)
+    at http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:430:21
+[  186318ms] ReferenceError: VisitorForm is not defined
+    at ParkingScreen (http://localhost:8081/apps\mobile\app\(resident)\parking.bundle//&platform=web&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable&dev=true&minify=false&modulesOnly=true&runModule=false&shallow=true:166:57)
+    at renderWithHooks (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:22002:24)
+    at updateFunctionComponent (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:25574:26)
+    at beginWork (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:27293:22)
+    at HTMLUnknownElement.callCallback (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:12258:20)
+    at Object.invokeGuardedCallbackDev (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:12302:22)
+    at invokeGuardedCallback (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:12359:37)
+    at beginWork$1 (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:32262:13)
+    at performUnitOfWork (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:31510:18)
+    at workLoopSync (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:31433:11)
+    at renderRootSync (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:31406:13)
+    at recoverFromConcurrentError (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:30898:26)
+    at performSyncWorkOnRoot (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:31107:26)
+    at flushSyncCallbacks (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:19095:28)
+    at flushSync (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:31202:13)
+    at Object.scheduleRefresh (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:32553:11)
+    at http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:966:23
+    at Set.forEach (<anonymous>)
+    at Object.performReactRefresh (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:958:32)
+    at Object.performReactRefresh (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:722:27)
+    at http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:430:21
+[  186319ms] [ERROR] The above error occurred in the <ParkingScreen> component:
+
+    at ParkingScreen (http://localhost:8081/apps\mobile\app\(resident)\parking.bundle//&platform=web&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable&dev=true&minify=false&modulesOnly=true&runModule=false&shallow=true:18:46)
+    at Suspense
+    at Route (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:59479:5)
+    at http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:59845:7
+    at StaticContainer (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:67707:18)
+    at EnsureSingleNavigator (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:62362:5)
+    at SceneView (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:67544:5)
+    at NavigationProvider (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:64503:5)
+    at div
+    at http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:41653:27
+    at div
+    at http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:41653:27
+    at http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:52660:62
+    at Background (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:71193:5)
+    at Screen (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:74803:70)
+    at div
+    at http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:41653:27
+    at MaybeScreen (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:75746:5)
+    at div
+    at http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:41653:27
+    at MaybeScreenContainer (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:75731:5)
+    at div
+    at http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:41653:27
+    at FrameSizeProvider (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:73139:5)
+    at SafeAreaProviderCompat (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:74742:5)
+    at BottomTabView (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:70706:7)
+    at PreventRemoveProvider (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:66428:5)
+    at NavigationStateListenerProvider (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:68139:5)
+    at NavigationContent (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:67278:5)
+    at http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:67294:7
+    at BottomTabNavigator (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:70608:5)
+    at http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:59372:17
+    at ResidentLayout
+    at Suspense
+    at Route (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:59479:5)
+    at http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:59845:7
+    at StaticContainer (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:67707:18)
+    at EnsureSingleNavigator (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:62362:5)
+    at SceneView (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:67544:5)
+    at NavigationProvider (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:64503:5)
+    at div
+    at http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:41653:27
+    at AnimatedHeaderHeightProvider (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:89646:5)
+    at div
+    at http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:41653:27
+    at div
+    at http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:41653:27
+    at http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:52660:62
+    at Background (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:71193:5)
+    at Screen (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:74803:70)
+    at div
+    at http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:41653:27
+    at FrameSizeProvider (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:73139:5)
+    at SafeAreaProviderCompat (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:74742:5)
+    at NativeStackView (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:89545:5)
+    at PreventRemoveProvider (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:66428:5)
+    at NavigationStateListenerProvider (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:68139:5)
+    at NavigationContent (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:67278:5)
+    at http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:67294:7
+    at NativeStackNavigator (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:89347:5)
+    at http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:59372:17
+    at RootLayout (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:131060:52)
+    at Suspense
+    at Route (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:59479:5)
+    at http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:59845:7
+    at div
+    at http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:41653:27
+    at NativeSafeAreaProvider (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:72891:5)
+    at SafeAreaProvider (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:72762:5)
+    at wrapper (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:90036:7)
+    at ThemeProvider (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:63650:5)
+    at EnsureSingleNavigator (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:62362:5)
+    at BaseNavigationContainer (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:60572:5)
+    at NavigationContainerInner (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:90248:5)
+    at ContextNavigator (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:90079:5)
+    at ExpoRoot (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:90027:14)
+    at _HelmetProvider (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:132093:7)
+    at App
+    at LogBoxStateSubscription (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:4920:9)
+    at ErrorOverlay
+    at withDevTools(ErrorOverlay)
+    at AppContainer (http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:77299:5)
+
+React will try to recreate this component tree from scratch using the error boundary you provided, LogBoxStateSubscription. @ http://localhost:8081/apps/mobile/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:4565

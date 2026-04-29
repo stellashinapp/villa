@@ -1,4 +1,15 @@
 import { Tabs } from 'expo-router';
+import { View, Text, StyleSheet } from 'react-native';
+
+function TabIcon({ label, focused }: { label: string; focused: boolean }) {
+  const icons: Record<string, string> = { '홈': '🏠', '메시지': '✉️', '빌라': '🏘️', '설정': '⚙️' };
+  return (
+    <View style={s.iconWrap}>
+      <Text style={[s.icon, focused && s.iconActive]}>{icons[label] || '📋'}</Text>
+      {focused && <View style={s.dot} />}
+    </View>
+  );
+}
 
 export default function AdminLayout() {
   return (
@@ -6,31 +17,53 @@ export default function AdminLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: 'rgba(15,27,51,0.95)',
-          borderTopColor: '#243555',
+          backgroundColor: '#FFFFFF',
+          borderTopColor: '#E8EBF0',
           borderTopWidth: 1,
+          height: 65,
+          paddingBottom: 8,
+          paddingTop: 6,
         },
-        tabBarActiveTintColor: '#2558D6',
-        tabBarInactiveTintColor: '#8893A7',
+        tabBarActiveTintColor: '#3454D1',
+        tabBarInactiveTintColor: '#9CA3AF',
         tabBarLabelStyle: { fontSize: 10, fontWeight: '700' },
       }}
     >
       <Tabs.Screen
         name="home"
-        options={{ title: '홈', tabBarIcon: () => null /* TODO: 아이콘 */ }}
+        options={{
+          title: '홈',
+          tabBarIcon: ({ focused }) => <TabIcon label="홈" focused={focused} />,
+        }}
       />
       <Tabs.Screen
         name="inbox"
-        options={{ title: '메시지', tabBarIcon: () => null }}
+        options={{
+          title: '메시지',
+          tabBarIcon: ({ focused }) => <TabIcon label="메시지" focused={focused} />,
+        }}
       />
       <Tabs.Screen
         name="villas"
-        options={{ title: '빌라', tabBarIcon: () => null }}
+        options={{
+          title: '빌라',
+          tabBarIcon: ({ focused }) => <TabIcon label="빌라" focused={focused} />,
+        }}
       />
       <Tabs.Screen
         name="settings"
-        options={{ title: '설정', tabBarIcon: () => null }}
+        options={{
+          title: '설정',
+          tabBarIcon: ({ focused }) => <TabIcon label="설정" focused={focused} />,
+        }}
       />
     </Tabs>
   );
 }
+
+const s = StyleSheet.create({
+  iconWrap: { alignItems: 'center', gap: 2 },
+  icon: { fontSize: 20, opacity: 0.4 },
+  iconActive: { opacity: 1 },
+  dot: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#3454D1' },
+});

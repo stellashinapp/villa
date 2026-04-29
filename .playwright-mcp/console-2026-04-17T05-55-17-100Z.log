@@ -1,0 +1,9 @@
+[     115ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[     714ms] [LOG] [Fast Refresh] done in 705ms @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[     822ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[     842ms] [LOG] [HMR] connected @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[     893ms] [ERROR] `legacyBehavior` is deprecated and will be removed in a future release. A codemod is available to upgrade your components:
+
+npx @next/codemod@latest new-link .
+
+Learn more: https://nextjs.org/docs/app/building-your-application/upgrading/codemods#remove-a-tags-from-link-components @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272

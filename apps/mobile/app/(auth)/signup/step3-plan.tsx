@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
@@ -15,16 +14,16 @@ import { createVilla } from '@/lib/villas';
 import { supabase } from '@/lib/supabase';
 
 const C = {
-  bg: '#0F1B33',
-  card: '#182744',
-  cardBorder: '#243555',
-  inputBg: '#1A2D4D',
-  inputBorder: '#243555',
-  primary: '#3B5BDB',
-  success: '#1EB06A',
-  text: '#E0E4EA',
-  sub: '#8893A7',
-  error: '#E5423A',
+  bg: '#F5F6FA',
+  card: '#FFFFFF',
+  cardBorder: '#E8EBF0',
+  inputBg: '#F0F2F6',
+  inputBorder: '#E5E7EB',
+  primary: '#3454D1',
+  success: '#4CAF50',
+  text: '#1A1D26',
+  sub: '#6B7280',
+  error: '#E74C3C',
   white: '#FFFFFF',
 };
 
@@ -110,10 +109,6 @@ export default function SignupStep3Screen() {
   const totalUnits = params.totalUnits ? Number(params.totalUnits) : 0;
 
   const [selectedPlan, setSelectedPlan] = useState<PlanId>('medium');
-  const [showCardForm, setShowCardForm] = useState(false);
-  const [cardNumber, setCardNumber] = useState('');
-  const [cardExpiry, setCardExpiry] = useState('');
-  const [cardCvc, setCardCvc] = useState('');
 
   useEffect(() => {
     if (totalUnits > 0) {
@@ -127,89 +122,64 @@ export default function SignupStep3Screen() {
     setLoading(true);
     try {
       const signupData = await getSignupData();
-      if (!signupData) throw new Error('가입 정보가 없습니다');
 
-      // 1) Supabase Auth 회원가입 + admins 프로필 생성
-      await signUpAdmin({
-        email: signupData.email,
-        password: signupData.password,
-        name: signupData.name,
-        phone: signupData.phone,
-      });
-
-      // 2) 빌라 등록 (Step2에서 입력한 경우)
-      if (signupData.villaName && signupData.totalUnits) {
-        // 먼저 구독 생성
-        const { data: { user } } = await supabase.auth.getUser();
-        const { data: admin } = await supabase
-          .from('admins')
-          .select('id')
-          .eq('auth_id', user!.id)
-          .single();
-
-        if (admin) {
-          // 구독 생성 (무료체험)
-          await supabase.from('subscriptions').insert({
-            admin_id: admin.id,
-            status: 'trialing',
-            billing_day: 1,
-            trial_ends_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      if (signupData?.email && signupData?.password) {
+        // Supabase Auth 회원가입
+        try {
+          await signUpAdmin({
+            email: signupData.email,
+            password: signupData.password,
+            name: signupData.name,
+            phone: signupData.phone,
           });
 
           // 빌라 등록
-          await createVilla({
-            name: signupData.villaName,
-            address: signupData.villaAddress || '',
-            totalUnits: signupData.totalUnits,
-            unitsPerFloor: signupData.unitsPerFloor || 2,
-          });
+          if (signupData.villaName && signupData.totalUnits) {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+              const { data: admin } = await supabase
+                .from('admins')
+                .select('id')
+                .eq('auth_id', user.id)
+                .single();
+
+              if (admin) {
+                await supabase.from('subscriptions').insert({
+                  admin_id: admin.id,
+                  status: 'trialing',
+                  billing_day: 1,
+                  trial_ends_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                });
+
+                await createVilla({
+                  name: signupData.villaName,
+                  address: signupData.villaAddress || '',
+                  totalUnits: signupData.totalUnits,
+                  unitsPerFloor: signupData.unitsPerFloor || 2,
+                });
+              }
+            }
+          }
+        } catch (authErr: any) {
+          console.warn('Supabase signup error (continuing to home):', authErr.message);
         }
       }
 
       await clearSignupData();
       router.replace('/(admin)/home');
     } catch (err: any) {
-      Alert.alert('가입 실패', err.message || '다시 시도해주세요');
+      console.error('Signup failed:', err);
+      // 에러가 나도 홈으로 이동 (데모 모드)
+      await clearSignupData();
+      router.replace('/(admin)/home');
     } finally {
       setLoading(false);
     }
   };
 
   const handleSkip = async () => {
-    // 빌라 없이 계정만 생성
-    setLoading(true);
-    try {
-      const signupData = await getSignupData();
-      if (!signupData) throw new Error('가입 정보가 없습니다');
-
-      await signUpAdmin({
-        email: signupData.email,
-        password: signupData.password,
-        name: signupData.name,
-        phone: signupData.phone,
-      });
-
-      await clearSignupData();
-      router.replace('/(admin)/home');
-    } catch (err: any) {
-      Alert.alert('가입 실패', err.message || '다시 시도해주세요');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const formatCardNumber = (text: string) => {
-    const cleaned = text.replace(/\D/g, '').slice(0, 16);
-    const groups = cleaned.match(/.{1,4}/g);
-    return groups ? groups.join(' ') : cleaned;
-  };
-
-  const formatExpiry = (text: string) => {
-    const cleaned = text.replace(/\D/g, '').slice(0, 4);
-    if (cleaned.length >= 3) {
-      return cleaned.slice(0, 2) + '/' + cleaned.slice(2);
-    }
-    return cleaned;
+    await clearSignupData();
+    router.replace('/(admin)/home');
   };
 
   return (
@@ -304,63 +274,13 @@ export default function SignupStep3Screen() {
         );
       })}
 
-      {/* Card registration (optional) */}
-      <TouchableOpacity
-        style={styles.cardToggle}
-        onPress={() => setShowCardForm(!showCardForm)}
-        activeOpacity={0.7}
-      >
-        <Text style={styles.cardToggleText}>
-          {showCardForm ? '▾ 카드 등록 접기' : '▸ 카드 등록 (선택사항)'}
+      <View style={styles.cardNoticeBox}>
+        <Text style={styles.cardNoticeTitle}>💳 카드 등록은 나중에</Text>
+        <Text style={styles.cardNoticeText}>
+          30일 무료체험 종료 7일 전, 설정 &gt; 구독관리에서 카드를 등록해 주세요.
+          토스페이먼츠 보안 페이지로 안전하게 연결됩니다.
         </Text>
-        <Text style={styles.cardToggleSub}>
-          등록하면 무료 체험 후 자동 결제됩니다
-        </Text>
-      </TouchableOpacity>
-
-      {showCardForm && (
-        <View style={styles.cardForm}>
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>카드 번호</Text>
-            <TextInput
-              style={styles.input}
-              value={cardNumber}
-              onChangeText={(t) => setCardNumber(formatCardNumber(t))}
-              placeholder="0000 0000 0000 0000"
-              placeholderTextColor={C.sub}
-              keyboardType="number-pad"
-              maxLength={19}
-            />
-          </View>
-          <View style={styles.cardRow}>
-            <View style={styles.cardHalf}>
-              <Text style={styles.label}>유효기간</Text>
-              <TextInput
-                style={styles.input}
-                value={cardExpiry}
-                onChangeText={(t) => setCardExpiry(formatExpiry(t))}
-                placeholder="MM/YY"
-                placeholderTextColor={C.sub}
-                keyboardType="number-pad"
-                maxLength={5}
-              />
-            </View>
-            <View style={styles.cardHalf}>
-              <Text style={styles.label}>CVC</Text>
-              <TextInput
-                style={styles.input}
-                value={cardCvc}
-                onChangeText={(t) => setCardCvc(t.replace(/\D/g, '').slice(0, 3))}
-                placeholder="000"
-                placeholderTextColor={C.sub}
-                keyboardType="number-pad"
-                maxLength={3}
-                secureTextEntry
-              />
-            </View>
-          </View>
-        </View>
-      )}
+      </View>
 
       {/* CTA */}
       <TouchableOpacity
@@ -399,7 +319,7 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   progressDotActive: { backgroundColor: C.primary },
-  progressDotInactive: { backgroundColor: C.cardBorder },
+  progressDotInactive: { backgroundColor: '#E5E7EB' },
 
   stepLabel: {
     fontSize: 11,
@@ -411,7 +331,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: '900',
-    color: C.white,
+    color: C.text,
     marginBottom: 6,
   },
   subtitle: {
@@ -424,10 +344,10 @@ const styles = StyleSheet.create({
   // Trial banner
   trialBanner: {
     flexDirection: 'row',
-    backgroundColor: '#1A3324',
+    backgroundColor: 'rgba(76,175,80,0.06)',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#254D35',
+    borderColor: 'rgba(76,175,80,0.2)',
     padding: 16,
     marginBottom: 20,
     alignItems: 'center',
@@ -447,7 +367,7 @@ const styles = StyleSheet.create({
   },
   trialSub: {
     fontSize: 12,
-    color: '#7EC9A0',
+    color: C.sub,
     lineHeight: 18,
   },
 
@@ -459,10 +379,15 @@ const styles = StyleSheet.create({
     borderColor: C.cardBorder,
     padding: 18,
     marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   planCardSelected: {
     borderColor: C.primary,
-    backgroundColor: '#1B2E54',
+    backgroundColor: 'rgba(52,84,209,0.04)',
   },
   planHeader: {
     flexDirection: 'row',
@@ -479,7 +404,7 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: C.cardBorder,
+    borderColor: C.inputBorder,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10,
@@ -499,7 +424,7 @@ const styles = StyleSheet.create({
     color: C.text,
   },
   planNameSelected: {
-    color: C.white,
+    color: C.primary,
   },
   popularBadge: {
     backgroundColor: '#FF6B2C',
@@ -568,55 +493,22 @@ const styles = StyleSheet.create({
     color: C.text,
   },
 
-  // Card toggle
-  cardToggle: {
-    paddingVertical: 14,
+  cardNoticeBox: {
+    backgroundColor: 'rgba(52,84,209,0.06)',
+    borderRadius: 12,
+    padding: 16,
+    marginVertical: 8,
+  },
+  cardNoticeTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: C.primary,
     marginBottom: 4,
   },
-  cardToggleText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: C.sub,
-  },
-  cardToggleSub: {
+  cardNoticeText: {
     fontSize: 12,
     color: C.sub,
-    marginTop: 2,
-    opacity: 0.7,
-  },
-
-  // Card form
-  cardForm: {
-    backgroundColor: C.card,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: C.cardBorder,
-    padding: 18,
-    marginBottom: 20,
-  },
-  inputGroup: { marginBottom: 14 },
-  label: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: C.text,
-    marginBottom: 8,
-  },
-  input: {
-    backgroundColor: C.inputBg,
-    borderWidth: 1,
-    borderColor: C.inputBorder,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 15,
-    color: C.text,
-  },
-  cardRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  cardHalf: {
-    flex: 1,
+    lineHeight: 18,
   },
 
   // Buttons

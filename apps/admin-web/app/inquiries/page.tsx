@@ -1,113 +1,60 @@
-'use client';
+import { createServerClient } from '@/lib/supabase-server';
 
-import { useState } from 'react';
-
-interface Reply {
-  author: string;
-  date: string;
-  body: string;
-}
-
-interface Inquiry {
-  id: number;
-  admin: string;
-  status: '대기중' | '해결됨';
-  date: string;
-  subject: string;
-  body: string;
-  replies: Reply[];
-}
-
-const INITIAL_INQUIRIES: Inquiry[] = [
-  {
-    id: 1,
-    admin: '김철수',
-    status: '대기중',
-    date: '2026-04-16',
-    subject: '세대 추가 방법 문의',
-    body: '기존 빌라에 새로운 세대를 추가하려고 하는데, 앱에서 어떻게 하면 되나요? 관리자 앱에서 세대 추가 버튼이 안 보입니다.',
-    replies: [
-      { author: 'ANDNEW 운영팀', date: '2026-04-16', body: '안녕하세요 김철수님, 빌라 상세 페이지 > 세대 관리 탭에서 추가 가능합니다. 혹시 안 보이시면 앱을 업데이트 해주세요.' },
-    ],
-  },
-  {
-    id: 2,
-    admin: '박영희',
-    status: '대기중',
-    date: '2026-04-15',
-    subject: '결제 수단 변경 요청',
-    body: '카드 만료로 인해 결제 수단을 변경하고 싶습니다. 어디서 변경할 수 있을까요?',
-    replies: [],
-  },
-  {
-    id: 3,
-    admin: '이민호',
-    status: '해결됨',
-    date: '2026-04-10',
-    subject: '구독 플랜 변경 문의',
-    body: '현재 소형 플랜인데 인기 플랜으로 변경하고 싶습니다. 중도 변경 시 요금은 어떻게 되나요?',
-    replies: [
-      { author: 'ANDNEW 운영팀', date: '2026-04-10', body: '플랜 변경은 다음 결제일부터 적용되며, 차액은 일할 계산됩니다.' },
-      { author: '이민호', date: '2026-04-11', body: '감사합니다, 변경 완료했습니다!' },
-    ],
-  },
-  {
-    id: 4,
-    admin: '정수진',
-    status: '해결됨',
-    date: '2026-04-05',
-    subject: '입주민 알림 발송 오류',
-    body: '입주민에게 공지 알림을 보냈는데, 일부 세대에 전달되지 않았습니다.',
-    replies: [
-      { author: 'ANDNEW 운영팀', date: '2026-04-05', body: '확인 결과, 앱 미설치 입주민에게는 푸시가 발송되지 않습니다. SMS 병행 발송을 권장드립니다.' },
-    ],
-  },
-  {
-    id: 5,
-    admin: '최동욱',
-    status: '대기중',
-    date: '2026-04-14',
-    subject: '관리비 내역서 PDF 출력',
-    body: '관리비 내역서를 PDF로 출력하는 기능이 있나요? 입주민에게 서면 제공이 필요합니다.',
-    replies: [],
-  },
-];
-
-const STATUS_STYLE: Record<string, string> = {
-  '대기중': 'bg-warnL text-warn',
-  '해결됨': 'bg-okL text-ok',
+type MessageRow = {
+  id: string;
+  text: string;
+  is_read: boolean;
+  category: string;
+  created_at: string;
+  villas: {
+    name: string;
+    admins: { name: string | null; email: string } | null;
+  } | null;
+  units: { ho_number: string } | null;
+  message_replies: { id: string; text: string; author_type: string; created_at: string }[] | null;
 };
 
-export default function InquiriesPage() {
-  const [inquiries, setInquiries] = useState<Inquiry[]>(INITIAL_INQUIRIES);
-  const [replyTexts, setReplyTexts] = useState<Record<number, string>>({});
+export const dynamic = 'force-dynamic';
 
-  const pending = inquiries.filter((i) => i.status === '대기중').length;
-  const resolved = inquiries.filter((i) => i.status === '해결됨').length;
+export default async function InquiriesPage() {
+  const supabase = createServerClient();
 
-  function handleReply(id: number) {
-    const text = replyTexts[id]?.trim();
-    if (!text) return;
-    setInquiries((prev) =>
-      prev.map((inq) =>
-        inq.id === id
-          ? { ...inq, replies: [...inq.replies, { author: 'ANDNEW 운영팀', date: new Date().toISOString().slice(0, 10), body: text }] }
-          : inq
-      )
+  const { data: messages, error } = await supabase
+    .from('messages')
+    .select(`
+      id, text, is_read, category, created_at,
+      villas:villa_id ( name, admins:admin_id ( name, email ) ),
+      units:unit_id ( ho_number ),
+      message_replies ( id, text, author_type, created_at )
+    `)
+    .order('created_at', { ascending: false })
+    .limit(200)
+    .returns<MessageRow[]>();
+
+  if (error) {
+    return (
+      <div>
+        <h2 className="text-lg font-bold mb-5">민원/문의</h2>
+        <div className="bg-errL text-err border border-err/30 rounded-[10px] p-5 text-sm">
+          조회 실패: {error.message}
+        </div>
+      </div>
     );
-    setReplyTexts((prev) => ({ ...prev, [id]: '' }));
   }
+
+  const rows = messages ?? [];
+  const pending = rows.filter((m) => (m.message_replies?.length ?? 0) === 0);
+  const resolved = rows.filter((m) => (m.message_replies?.length ?? 0) > 0);
 
   return (
     <div>
-      <h2 className="text-lg font-bold mb-5">관리자 문의</h2>
+      <h2 className="text-lg font-bold mb-5">민원/문의 모니터링</h2>
 
-      {/* KPI */}
       <div className="grid grid-cols-3 gap-4 mb-6">
         {[
-          { label: '미해결', value: `${pending}건`, color: 'text-warn' },
-          { label: '해결됨', value: `${resolved}건`, color: 'text-ok' },
-          { label: '총 문의', value: `${inquiries.length}건`, color: 'text-pri' },
+          { label: '총 민원', value: `${rows.length}건`, color: 'text-pri' },
+          { label: '답변 대기', value: `${pending.length}건`, color: 'text-warn' },
+          { label: '답변 완료', value: `${resolved.length}건`, color: 'text-ok' },
         ].map((k) => (
           <div key={k.label} className="bg-card border border-border rounded-[10px] p-5">
             <div className="text-xs text-t3 font-medium mb-2">{k.label}</div>
@@ -116,64 +63,55 @@ export default function InquiriesPage() {
         ))}
       </div>
 
-      {/* Inquiry Cards */}
-      <div className="space-y-4">
-        {inquiries.map((inq) => (
-          <div key={inq.id} className="bg-card border border-border rounded-[10px] overflow-hidden">
-            {/* Header */}
-            <div className="px-5 py-4 border-b border-border flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="font-semibold text-sm text-t1">{inq.admin}</span>
-                <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${STATUS_STYLE[inq.status]}`}>
-                  {inq.status}
-                </span>
-              </div>
-              <span className="text-xs text-t3">{inq.date}</span>
-            </div>
+      <div className="bg-priL/30 border border-priL rounded-[10px] p-4 mb-4 text-xs text-t2">
+        💡 입주민이 관리자에게 보낸 민원/문의를 본사에서 모니터링합니다. 답변은 관리자 모바일 앱에서 진행됩니다.
+      </div>
 
-            {/* Body */}
-            <div className="px-5 py-4">
-              <h4 className="text-sm font-bold text-t1 mb-2">{inq.subject}</h4>
-              <p className="text-sm text-t2 leading-relaxed">{inq.body}</p>
-            </div>
-
-            {/* Replies */}
-            {inq.replies.length > 0 && (
-              <div className="mx-5 mb-4 border-t border-border pt-3 space-y-3">
-                {inq.replies.map((r, i) => (
-                  <div key={i} className={`rounded-lg p-3 text-sm ${
-                    r.author === 'ANDNEW 운영팀' ? 'bg-priL border border-pri/20' : 'bg-surface border border-border'
-                  }`}>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="font-semibold text-xs text-t1">{r.author}</span>
-                      <span className="text-xs text-t3">{r.date}</span>
-                    </div>
-                    <p className="text-t2 leading-relaxed">{r.body}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Reply Input (only for open inquiries) */}
-            {inq.status === '대기중' && (
-              <div className="px-5 pb-4 flex gap-2">
-                <input
-                  placeholder="답변을 입력하세요..."
-                  value={replyTexts[inq.id] ?? ''}
-                  onChange={(e) => setReplyTexts((prev) => ({ ...prev, [inq.id]: e.target.value }))}
-                  onKeyDown={(e) => e.key === 'Enter' && handleReply(inq.id)}
-                  className="flex-1 bg-surface border border-border rounded-lg px-3.5 py-2 text-sm text-t1 outline-none focus:border-pri"
-                />
-                <button
-                  onClick={() => handleReply(inq.id)}
-                  className="px-4 py-2 bg-pri text-white text-sm font-semibold rounded-lg hover:bg-pri/80 transition-colors"
-                >
-                  답변
-                </button>
-              </div>
-            )}
-          </div>
-        ))}
+      <div className="bg-card border border-border rounded-[10px] overflow-hidden">
+        <div className="px-5 py-4 border-b border-border">
+          <h3 className="text-sm font-bold">전체 민원 (최근 200건)</h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border text-t3 text-xs">
+                <th className="text-left px-5 py-3 font-medium">접수일</th>
+                <th className="text-left px-5 py-3 font-medium">빌라</th>
+                <th className="text-left px-5 py-3 font-medium">호실</th>
+                <th className="text-left px-5 py-3 font-medium">내용</th>
+                <th className="text-left px-5 py-3 font-medium">관리자</th>
+                <th className="text-left px-5 py-3 font-medium">상태</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.length === 0 ? (
+                <tr><td colSpan={6} className="px-5 py-10 text-center text-t3">아직 민원이 없습니다</td></tr>
+              ) : (
+                rows.map((m) => {
+                  const villa = m.villas?.name ?? '-';
+                  const admin = m.villas?.admins?.name ?? m.villas?.admins?.email ?? '-';
+                  const ho = m.units?.ho_number ?? '-';
+                  const replyCount = m.message_replies?.length ?? 0;
+                  const isResolved = replyCount > 0;
+                  return (
+                    <tr key={m.id} className="border-b border-border last:border-0 hover:bg-white/[.03] transition-colors">
+                      <td className="px-5 py-3.5 text-t2 whitespace-nowrap">{new Date(m.created_at).toLocaleString('ko-KR')}</td>
+                      <td className="px-5 py-3.5 text-t2">{villa}</td>
+                      <td className="px-5 py-3.5 text-t2">{ho}</td>
+                      <td className="px-5 py-3.5 text-t1 max-w-md truncate">{m.text}</td>
+                      <td className="px-5 py-3.5 text-t2">{admin}</td>
+                      <td className="px-5 py-3.5">
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${isResolved ? 'bg-okL text-ok' : 'bg-warnL text-warn'}`}>
+                          {isResolved ? `답변 ${replyCount}건` : '대기중'}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

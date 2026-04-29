@@ -13,16 +13,16 @@ import { useRouter } from 'expo-router';
 import { saveSignupData } from '@/lib/signup-store';
 
 const C = {
-  bg: '#0F1B33',
-  card: '#182744',
-  cardBorder: '#243555',
-  inputBg: '#1A2D4D',
-  inputBorder: '#243555',
-  primary: '#3B5BDB',
-  success: '#1EB06A',
-  text: '#E0E4EA',
-  sub: '#8893A7',
-  error: '#E5423A',
+  bg: '#F5F6FA',
+  card: '#FFFFFF',
+  cardBorder: '#E8EBF0',
+  inputBg: '#F0F2F6',
+  inputBorder: '#E5E7EB',
+  primary: '#3454D1',
+  success: '#4CAF50',
+  text: '#1A1D26',
+  sub: '#6B7280',
+  error: '#E74C3C',
   white: '#FFFFFF',
 };
 
@@ -131,7 +131,7 @@ export default function SignupStep2Screen() {
         }}
         onBlur={() => setTouched((prev) => ({ ...prev, [field]: true }))}
         placeholder={options?.placeholder || ''}
-        placeholderTextColor={C.sub}
+        placeholderTextColor="#9CA3AF"
         keyboardType={options?.keyboardType || 'default'}
         autoCapitalize="none"
       />
@@ -209,30 +209,47 @@ export default function SignupStep2Screen() {
           )}
         </View>
 
-        {totalUnits && Number(totalUnits) > 0 && (
-          <View style={styles.previewCard}>
-            <Text style={styles.previewTitle}>빌라 요약</Text>
-            <View style={styles.previewRow}>
-              <Text style={styles.previewLabel}>총 세대수</Text>
-              <Text style={styles.previewValue}>{totalUnits}세대</Text>
-            </View>
-            {Number(unitsPerFloor) > 0 && (
-              <View style={styles.previewRow}>
-                <Text style={styles.previewLabel}>예상 층수</Text>
-                <Text style={styles.previewValue}>
-                  {Math.ceil(Number(totalUnits) / Number(unitsPerFloor))}층
-                </Text>
+        {totalUnits && Number(totalUnits) > 0 && (() => {
+          const units = Number(totalUnits);
+          const plan = units <= 8 ? { name: '소형', price: 30000, range: '6~8세대' }
+            : units <= 15 ? { name: '인기', price: 50000, range: '9~15세대' }
+            : { name: '대형', price: 70000, range: '16~30세대' };
+          const floors = Number(unitsPerFloor) > 0 ? Math.ceil(units / Number(unitsPerFloor)) : 0;
+          return (
+            <View style={styles.previewCard}>
+              <Text style={styles.previewTitle}>자동 플랜 배정</Text>
+              <View style={styles.planAutoCard}>
+                <View style={styles.planAutoHeader}>
+                  <Text style={styles.planAutoName}>{plan.name} 플랜</Text>
+                  <Text style={styles.planAutoRange}>{plan.range}</Text>
+                </View>
+                <Text style={styles.planAutoPrice}>월 {plan.price.toLocaleString()}원</Text>
+                <View style={styles.planAutoDivider} />
+                <View style={styles.previewRow}>
+                  <Text style={styles.previewLabel}>세대수</Text>
+                  <Text style={styles.previewValue}>{totalUnits}세대</Text>
+                </View>
+                {floors > 0 && (
+                  <View style={styles.previewRow}>
+                    <Text style={styles.previewLabel}>예상 층수</Text>
+                    <Text style={styles.previewValue}>{floors}층</Text>
+                  </View>
+                )}
               </View>
-            )}
-          </View>
-        )}
+              <View style={styles.trialBanner}>
+                <Text style={styles.trialText}>🎉 첫 1개월 완전 무료</Text>
+                <Text style={styles.trialSub}>카드 등록 없이 바로 시작 · 언제든 해지 가능</Text>
+              </View>
+            </View>
+          );
+        })()}
 
         <TouchableOpacity
           style={styles.primaryButton}
           onPress={handleNext}
           activeOpacity={0.8}
         >
-          <Text style={styles.primaryButtonText}>다음 → 플랜 선택</Text>
+          <Text style={styles.primaryButtonText}>다음 → 카드 등록 (선택)</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -265,7 +282,7 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   progressDotActive: { backgroundColor: C.primary },
-  progressDotInactive: { backgroundColor: C.cardBorder },
+  progressDotInactive: { backgroundColor: '#E5E7EB' },
 
   stepLabel: {
     fontSize: 11,
@@ -277,7 +294,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: '900',
-    color: C.white,
+    color: C.text,
     marginBottom: 6,
   },
   subtitle: {
@@ -294,6 +311,11 @@ const styles = StyleSheet.create({
     borderColor: C.cardBorder,
     padding: 20,
     marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
 
   inputGroup: { marginBottom: 16 },
@@ -342,12 +364,17 @@ const styles = StyleSheet.create({
     borderColor: C.cardBorder,
     padding: 16,
     marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   previewTitle: {
     fontSize: 13,
     fontWeight: '700',
-    color: C.sub,
-    marginBottom: 10,
+    color: C.primary,
+    marginBottom: 12,
     letterSpacing: 0.5,
   },
   previewRow: {
@@ -363,6 +390,58 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: C.text,
+  },
+  planAutoCard: {
+    backgroundColor: 'rgba(52,84,209,0.06)',
+    borderWidth: 1,
+    borderColor: 'rgba(52,84,209,0.15)',
+    borderRadius: 14,
+    padding: 16,
+    marginBottom: 12,
+  },
+  planAutoHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 4,
+  },
+  planAutoName: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: C.text,
+  },
+  planAutoRange: {
+    fontSize: 12,
+    color: C.sub,
+  },
+  planAutoPrice: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: C.primary,
+    marginBottom: 12,
+  },
+  planAutoDivider: {
+    height: 1,
+    backgroundColor: C.cardBorder,
+    marginBottom: 8,
+  },
+  trialBanner: {
+    backgroundColor: 'rgba(76,175,80,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(76,175,80,0.2)',
+    borderRadius: 12,
+    padding: 14,
+    alignItems: 'center',
+  },
+  trialText: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: C.success,
+  },
+  trialSub: {
+    fontSize: 12,
+    color: C.sub,
+    marginTop: 4,
   },
 
   primaryButton: {

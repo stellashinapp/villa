@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.47.0",
+    "@tosspayments/tosspayments-sdk": "^2.7.0",
     "@villatolk/shared": "*",
     "next": "^16.2.4",
     "react": "^19.0.0",

@@ -48,6 +48,19 @@ export async function signInAdmin(email: string, password: string) {
   });
 
   if (error) throw new Error(error.message);
+
+  try {
+    const { saveAdminPushToken } = await import('./notifications');
+    await saveAdminPushToken();
+  } catch {}
+
+  try {
+    const { syncAdminFromSupabase } = await import('./sync');
+    await syncAdminFromSupabase();
+  } catch (err) {
+    console.warn('[auth] sync failed:', err);
+  }
+
   return data;
 }
 
@@ -57,6 +70,10 @@ export async function signInAdmin(email: string, password: string) {
 export async function signOut() {
   const { error } = await supabase.auth.signOut();
   if (error) throw new Error(error.message);
+  try {
+    const { clearStore } = await import('./sync');
+    await clearStore();
+  } catch {}
 }
 
 /**

@@ -1,0 +1,16 @@
+- generic [ref=e12]:
+  - generic [ref=e13]:
+    - generic [ref=e14]: 입주민 로그인
+    - generic [ref=e15]: 이름과 전화번호로 로그인하세요
+    - generic [ref=e16]: 관리자가 등록한 정보와 일치하면 자동으로 빌라·호실이 매칭됩니다
+  - generic [ref=e17]:
+    - generic [ref=e18]: 이름 *
+    - 'textbox "예: 김민수" [ref=e19]'
+    - generic [ref=e20]: 전화번호 *
+    - 'textbox "예: 010-1234-5678" [ref=e21]'
+    - generic [ref=e22]:
+      - generic [ref=e23]: 데모 로그인 정보
+      - generic [ref=e24]: "이름: 김민수"
+      - generic [ref=e25]: "전화번호: 010-1234-5678"
+    - generic [ref=e27] [cursor=pointer]: 로그인
+    - generic [ref=e29] [cursor=pointer]: 돌아가기

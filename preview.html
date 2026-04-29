@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>빌라톡 프리뷰</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#F5F6FA;--card:#FFFFFF;--border:#E8EBF0;
+  --pri:#3454D1;--priL:#E8EEFB;--priD:#2A43A8;
+  --text:#1A1D26;--sub:#6B7280;--muted:#9CA3AF;
+  --ok:#4CAF50;--okL:#E8F5E9;
+  --warn:#F39C12;--warnL:#FFF8E1;
+  --err:#E74C3C;--errL:#FDE8E8;
+  --accent:#FF6B35;
+  --navy:#1B2A4A;--navyL:#243B6A;
+  --font:-apple-system,'Pretendard','Noto Sans KR',sans-serif;
+  --shadow:0 1px 3px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.03);
+  --r:14px;
+}
+html,body{font-family:var(--font);background:#E8EBF0;min-height:100vh}
+.app{max-width:390px;margin:0 auto;min-height:100vh;position:relative;background:var(--bg)}
+.screens{display:flex;gap:20px;padding:20px;flex-wrap:wrap;justify-content:center}
+.phone{width:390px;min-height:700px;background:var(--bg);border-radius:24px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.15);position:relative;border:1px solid #ddd}
+.phone-title{background:#1A1D26;color:#fff;text-align:center;padding:6px;font-size:11px;font-weight:600;letter-spacing:1px}
+
+/* Components */
+.card{background:var(--card);border-radius:var(--r);padding:16px;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:10px}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.btn{display:flex;align-items:center;justify-content:center;border:none;border-radius:12px;padding:14px;font-weight:700;font-size:14px;cursor:pointer;width:100%}
+.divider{height:1px;background:var(--border);margin:12px 0}
+
+/* Nav */
+.bnav{position:absolute;bottom:0;left:0;right:0;background:rgba(255,255,255,.97);border-top:1px solid var(--border);display:flex;padding:8px 0 16px;z-index:10}
+.bnav-i{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;color:var(--muted);font-weight:600;cursor:pointer}
+.bnav-i.on{color:var(--pri)}
+.bnav-i .ni{font-size:20px;opacity:.4}.bnav-i.on .ni{opacity:1}
+.bnav-i .dot{width:4px;height:4px;border-radius:50%;background:var(--pri);display:none}.bnav-i.on .dot{display:block}
+
+/* Header */
+.hdr{padding:52px 20px 12px;display:flex;justify-content:space-between;align-items:flex-start}
+.hdr-label{font-size:11px;color:var(--pri);font-weight:700;letter-spacing:2px}
+.hdr-title{font-size:22px;font-weight:900;color:var(--text);margin-top:4px}
+.hdr-sub{font-size:12px;color:var(--sub);margin-top:2px}
+.logout-btn{background:var(--priL);border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;color:var(--pri);cursor:pointer}
+
+/* Summary cards */
+.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 20px;margin-bottom:16px}
+.summary-card{background:var(--card);border-radius:12px;padding:14px;text-align:center;box-shadow:var(--shadow);border:1px solid var(--border)}
+.summary-card .val{font-size:22px;font-weight:900;color:var(--text)}
+.summary-card .lbl{font-size:11px;color:var(--sub);margin-top:2px}
+
+/* Villa card */
+.villa-card{background:var(--card);border-radius:var(--r);padding:0;margin:0 20px 10px;box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden}
+.villa-card .villa-header{padding:14px 16px;display:flex;justify-content:space-between;align-items:center}
+.villa-card .villa-name{font-size:15px;font-weight:800;color:var(--text)}
+.villa-card .villa-addr{font-size:11px;color:var(--sub);margin-top:2px}
+.villa-card .villa-bill{background:linear-gradient(135deg,#1B2A4A,#3454D1);padding:14px 16px;display:flex;justify-content:space-between;align-items:center}
+.villa-card .bill-label{font-size:11px;color:rgba(255,255,255,.6)}
+.villa-card .bill-amount{font-size:16px;font-weight:900;color:#fff;margin-top:2px}
+.villa-card .bill-badge{padding:3px 8px;border-radius:8px;font-size:11px;font-weight:700}
+
+/* Detail page */
+.detail-header{padding:16px 20px;background:var(--card);border-bottom:1px solid var(--border)}
+.detail-villa{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:var(--card);margin:10px 20px;border-radius:12px;border:1px solid var(--border)}
+.bill-summary{margin:0 20px;background:var(--card);border-radius:var(--r);padding:20px;border:1px solid var(--border);margin-bottom:12px}
+.bill-summary .count{font-size:36px;font-weight:900;color:var(--text)}
+.bill-summary .total{font-size:24px;font-weight:900;color:var(--text)}
+
+.unpaid-row{margin:0 20px 10px;display:flex;gap:8px}
+.unpaid-row .btn-alert{flex:1;background:var(--err);color:#fff;border:none;border-radius:10px;padding:12px;font-size:13px;font-weight:700;text-align:center;cursor:pointer}
+.unpaid-row .btn-detail{flex:1;background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:13px;font-weight:700;text-align:center;cursor:pointer}
+
+.unit-item{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:var(--card);margin:0 20px 6px;border-radius:10px;border:1px solid var(--border)}
+.unit-item .ho{font-size:14px;font-weight:700;color:var(--text)}
+.unit-item .info{font-size:12px;color:var(--sub)}
+
+.feed-item{padding:12px 20px;background:var(--card);margin:0 20px 6px;border-radius:10px;border:1px solid var(--border)}
+.feed-item .feed-type{font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;display:inline-block;margin-bottom:6px}
+.feed-item .feed-text{font-size:13px;color:var(--text);line-height:1.5}
+
+/* Scrollable area */
+.scroll{padding-bottom:80px;overflow-y:auto;height:calc(100% - 0px)}
+
+/* Tab switcher */
+.tab-switch{display:flex;gap:4px;padding:0 20px;margin-bottom:12px;overflow-x:auto}
+.tab-switch .tab{padding:8px 16px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;border:none}
+.tab-switch .tab.on{background:var(--pri);color:#fff}
+.tab-switch .tab:not(.on){background:var(--card);color:var(--sub);border:1px solid var(--border)}
+
+.section-title{font-size:13px;font-weight:700;color:var(--sub);padding:0 20px;margin:16px 0 10px;letter-spacing:.5px}
+</style>
+</head>
+<body>
+<div class="screens">
+
+<!-- ========== 화면 1: 관리자 홈 ========== -->
+<div class="phone">
+  <div class="phone-title">관리자 홈</div>
+  <div class="scroll">
+    <div class="hdr">
+      <div>
+        <div class="hdr-label">ADMIN</div>
+        <div class="hdr-title">홈</div>
+        <div class="hdr-sub">관리자님 로그인됨</div>
+      </div>
+      <button class="logout-btn">로그아웃</button>
+    </div>
+
+    <!-- 요약 -->
+    <div class="summary-grid">
+      <div class="summary-card"><div class="val">2</div><div class="lbl">관리 빌라</div></div>
+      <div class="summary-card"><div class="val">14</div><div class="lbl">총 세대</div></div>
+      <div class="summary-card"><div class="val" style="color:var(--accent)">1</div><div class="lbl">새 메시지</div></div>
+    </div>
+
+    <!-- 빌라 카드들 -->
+    <div class="villa-card">
+      <div class="villa-header">
+        <div>
+          <div class="villa-name">마포빌라</div>
+          <div class="villa-addr">서울 마포구 연남동 123-4 · 8세대</div>
+        </div>
+      </div>
+      <div class="villa-bill">
+        <div>
+          <div class="bill-label">2026년 3월 관리비</div>
+          <div class="bill-amount">109,625원 <span style="font-size:12px;font-weight:400">세대당 · 8세대</span></div>
+        </div>
+        <div>
+          <span class="bill-badge" style="background:rgba(255,255,255,.15);color:#fff">납부율 75%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="villa-card">
+      <div class="villa-header">
+        <div>
+          <div class="villa-name">해피빌라</div>
+          <div class="villa-addr">서울 마포구 연남동 123-4 · 6세대</div>
+        </div>
+      </div>
+      <div class="villa-bill">
+        <div>
+          <div class="bill-label">2026년 3월 관리비</div>
+          <div class="bill-amount">99,400원 <span style="font-size:12px;font-weight:400">세대당 · 6세대</span></div>
+        </div>
+        <div>
+          <span class="bill-badge" style="background:rgba(255,255,255,.15);color:#fff">납부율 50%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 새 빌라 등록 -->
+    <div style="padding:0 20px;margin-bottom:16px">
+      <button class="btn" style="background:var(--pri);color:#fff;font-size:15px">+ 새 빌라 등록</button>
+    </div>
+
+    <!-- 구독 -->
+    <div style="padding:0 20px;margin-bottom:16px">
+      <div class="card" style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="font-size:14px;font-weight:800;color:var(--text)">프로 플랜</span>
+            <span class="badge" style="background:var(--okL);color:var(--ok)">구독중</span>
+          </div>
+          <div style="font-size:11px;color:var(--sub);margin-top:4px">신한카드 ···· 4512 · 다음결제 2026.04.01</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:18px;font-weight:900;color:var(--pri)">4,9000원</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 하단 탭 -->
+  <div class="bnav">
+    <div class="bnav-i on"><span class="ni">🏠</span>홈<span class="dot"></span></div>
+    <div class="bnav-i"><span class="ni">✉️</span>메시지</div>
+    <div class="bnav-i"><span class="ni">🏘️</span>빌라</div>
+    <div class="bnav-i"><span class="ni">⚙️</span>설정</div>
+  </div>
+</div>
+
+<!-- ========== 화면 2: 빌라 상세 (관리비) ========== -->
+<div class="phone">
+  <div class="phone-title">빌라 상세 - 관리비</div>
+  <div class="scroll">
+    <div class="hdr">
+      <div>
+        <div class="hdr-label">ADMIN</div>
+        <div class="hdr-title">홈</div>
+        <div class="hdr-sub">관리자님 로그인됨</div>
+      </div>
+      <button class="logout-btn">로그아웃</button>
+    </div>
+
+    <!-- 빌라 선택 -->
+    <div class="detail-villa">
+      <div>
+        <div style="font-size:14px;font-weight:700;color:var(--text)">해피빌라</div>
+        <div style="font-size:11px;color:var(--sub)">서울 마포구 123-4 · 6세대</div>
+      </div>
+      <span style="color:var(--sub)">▾</span>
+    </div>
+
+    <!-- 이번달 관리 현황 -->
+    <div class="section-title">이번달 관리 현황</div>
+    <div style="display:flex;gap:10px;padding:0 20px;margin-bottom:12px">
+      <div class="bill-summary" style="flex:1;margin:0">
+        <div class="count" style="color:var(--accent)">4</div>
+        <div style="font-size:12px;color:var(--sub)">납부율 50%</div>
+      </div>
+      <div class="bill-summary" style="flex:2;margin:0;text-align:right">
+        <div class="total">409,625<span style="font-size:14px">원</span></div>
+        <div style="display:inline-block;margin-top:4px"><span class="badge" style="background:var(--errL);color:var(--err)">미납</span></div>
+      </div>
+    </div>
+
+    <!-- 액션 버튼 -->
+    <div class="unpaid-row">
+      <div class="btn-alert">미납세대 독촉 보내기</div>
+      <div class="btn-detail">미납 상세보기</div>
+    </div>
+
+    <!-- 세대 납부 현황 -->
+    <div class="section-title">세대별 현황</div>
+    <div class="unit-item">
+      <div><span class="ho">1</span> <span class="info">관리비(세터 1)번기 등 1건</span></div>
+      <button style="background:var(--pri);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer">바로 확인</button>
+    </div>
+
+    <!-- 최근 이벤트 피드 -->
+    <div class="section-title">최근 이벤트 피드</div>
+    <div class="feed-item">
+      <span class="feed-type" style="background:var(--warnL);color:var(--warn)">납부</span>
+      <div class="feed-text">301호 미납 상태 변경됨</div>
+    </div>
+    <div class="feed-item">
+      <span class="feed-type" style="background:var(--priL);color:var(--pri)">민원</span>
+      <div class="feed-text">102호 민원 등록됨</div>
+    </div>
+    <div class="feed-item">
+      <span class="feed-type" style="background:var(--okL);color:var(--ok)">공지</span>
+      <div class="feed-text">공지 발송 완료</div>
+    </div>
+  </div>
+
+  <div class="bnav">
+    <div class="bnav-i on"><span class="ni">🏠</span>홈<span class="dot"></span></div>
+    <div class="bnav-i"><span class="ni">✉️</span>메시지</div>
+    <div class="bnav-i"><span class="ni">🏘️</span>빌라</div>
+    <div class="bnav-i"><span class="ni">⚙️</span>설정</div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>

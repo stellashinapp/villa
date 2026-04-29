@@ -1,0 +1,185 @@
+- generic [active] [ref=e1]:
+  - complementary [ref=e2]:
+    - generic [ref=e3]:
+      - heading "ANDNEW" [level=1] [ref=e4]
+      - text: ADMIN CONSOLE
+    - navigation [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]: OVERVIEW
+        - link "📊 대시보드" [ref=e8] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e9]: 📊
+          - text: 대시보드
+      - generic [ref=e10]:
+        - generic [ref=e11]: MANAGEMENT
+        - link "👤 관리자 관리" [ref=e12] [cursor=pointer]:
+          - /url: /admins
+          - generic [ref=e13]: 👤
+          - text: 관리자 관리
+        - link "🏘️ 빌라 관리" [ref=e14] [cursor=pointer]:
+          - /url: /villas
+          - generic [ref=e15]: 🏘️
+          - text: 빌라 관리
+        - link "👥 입주민" [ref=e16] [cursor=pointer]:
+          - /url: /residents
+          - generic [ref=e17]: 👥
+          - text: 입주민
+      - generic [ref=e18]:
+        - generic [ref=e19]: REVENUE
+        - link "📈 구독·매출" [ref=e20] [cursor=pointer]:
+          - /url: /subscriptions
+          - generic [ref=e21]: 📈
+          - text: 구독·매출
+        - link "💳 결제 내역" [ref=e22] [cursor=pointer]:
+          - /url: /payments
+          - generic [ref=e23]: 💳
+          - text: 결제 내역
+      - generic [ref=e24]:
+        - generic [ref=e25]: SUPPORT
+        - link "💬 관리자 문의" [ref=e26] [cursor=pointer]:
+          - /url: /inquiries
+          - generic [ref=e27]: 💬
+          - text: 관리자 문의
+        - link "📢 공지 발송" [ref=e28] [cursor=pointer]:
+          - /url: /notices
+          - generic [ref=e29]: 📢
+          - text: 공지 발송
+      - generic [ref=e30]:
+        - generic [ref=e31]: SYSTEM
+        - link "⚙️ 설정" [ref=e32] [cursor=pointer]:
+          - /url: /settings
+          - generic [ref=e33]: ⚙️
+          - text: 설정
+  - main [ref=e34]:
+    - generic [ref=e35]:
+      - generic [ref=e36]: ANDNEW Admin
+      - textbox "관리자, 빌라명 검색..." [ref=e37]
+    - generic [ref=e39]:
+      - heading "구독 / 매출" [level=2] [ref=e40]
+      - generic [ref=e41]:
+        - generic [ref=e42]:
+          - generic [ref=e43]: 이번달 MRR
+          - generic [ref=e44]: 880,000원
+        - generic [ref=e45]:
+          - generic [ref=e46]: 활성 구독
+          - generic [ref=e47]: 3건
+        - generic [ref=e48]:
+          - generic [ref=e49]: 빌라 구독건
+          - generic [ref=e50]: 25건
+        - generic [ref=e51]:
+          - generic [ref=e52]: ARPU
+          - generic [ref=e53]: 176,000원
+      - generic [ref=e54]:
+        - generic [ref=e55]:
+          - heading "MRR 월별 추이" [level=3] [ref=e56]
+          - button "CSV 다운로드" [ref=e57] [cursor=pointer]
+        - table [ref=e59]:
+          - rowgroup [ref=e60]:
+            - row "월 MRR 전월대비 관리자수 빌라수 신규 해지" [ref=e61]:
+              - columnheader "월" [ref=e62]
+              - columnheader "MRR" [ref=e63]
+              - columnheader "전월대비" [ref=e64]
+              - columnheader "관리자수" [ref=e65]
+              - columnheader "빌라수" [ref=e66]
+              - columnheader "신규" [ref=e67]
+              - columnheader "해지" [ref=e68]
+          - rowgroup [ref=e69]:
+            - row "2025-10 420,000원 - 3 8 3 0" [ref=e70]:
+              - cell "2025-10" [ref=e71]
+              - cell "420,000원" [ref=e72]
+              - cell "-" [ref=e73]
+              - cell "3" [ref=e74]
+              - cell "8" [ref=e75]
+              - cell "3" [ref=e76]
+              - cell "0" [ref=e77]
+            - row "2025-11 480,000원 +14.3% 4 10 2 0" [ref=e78]:
+              - cell "2025-11" [ref=e79]
+              - cell "480,000원" [ref=e80]
+              - cell "+14.3%" [ref=e81]
+              - cell "4" [ref=e82]
+              - cell "10" [ref=e83]
+              - cell "2" [ref=e84]
+              - cell "0" [ref=e85]
+            - row "2025-12 530,000원 +10.4% 4 11 1 0" [ref=e86]:
+              - cell "2025-12" [ref=e87]
+              - cell "530,000원" [ref=e88]
+              - cell "+10.4%" [ref=e89]
+              - cell "4" [ref=e90]
+              - cell "11" [ref=e91]
+              - cell "1" [ref=e92]
+              - cell "0" [ref=e93]
+            - row "2026-01 680,000원 +28.3% 5 15 4 0" [ref=e94]:
+              - cell "2026-01" [ref=e95]
+              - cell "680,000원" [ref=e96]
+              - cell "+28.3%" [ref=e97]
+              - cell "5" [ref=e98]
+              - cell "15" [ref=e99]
+              - cell "4" [ref=e100]
+              - cell "0" [ref=e101]
+            - row "2026-02 750,000원 +10.3% 5 17 2 0" [ref=e102]:
+              - cell "2026-02" [ref=e103]
+              - cell "750,000원" [ref=e104]
+              - cell "+10.3%" [ref=e105]
+              - cell "5" [ref=e106]
+              - cell "17" [ref=e107]
+              - cell "2" [ref=e108]
+              - cell "0" [ref=e109]
+            - row "2026-03 820,000원 +9.3% 5 19 3 1" [ref=e110]:
+              - cell "2026-03" [ref=e111]
+              - cell "820,000원" [ref=e112]
+              - cell "+9.3%" [ref=e113]
+              - cell "5" [ref=e114]
+              - cell "19" [ref=e115]
+              - cell "3" [ref=e116]
+              - cell "1" [ref=e117]
+            - row "2026-04 880,000원 +7.3% 5 20 2 1" [ref=e118]:
+              - cell "2026-04" [ref=e119]
+              - cell "880,000원" [ref=e120]
+              - cell "+7.3%" [ref=e121]
+              - cell "5" [ref=e122]
+              - cell "20" [ref=e123]
+              - cell "2" [ref=e124]
+              - cell "1" [ref=e125]
+      - generic [ref=e126]:
+        - heading "관리자별 구독 상세" [level=3] [ref=e128]
+        - table [ref=e130]:
+          - rowgroup [ref=e131]:
+            - row "관리자 빌라수 플랜 월 금액 상태" [ref=e132]:
+              - columnheader "관리자" [ref=e133]
+              - columnheader "빌라수" [ref=e134]
+              - columnheader "플랜" [ref=e135]
+              - columnheader "월 금액" [ref=e136]
+              - columnheader "상태" [ref=e137]
+          - rowgroup [ref=e138]:
+            - row "김철수 3 혼합 150,000원 활성" [ref=e139]:
+              - cell "김철수" [ref=e140]
+              - cell "3" [ref=e141]
+              - cell "혼합" [ref=e142]
+              - cell "150,000원" [ref=e143]
+              - cell "활성" [ref=e144]
+            - row "박영희 7 혼합 280,000원 활성" [ref=e145]:
+              - cell "박영희" [ref=e146]
+              - cell "7" [ref=e147]
+              - cell "혼합" [ref=e148]
+              - cell "280,000원" [ref=e149]
+              - cell "활성" [ref=e150]
+            - row "이민호 1 소형 30,000원 미정산" [ref=e151]:
+              - cell "이민호" [ref=e152]
+              - cell "1" [ref=e153]
+              - cell "소형" [ref=e154]
+              - cell "30,000원" [ref=e155]
+              - cell "미정산" [ref=e156]
+            - row "정수진 12 혼합 600,000원 활성" [ref=e157]:
+              - cell "정수진" [ref=e158]
+              - cell "12" [ref=e159]
+              - cell "혼합" [ref=e160]
+              - cell "600,000원" [ref=e161]
+              - cell "활성" [ref=e162]
+            - row "최동욱 2 인기 100,000원 결제실패" [ref=e163]:
+              - cell "최동욱" [ref=e164]
+              - cell "2" [ref=e165]
+              - cell "인기" [ref=e166]
+              - cell "100,000원" [ref=e167]
+              - cell "결제실패" [ref=e168]
+  - button "Open Next.js Dev Tools" [ref=e174] [cursor=pointer]:
+    - img [ref=e175]

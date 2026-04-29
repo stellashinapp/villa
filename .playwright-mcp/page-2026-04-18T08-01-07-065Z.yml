@@ -1,0 +1,24 @@
+- generic [ref=e14]:
+  - generic [ref=e19]: STEP 2 / 3
+  - generic [ref=e20]: 첫 번째 빌라 등록
+  - generic [ref=e21]: 관리할 빌라 정보를 입력해주세요 나중에 더 추가할 수 있어요
+  - generic [ref=e22]:
+    - generic [ref=e23]:
+      - generic [ref=e24]: 빌라 이름
+      - 'textbox "예: 행복빌라, 그린파크 201동" [ref=e25]'
+    - generic [ref=e26]:
+      - generic [ref=e27]: 주소
+      - textbox "서울시 강남구 역삼동 123-45" [ref=e28]
+    - generic [ref=e29]:
+      - generic [ref=e31]:
+        - generic [ref=e32]: 총 세대수
+        - 'textbox "예: 12" [active] [ref=e33]'
+      - generic [ref=e35]:
+        - generic [ref=e36]: 층당 세대수
+        - textbox "2" [ref=e37]
+    - generic [ref=e38]:
+      - generic [ref=e39]: 관리비 입금 계좌
+      - 'textbox "은행명 계좌번호 (예: 국민 123-456-789)" [ref=e40]'
+      - generic [ref=e41]: 입주민이 관리비를 입금할 계좌입니다
+  - generic [ref=e43] [cursor=pointer]: 다음 → 카드 등록 (선택)
+  - generic [ref=e45] [cursor=pointer]: 나중에 할게요

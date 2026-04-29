@@ -1,0 +1,60 @@
+- generic [ref=e8]:
+  - generic [ref=e14]:
+    - generic [ref=e15]:
+      - generic [ref=e16]:
+        - generic [ref=e17]: ADMIN
+        - generic [ref=e19] [cursor=pointer]: 로그아웃
+      - generic [ref=e20]: 좋은 아침이에요 👋 관리자님
+    - generic [ref=e21]:
+      - generic [ref=e22]:
+        - generic [ref=e23]:
+          - generic [ref=e24]: 관리 빌라
+          - generic [ref=e25]: "0"
+        - generic [ref=e26]:
+          - generic [ref=e27]: 총 세대
+          - generic [ref=e28]: "0"
+      - generic [ref=e29]:
+        - generic [ref=e30]:
+          - generic [ref=e31]: 미납 세대
+          - generic [ref=e32]: "0"
+        - generic [ref=e33]:
+          - generic [ref=e34]: 새 메시지
+          - generic [ref=e35]: "0"
+    - generic [ref=e37] [cursor=pointer]: + 새 빌라 등록
+    - generic [ref=e38]:
+      - generic [ref=e39]: 내 빌라
+      - generic [ref=e40]:
+        - generic [ref=e41]: 등록된 빌라가 없어요
+        - generic [ref=e42]: 새 빌라를 등록해주세요
+    - generic [ref=e43]:
+      - generic [ref=e44]: 서비스 구독
+      - generic [ref=e45]:
+        - generic [ref=e48]: 미가입
+        - generic [ref=e50]:
+          - generic [ref=e51]:
+            - generic [ref=e52]: 빌라
+            - generic [ref=e53]: 0개
+          - generic [ref=e54]:
+            - generic [ref=e55]: 세대
+            - generic [ref=e56]: 0세대
+  - tablist [ref=e58]:
+    - tab "🏠 🏠 홈" [selected] [ref=e60] [cursor=pointer]:
+      - generic [ref=e61]:
+        - generic [ref=e64]: 🏠
+        - generic [ref=e68]: 🏠
+      - generic [ref=e69]: 홈
+    - tab "✉️ ✉️ 메시지" [ref=e71] [cursor=pointer]:
+      - generic [ref=e72]:
+        - generic [ref=e75]: ✉️
+        - generic [ref=e79]: ✉️
+      - generic [ref=e80]: 메시지
+    - tab "🏘️ 🏘️ 빌라" [ref=e82] [cursor=pointer]:
+      - generic [ref=e83]:
+        - generic [ref=e86]: 🏘️
+        - generic [ref=e90]: 🏘️
+      - generic [ref=e91]: 빌라
+    - tab "⚙️ ⚙️ 설정" [ref=e93] [cursor=pointer]:
+      - generic [ref=e94]:
+        - generic [ref=e97]: ⚙️
+        - generic [ref=e101]: ⚙️
+      - generic [ref=e102]: 설정

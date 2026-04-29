@@ -1,0 +1,108 @@
+- generic [ref=e10]:
+  - generic [ref=e127]:
+    - generic [ref=e128]:
+      - generic [ref=e130] [cursor=pointer]: ← 돌아가기
+      - generic [ref=e131]: 빌라 등록
+    - generic [ref=e132]:
+      - generic [ref=e133]: 빌라 이름 *
+      - 'textbox "예: 해피빌라" [ref=e134]'
+      - generic [ref=e135]: 주소 *
+      - textbox "서울 마포구 연남동 123-4" [ref=e136]
+      - generic [ref=e137]: 관리비 입금 은행
+      - 'textbox "예: 국민, 신한, 우리, 하나" [ref=e138]'
+      - generic [ref=e139]: 계좌번호
+      - 'textbox "예: 123-456-789012" [ref=e140]'
+    - generic [ref=e141]:
+      - generic [ref=e142]:
+        - generic [ref=e143]: 층별 세대 설정
+        - generic [ref=e144]: 총 8세대
+      - generic [ref=e145]: 각 층을 눌러서 호실 이름을 직접 수정할 수 있습니다
+      - generic [ref=e147] [cursor=pointer]:
+        - generic [ref=e149]: 1층
+        - generic [ref=e150]: 2세대
+        - generic [ref=e151]:
+          - generic [ref=e153]: −
+          - generic [ref=e155]: +
+        - generic [ref=e157]: ✕
+      - generic [ref=e159] [cursor=pointer]:
+        - generic [ref=e161]: 2층
+        - generic [ref=e162]: 2세대
+        - generic [ref=e163]:
+          - generic [ref=e165]: −
+          - generic [ref=e167]: +
+        - generic [ref=e169]: ✕
+      - generic [ref=e171] [cursor=pointer]:
+        - generic [ref=e173]: 3층
+        - generic [ref=e174]: 2세대
+        - generic [ref=e175]:
+          - generic [ref=e177]: −
+          - generic [ref=e179]: +
+        - generic [ref=e181]: ✕
+      - generic [ref=e183] [cursor=pointer]:
+        - generic [ref=e185]: 4층
+        - generic [ref=e186]: 2세대
+        - generic [ref=e187]:
+          - generic [ref=e189]: −
+          - generic [ref=e191]: +
+        - generic [ref=e193]: ✕
+      - generic [ref=e194]:
+        - generic [ref=e195]:
+          - generic [ref=e197] [cursor=pointer]: + 지하1층
+          - generic [ref=e199] [cursor=pointer]: + 5층
+        - generic [ref=e200]:
+          - 'textbox "직접 입력 (예: B3, 옥탑, 상가)" [ref=e201]'
+          - generic [ref=e203] [cursor=pointer]: 추가
+    - generic [ref=e204]:
+      - generic [ref=e205]:
+        - generic [ref=e206]:
+          - generic [ref=e207]:
+            - generic [ref=e208]: 소형 플랜
+            - generic [ref=e209]: 6~8세대
+          - generic [ref=e210]: 월 30,000원
+        - generic [ref=e212]: 🎉 첫 1개월 무료
+      - generic [ref=e213]: 전체 호실 미리보기 (8개)
+      - generic [ref=e214]:
+        - generic [ref=e215]:
+          - generic [ref=e216]: 1층
+          - generic [ref=e217]:
+            - generic [ref=e219]: 101호
+            - generic [ref=e221]: 102호
+        - generic [ref=e222]:
+          - generic [ref=e223]: 2층
+          - generic [ref=e224]:
+            - generic [ref=e226]: 201호
+            - generic [ref=e228]: 202호
+        - generic [ref=e229]:
+          - generic [ref=e230]: 3층
+          - generic [ref=e231]:
+            - generic [ref=e233]: 301호
+            - generic [ref=e235]: 302호
+        - generic [ref=e236]:
+          - generic [ref=e237]: 4층
+          - generic [ref=e238]:
+            - generic [ref=e240]: 401호
+            - generic [ref=e242]: 402호
+    - generic [ref=e243]:
+      - generic [ref=e245] [cursor=pointer]: 등록하기
+      - generic [ref=e247] [cursor=pointer]: 취소
+  - tablist [ref=e78]:
+    - tab "🏠 🏠 홈" [ref=e80] [cursor=pointer]:
+      - generic [ref=e81]:
+        - generic [ref=e84]: 🏠
+        - generic [ref=e88]: 🏠
+      - generic [ref=e89]: 홈
+    - tab "✉️ ✉️ 메시지" [ref=e91] [cursor=pointer]:
+      - generic [ref=e92]:
+        - generic [ref=e95]: ✉️
+        - generic [ref=e99]: ✉️
+      - generic [ref=e100]: 메시지
+    - tab "🏘️ 🏘️ 빌라" [selected] [ref=e102] [cursor=pointer]:
+      - generic [ref=e103]:
+        - generic [ref=e106]: 🏘️
+        - generic [ref=e110]: 🏘️
+      - generic [ref=e111]: 빌라
+    - tab "⚙️ ⚙️ 설정" [ref=e113] [cursor=pointer]:
+      - generic [ref=e114]:
+        - generic [ref=e117]: ⚙️
+        - generic [ref=e121]: ⚙️
+      - generic [ref=e122]: 설정

@@ -1,34 +1,72 @@
-export default function PaymentsPage() {
-  const PAYMENTS = [
-    { id: 1, date: '2026-04-15', admin: '김철수', desc: '4월 구독료 (3 빌라)', amount: 150000, method: '카드 자동결제', status: '성공' as const },
-    { id: 2, date: '2026-04-15', admin: '박영희', desc: '4월 구독료 (7 빌라)', amount: 280000, method: '카드 자동결제', status: '성공' as const },
-    { id: 3, date: '2026-04-15', admin: '이민호', desc: '4월 구독료 (1 빌라)', amount: 30000, method: '카드 자동결제', status: '실패' as const },
-    { id: 4, date: '2026-04-15', admin: '정수진', desc: '4월 구독료 (12 빌라)', amount: 600000, method: '카드 자동결제', status: '성공' as const },
-    { id: 5, date: '2026-04-15', admin: '최동욱', desc: '4월 구독료 (2 빌라)', amount: 100000, method: '카드 자동결제', status: '실패' as const },
-    { id: 6, date: '2026-03-15', admin: '김철수', desc: '3월 구독료 (3 빌라)', amount: 150000, method: '카드 자동결제', status: '성공' as const },
-    { id: 7, date: '2026-03-15', admin: '박영희', desc: '3월 구독료 (7 빌라)', amount: 280000, method: '카드 자동결제', status: '성공' as const },
-    { id: 8, date: '2026-03-15', admin: '정수진', desc: '3월 구독료 (12 빌라)', amount: 600000, method: '카드 자동결제', status: '성공' as const },
-    { id: 9, date: '2026-03-15', admin: '이민호', desc: '3월 구독료 (1 빌라)', amount: 30000, method: '계좌이체', status: '성공' as const },
-    { id: 10, date: '2026-03-15', admin: '최동욱', desc: '3월 구독료 (2 빌라)', amount: 100000, method: '카드 자동결제', status: '성공' as const },
-  ];
+import { createServerClient } from '@/lib/supabase-server';
 
-  const successPayments = PAYMENTS.filter((p) => p.status === '성공');
-  const failPayments = PAYMENTS.filter((p) => p.status === '실패');
-  const successAmount = successPayments.reduce((s, p) => s + p.amount, 0);
-  const failAmount = failPayments.reduce((s, p) => s + p.amount, 0);
-  const successRate = ((successPayments.length / PAYMENTS.length) * 100).toFixed(1);
+type Row = {
+  id: string;
+  amount: number;
+  status: 'success' | 'failed' | 'refunded';
+  created_at: string;
+  failure_reason: string | null;
+  subscriptions: {
+    id: string;
+    admin_id: string;
+    admins: { name: string | null; email: string } | null;
+    subscription_items: { id: string }[] | null;
+  } | null;
+};
+
+const STATUS_KO: Record<Row['status'], { label: string; cls: string }> = {
+  success: { label: '성공', cls: 'bg-okL text-ok' },
+  failed: { label: '실패', cls: 'bg-errL text-err' },
+  refunded: { label: '환불', cls: 'bg-white/10 text-t3' },
+};
+
+export const dynamic = 'force-dynamic';
+
+export default async function PaymentsPage() {
+  const supabase = createServerClient();
+
+  const { data: payments, error } = await supabase
+    .from('subscription_payments')
+    .select(`
+      id, amount, status, created_at, failure_reason,
+      subscriptions:subscription_id (
+        id, admin_id,
+        admins:admin_id ( name, email ),
+        subscription_items ( id )
+      )
+    `)
+    .order('created_at', { ascending: false })
+    .limit(200)
+    .returns<Row[]>();
+
+  if (error) {
+    return (
+      <div>
+        <h2 className="text-lg font-bold mb-5">결제 내역</h2>
+        <div className="bg-errL text-err border border-err/30 rounded-[10px] p-5 text-sm">
+          데이터 조회 실패: {error.message}
+        </div>
+      </div>
+    );
+  }
+
+  const rows = payments ?? [];
+  const success = rows.filter((p) => p.status === 'success');
+  const failed = rows.filter((p) => p.status === 'failed');
+  const successAmount = success.reduce((s, p) => s + (p.amount ?? 0), 0);
+  const failAmount = failed.reduce((s, p) => s + (p.amount ?? 0), 0);
+  const successRate = rows.length > 0 ? ((success.length / rows.length) * 100).toFixed(1) : '0.0';
 
   return (
     <div>
       <h2 className="text-lg font-bold mb-5">결제 내역</h2>
 
-      {/* KPI */}
       <div className="grid grid-cols-5 gap-4 mb-6">
         {[
           { label: '결제 성공 금액', value: `${successAmount.toLocaleString()}원`, color: 'text-ok' },
-          { label: '성공 건수', value: `${successPayments.length}건`, color: 'text-ok' },
+          { label: '성공 건수', value: `${success.length}건`, color: 'text-ok' },
           { label: '결제 실패 금액', value: `${failAmount.toLocaleString()}원`, color: 'text-err' },
-          { label: '실패 건수', value: `${failPayments.length}건`, color: 'text-err' },
+          { label: '실패 건수', value: `${failed.length}건`, color: 'text-err' },
           { label: '성공률', value: `${successRate}%`, color: 'text-pri' },
         ].map((k) => (
           <div key={k.label} className="bg-card border border-border rounded-[10px] p-5">
@@ -38,10 +76,9 @@ export default function PaymentsPage() {
         ))}
       </div>
 
-      {/* Table */}
       <div className="bg-card border border-border rounded-[10px] overflow-hidden">
         <div className="px-5 py-4 border-b border-border">
-          <h3 className="text-sm font-bold">결제 목록</h3>
+          <h3 className="text-sm font-bold">결제 목록 (최근 200건)</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -51,27 +88,36 @@ export default function PaymentsPage() {
                 <th className="text-left px-5 py-3 font-medium">관리자</th>
                 <th className="text-left px-5 py-3 font-medium">내역</th>
                 <th className="text-right px-5 py-3 font-medium">금액</th>
-                <th className="text-left px-5 py-3 font-medium">결제수단</th>
                 <th className="text-left px-5 py-3 font-medium">상태</th>
+                <th className="text-left px-5 py-3 font-medium">비고</th>
               </tr>
             </thead>
             <tbody>
-              {PAYMENTS.map((p) => (
-                <tr key={p.id} className="border-b border-border last:border-0 hover:bg-white/[.03] transition-colors">
-                  <td className="px-5 py-3.5 text-t2">{p.date}</td>
-                  <td className="px-5 py-3.5 font-semibold text-t1">{p.admin}</td>
-                  <td className="px-5 py-3.5 text-t2">{p.desc}</td>
-                  <td className="px-5 py-3.5 text-right font-semibold">{p.amount.toLocaleString()}원</td>
-                  <td className="px-5 py-3.5 text-t3">{p.method}</td>
-                  <td className="px-5 py-3.5">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                      p.status === '성공' ? 'bg-okL text-ok' : 'bg-errL text-err'
-                    }`}>
-                      {p.status}
-                    </span>
+              {rows.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-5 py-10 text-center text-t3">
+                    아직 결제 내역이 없습니다
                   </td>
                 </tr>
-              ))}
+              ) : (
+                rows.map((p) => {
+                  const admin = p.subscriptions?.admins;
+                  const villaCount = p.subscriptions?.subscription_items?.length ?? 0;
+                  const st = STATUS_KO[p.status];
+                  return (
+                    <tr key={p.id} className="border-b border-border last:border-0 hover:bg-white/[.03] transition-colors">
+                      <td className="px-5 py-3.5 text-t2">{new Date(p.created_at).toLocaleDateString('ko-KR')}</td>
+                      <td className="px-5 py-3.5 font-semibold text-t1">{admin?.name ?? admin?.email ?? '-'}</td>
+                      <td className="px-5 py-3.5 text-t2">구독료 ({villaCount} 빌라)</td>
+                      <td className="px-5 py-3.5 text-right font-semibold">{(p.amount ?? 0).toLocaleString()}원</td>
+                      <td className="px-5 py-3.5">
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${st.cls}`}>{st.label}</span>
+                      </td>
+                      <td className="px-5 py-3.5 text-t3 text-xs">{p.failure_reason ?? ''}</td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>

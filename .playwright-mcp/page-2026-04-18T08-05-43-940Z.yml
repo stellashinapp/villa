@@ -1,0 +1,86 @@
+- generic [ref=e80]:
+  - generic [ref=e86]:
+    - generic [ref=e87]:
+      - generic [ref=e88]:
+        - generic [ref=e89]: ADMIN
+        - generic [ref=e91] [cursor=pointer]: 로그아웃
+      - generic [ref=e92]: 좋은 아침이에요 👋 관리자님
+    - generic [ref=e93]:
+      - generic [ref=e94]:
+        - generic [ref=e95]:
+          - generic [ref=e96]: 관리 빌라
+          - generic [ref=e97]: "0"
+        - generic [ref=e98]:
+          - generic [ref=e99]: 총 세대
+          - generic [ref=e100]: "0"
+      - generic [ref=e101]:
+        - generic [ref=e102]:
+          - generic [ref=e103]: 미납 세대
+          - generic [ref=e104]: "0"
+        - generic [ref=e105]:
+          - generic [ref=e106]: 새 메시지
+          - generic [ref=e107]: "0"
+    - generic [ref=e109] [cursor=pointer]: + 새 빌라 등록
+    - generic [ref=e110]:
+      - generic [ref=e111]: 내 빌라
+      - generic [ref=e112]:
+        - generic [ref=e113]: 등록된 빌라가 없어요
+        - generic [ref=e114]: 새 빌라를 등록해주세요
+    - generic [ref=e115]:
+      - generic [ref=e116]: 서비스 구독
+      - generic [ref=e117]:
+        - generic [ref=e119]:
+          - generic [ref=e120]: 구독 중
+          - generic [ref=e123]: 미가입
+        - generic [ref=e125]:
+          - generic [ref=e126]:
+            - generic [ref=e127]: 빌라 수
+            - generic [ref=e128]: 0개
+          - generic [ref=e129]:
+            - generic [ref=e130]: 상태
+            - generic [ref=e131]: "-"
+          - generic [ref=e132]:
+            - generic [ref=e133]: 총 세대
+            - generic [ref=e134]: 0세대
+  - tablist [ref=e136]:
+    - tab "홈" [selected] [ref=e138] [cursor=pointer]:
+      - generic [ref=e142]: 홈
+    - tab "메시지" [ref=e144] [cursor=pointer]:
+      - generic [ref=e148]: 메시지
+    - tab "설정" [ref=e150] [cursor=pointer]:
+      - generic [ref=e154]: 설정
+    - tab "⏷ ⏷ villas/add" [ref=e156] [cursor=pointer]:
+      - generic [ref=e157]:
+        - generic [ref=e159]: ⏷
+        - generic [ref=e161]: ⏷
+      - generic [ref=e162]: villas/add
+    - tab "⏷ ⏷ villas/index" [ref=e164] [cursor=pointer]:
+      - generic [ref=e165]:
+        - generic [ref=e167]: ⏷
+        - generic [ref=e169]: ⏷
+      - generic [ref=e170]: villas/index
+    - tab "⏷ ⏷ villas/[id]/bills" [ref=e172] [cursor=pointer]:
+      - generic [ref=e173]:
+        - generic [ref=e175]: ⏷
+        - generic [ref=e177]: ⏷
+      - generic [ref=e178]: villas/[id]/bills
+    - tab "⏷ ⏷ villas/[id]/messages" [ref=e180] [cursor=pointer]:
+      - generic [ref=e181]:
+        - generic [ref=e183]: ⏷
+        - generic [ref=e185]: ⏷
+      - generic [ref=e186]: villas/[id]/messages
+    - tab "⏷ ⏷ villas/[id]/notices" [ref=e188] [cursor=pointer]:
+      - generic [ref=e189]:
+        - generic [ref=e191]: ⏷
+        - generic [ref=e193]: ⏷
+      - generic [ref=e194]: villas/[id]/notices
+    - tab "⏷ ⏷ villas/[id]/parking" [ref=e196] [cursor=pointer]:
+      - generic [ref=e197]:
+        - generic [ref=e199]: ⏷
+        - generic [ref=e201]: ⏷
+      - generic [ref=e202]: villas/[id]/parking
+    - tab "⏷ ⏷ villas/[id]/residents" [ref=e204] [cursor=pointer]:
+      - generic [ref=e205]:
+        - generic [ref=e207]: ⏷
+        - generic [ref=e209]: ⏷
+      - generic [ref=e210]: villas/[id]/residents

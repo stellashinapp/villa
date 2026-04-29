@@ -13,16 +13,16 @@ import { useRouter } from 'expo-router';
 import { saveSignupData } from '@/lib/signup-store';
 
 const C = {
-  bg: '#0F1B33',
-  card: '#182744',
-  cardBorder: '#243555',
-  inputBg: '#1A2D4D',
-  inputBorder: '#243555',
-  primary: '#3B5BDB',
-  success: '#1EB06A',
-  text: '#E0E4EA',
-  sub: '#8893A7',
-  error: '#E5423A',
+  bg: '#F5F6FA',
+  card: '#FFFFFF',
+  cardBorder: '#E8EBF0',
+  inputBg: '#F0F2F6',
+  inputBorder: '#E5E7EB',
+  primary: '#4A6CF7',
+  success: '#4CAF50',
+  text: '#1A1D26',
+  sub: '#6B7280',
+  error: '#E74C3C',
   white: '#FFFFFF',
 };
 
@@ -164,7 +164,7 @@ export default function SignupStep1Screen() {
         }}
         onBlur={() => setTouched((prev) => ({ ...prev, [field]: true }))}
         placeholder={options?.placeholder || ''}
-        placeholderTextColor={C.sub}
+        placeholderTextColor="#9CA3AF"
         keyboardType={options?.keyboardType || 'default'}
         secureTextEntry={options?.secureTextEntry}
         autoCapitalize="none"
@@ -180,26 +180,30 @@ export default function SignupStep1Screen() {
     checked: boolean,
     onPress: () => void,
     isAll?: boolean,
-    hasError?: boolean
+    hasError?: boolean,
+    viewLink?: string,
   ) => (
-    <TouchableOpacity
-      style={[styles.checkRow, isAll && styles.checkRowAll]}
-      onPress={onPress}
-      activeOpacity={0.7}
-    >
-      <View
-        style={[
-          styles.checkbox,
-          checked && styles.checkboxChecked,
-          hasError && styles.checkboxError,
-        ]}
-      >
-        {checked && <Text style={styles.checkmark}>✓</Text>}
-      </View>
-      <Text style={[styles.checkLabel, isAll && styles.checkLabelAll]}>
-        {label}
-      </Text>
-    </TouchableOpacity>
+    <View style={[styles.checkRow, isAll && styles.checkRowAll]}>
+      <TouchableOpacity onPress={onPress} activeOpacity={0.7} style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+        <View
+          style={[
+            styles.checkbox,
+            checked && styles.checkboxChecked,
+            hasError && styles.checkboxError,
+          ]}
+        >
+          {checked && <Text style={styles.checkmark}>✓</Text>}
+        </View>
+        <Text style={[styles.checkLabel, isAll && styles.checkLabelAll]}>
+          {label}
+        </Text>
+      </TouchableOpacity>
+      {viewLink && (
+        <TouchableOpacity onPress={() => router.push(viewLink as never)}>
+          <Text style={{ fontSize: 12, color: '#4A6CF7', textDecorationLine: 'underline' }}>보기</Text>
+        </TouchableOpacity>
+      )}
+    </View>
   );
 
   return (
@@ -264,7 +268,8 @@ export default function SignupStep1Screen() {
                 agreeMarketing,
               ]),
             false,
-            !!errors.terms
+            !!errors.terms,
+            '/legal/terms'
           )}
           {renderCheckbox(
             '[필수] 개인정보 수집·이용',
@@ -275,7 +280,8 @@ export default function SignupStep1Screen() {
                 agreeMarketing,
               ]),
             false,
-            !!errors.privacy
+            !!errors.privacy,
+            '/legal/privacy'
           )}
           {renderCheckbox(
             '[선택] 마케팅 수신',
@@ -331,7 +337,7 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   progressDotActive: { backgroundColor: C.primary },
-  progressDotInactive: { backgroundColor: C.cardBorder },
+  progressDotInactive: { backgroundColor: '#E5E7EB' },
 
   stepLabel: {
     fontSize: 11,
@@ -343,7 +349,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: '900',
-    color: C.white,
+    color: C.text,
     marginBottom: 6,
   },
   subtitle: {
@@ -360,6 +366,11 @@ const styles = StyleSheet.create({
     borderColor: C.cardBorder,
     padding: 20,
     marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
 
   inputGroup: { marginBottom: 16 },
@@ -400,6 +411,11 @@ const styles = StyleSheet.create({
     borderColor: C.cardBorder,
     padding: 20,
     marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   termsDivider: {
     height: 1,
@@ -419,7 +435,7 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 6,
     borderWidth: 1.5,
-    borderColor: C.cardBorder,
+    borderColor: C.inputBorder,
     backgroundColor: C.inputBg,
     alignItems: 'center',
     justifyContent: 'center',

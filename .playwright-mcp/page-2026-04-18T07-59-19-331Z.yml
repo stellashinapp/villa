@@ -1,0 +1,30 @@
+- generic [ref=e45]:
+  - generic [ref=e50]: STEP 1 / 3
+  - generic [ref=e51]: 관리자 계정 만들기
+  - generic [ref=e52]: 빌라 건물주·관리 담당자 전용입니다
+  - generic [ref=e53]:
+    - generic [ref=e54]:
+      - generic [ref=e55]: 이름
+      - textbox "홍길동" [ref=e56]
+    - generic [ref=e57]:
+      - generic [ref=e58]: 전화번호
+      - textbox "01012345678" [ref=e59]
+    - generic [ref=e60]:
+      - generic [ref=e61]: 이메일 (선택)
+      - textbox "example@email.com" [ref=e62]
+    - generic [ref=e63]:
+      - generic [ref=e64]: 아이디
+      - textbox "4자 이상" [ref=e65]
+    - generic [ref=e66]:
+      - generic [ref=e67]: 비밀번호
+      - textbox "6자 이상" [ref=e68]
+    - generic [ref=e69]:
+      - generic [ref=e70]: 비밀번호 확인
+      - textbox "비밀번호를 다시 입력" [ref=e71]
+  - generic [ref=e72]:
+    - generic [ref=e75] [cursor=pointer]: 전체 동의
+    - generic [ref=e79] [cursor=pointer]: "[필수] 서비스 이용약관"
+    - generic [ref=e82] [cursor=pointer]: "[필수] 개인정보 수집·이용"
+    - generic [ref=e85] [cursor=pointer]: "[선택] 마케팅 수신"
+  - generic [ref=e87] [cursor=pointer]: 다음 → 빌라 등록
+  - generic [ref=e89] [cursor=pointer]: ← 로그인으로

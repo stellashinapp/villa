@@ -1,58 +1,106 @@
-'use client';
+import { createServerClient } from '@/lib/supabase-server';
 
-const MRR_DATA = [
-  { month: '2025-10', mrr: 420000, change: null, admins: 3, villas: 8, newSubs: 3, churned: 0 },
-  { month: '2025-11', mrr: 480000, change: '+14.3%', admins: 4, villas: 10, newSubs: 2, churned: 0 },
-  { month: '2025-12', mrr: 530000, change: '+10.4%', admins: 4, villas: 11, newSubs: 1, churned: 0 },
-  { month: '2026-01', mrr: 680000, change: '+28.3%', admins: 5, villas: 15, newSubs: 4, churned: 0 },
-  { month: '2026-02', mrr: 750000, change: '+10.3%', admins: 5, villas: 17, newSubs: 2, churned: 0 },
-  { month: '2026-03', mrr: 820000, change: '+9.3%', admins: 5, villas: 19, newSubs: 3, churned: 1 },
-  { month: '2026-04', mrr: 880000, change: '+7.3%', admins: 5, villas: 20, newSubs: 2, churned: 1 },
-];
-
-const ADMIN_SUBS = [
-  { admin: '김철수', villas: 3, plan: '혼합', amount: 150000, status: '활성' },
-  { admin: '박영희', villas: 7, plan: '혼합', amount: 280000, status: '활성' },
-  { admin: '이민호', villas: 1, plan: '소형', amount: 30000, status: '미정산' },
-  { admin: '정수진', villas: 12, plan: '혼합', amount: 600000, status: '활성' },
-  { admin: '최동욱', villas: 2, plan: '인기', amount: 100000, status: '결제실패' },
-];
-
-const STATUS_STYLE: Record<string, string> = {
-  '활성': 'bg-okL text-ok',
-  '미정산': 'bg-warnL text-warn',
-  '결제실패': 'bg-errL text-err',
+type SubRow = {
+  id: string;
+  admin_id: string;
+  status: 'trialing' | 'active' | 'past_due' | 'cancelled' | 'pending_cancel';
+  billing_key: string | null;
+  card_brand: string | null;
+  card_last4: string | null;
+  billing_day: number;
+  trial_ends_at: string | null;
+  current_period_end: string | null;
+  created_at: string;
+  admins: { name: string | null; email: string } | null;
+  subscription_items: { id: string; plan: string; price: number }[] | null;
 };
 
-const currentMrr = MRR_DATA[MRR_DATA.length - 1];
-const activeSubs = ADMIN_SUBS.filter((s) => s.status === '활성').length;
-const totalVillaSubs = ADMIN_SUBS.reduce((s, a) => s + a.villas, 0);
-const arpu = Math.round(currentMrr.mrr / ADMIN_SUBS.length);
+type PaymentRow = {
+  id: string;
+  subscription_id: string;
+  amount: number;
+  status: 'success' | 'failed' | 'refunded';
+  created_at: string;
+};
 
-function downloadCSV() {
-  const header = '월,MRR,전월대비,관리자수,빌라수,신규,해지\n';
-  const rows = MRR_DATA.map((r) =>
-    `${r.month},${r.mrr},${r.change ?? '-'},${r.admins},${r.villas},${r.newSubs},${r.churned}`
-  ).join('\n');
-  const blob = new Blob(['\uFEFF' + header + rows], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `mrr_${new Date().toISOString().slice(0, 10)}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
+const STATUS_STYLE: Record<SubRow['status'], { label: string; cls: string }> = {
+  trialing: { label: '무료체험', cls: 'bg-priL text-priT' },
+  active: { label: '활성', cls: 'bg-okL text-ok' },
+  past_due: { label: '결제실패', cls: 'bg-errL text-err' },
+  pending_cancel: { label: '해지예정', cls: 'bg-warnL text-warn' },
+  cancelled: { label: '해지됨', cls: 'bg-white/10 text-t3' },
+};
+
+function monthKey(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
-export default function SubscriptionsPage() {
+function volumeDiscount(villaCount: number): number {
+  if (villaCount >= 10) return 0.15;
+  if (villaCount >= 5) return 0.1;
+  if (villaCount >= 3) return 0.05;
+  return 0;
+}
+
+export const dynamic = 'force-dynamic';
+
+export default async function SubscriptionsPage() {
+  const supabase = createServerClient();
+
+  const [{ data: subs }, { data: payments }] = await Promise.all([
+    supabase
+      .from('subscriptions')
+      .select(`
+        id, admin_id, status, billing_key, card_brand, card_last4, billing_day,
+        trial_ends_at, current_period_end, created_at,
+        admins:admin_id ( name, email ),
+        subscription_items ( id, plan, price )
+      `)
+      .returns<SubRow[]>(),
+    supabase
+      .from('subscription_payments')
+      .select('id, subscription_id, amount, status, created_at')
+      .eq('status', 'success')
+      .gte('created_at', new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString())
+      .returns<PaymentRow[]>(),
+  ]);
+
+  const subsRows = subs ?? [];
+  const paymentRows = payments ?? [];
+
+  const monthlyMap = new Map<string, number>();
+  for (const p of paymentRows) {
+    const key = monthKey(new Date(p.created_at));
+    monthlyMap.set(key, (monthlyMap.get(key) ?? 0) + p.amount);
+  }
+
+  const months: string[] = [];
+  const now = new Date();
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push(monthKey(d));
+  }
+
+  const trend = months.map((m, idx) => {
+    const mrr = monthlyMap.get(m) ?? 0;
+    const prev = idx > 0 ? monthlyMap.get(months[idx - 1]) ?? 0 : 0;
+    const change = prev > 0 ? (((mrr - prev) / prev) * 100).toFixed(1) : null;
+    return { month: m, mrr, change };
+  });
+
+  const currentMrr = trend[trend.length - 1]?.mrr ?? 0;
+  const activeCount = subsRows.filter((s) => s.status === 'active').length;
+  const totalVillaSubs = subsRows.reduce((s, a) => s + (a.subscription_items?.length ?? 0), 0);
+  const arpu = subsRows.length > 0 ? Math.round(currentMrr / subsRows.length) : 0;
+
   return (
     <div>
       <h2 className="text-lg font-bold mb-5">구독 / 매출</h2>
 
-      {/* KPI */}
       <div className="grid grid-cols-4 gap-4 mb-6">
         {[
-          { label: '이번달 MRR', value: `${currentMrr.mrr.toLocaleString()}원`, color: 'text-pri' },
-          { label: '활성 구독', value: `${activeSubs}건`, color: 'text-ok' },
+          { label: '이번달 MRR', value: `${currentMrr.toLocaleString()}원`, color: 'text-pri' },
+          { label: '활성 구독', value: `${activeCount}건`, color: 'text-ok' },
           { label: '빌라 구독건', value: `${totalVillaSubs}건`, color: 'text-[#4DA6FF]' },
           { label: 'ARPU', value: `${arpu.toLocaleString()}원`, color: 'text-warn' },
         ].map((k) => (
@@ -63,16 +111,9 @@ export default function SubscriptionsPage() {
         ))}
       </div>
 
-      {/* MRR Monthly Trend */}
       <div className="bg-card border border-border rounded-[10px] overflow-hidden mb-6">
-        <div className="px-5 py-4 border-b border-border flex items-center justify-between">
-          <h3 className="text-sm font-bold">MRR 월별 추이</h3>
-          <button
-            onClick={downloadCSV}
-            className="px-3.5 py-1.5 bg-pri/10 text-pri text-xs font-semibold rounded-lg hover:bg-pri/20 transition-colors"
-          >
-            CSV 다운로드
-          </button>
+        <div className="px-5 py-4 border-b border-border">
+          <h3 className="text-sm font-bold">MRR 월별 추이 (최근 7개월)</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -81,28 +122,22 @@ export default function SubscriptionsPage() {
                 <th className="text-left px-5 py-3 font-medium">월</th>
                 <th className="text-right px-5 py-3 font-medium">MRR</th>
                 <th className="text-right px-5 py-3 font-medium">전월대비</th>
-                <th className="text-right px-5 py-3 font-medium">관리자수</th>
-                <th className="text-right px-5 py-3 font-medium">빌라수</th>
-                <th className="text-right px-5 py-3 font-medium">신규</th>
-                <th className="text-right px-5 py-3 font-medium">해지</th>
               </tr>
             </thead>
             <tbody>
-              {MRR_DATA.map((r) => (
-                <tr key={r.month} className="border-b border-border last:border-0 hover:bg-white/[.03] transition-colors">
+              {trend.map((r) => (
+                <tr key={r.month} className="border-b border-border last:border-0">
                   <td className="px-5 py-3.5 font-semibold text-t1">{r.month}</td>
                   <td className="px-5 py-3.5 text-right font-semibold">{r.mrr.toLocaleString()}원</td>
                   <td className="px-5 py-3.5 text-right">
-                    {r.change ? (
-                      <span className={r.change.startsWith('+') ? 'text-ok' : 'text-err'}>{r.change}</span>
+                    {r.change !== null ? (
+                      <span className={parseFloat(r.change) >= 0 ? 'text-ok' : 'text-err'}>
+                        {parseFloat(r.change) >= 0 ? '+' : ''}{r.change}%
+                      </span>
                     ) : (
                       <span className="text-t3">-</span>
                     )}
                   </td>
-                  <td className="px-5 py-3.5 text-right text-t2">{r.admins}</td>
-                  <td className="px-5 py-3.5 text-right text-t2">{r.villas}</td>
-                  <td className="px-5 py-3.5 text-right text-ok">{r.newSubs}</td>
-                  <td className="px-5 py-3.5 text-right text-err">{r.churned}</td>
                 </tr>
               ))}
             </tbody>
@@ -110,7 +145,6 @@ export default function SubscriptionsPage() {
         </div>
       </div>
 
-      {/* Admin Subscriptions */}
       <div className="bg-card border border-border rounded-[10px] overflow-hidden">
         <div className="px-5 py-4 border-b border-border">
           <h3 className="text-sm font-bold">관리자별 구독 상세</h3>
@@ -121,27 +155,45 @@ export default function SubscriptionsPage() {
               <tr className="border-b border-border text-t3 text-xs">
                 <th className="text-left px-5 py-3 font-medium">관리자</th>
                 <th className="text-right px-5 py-3 font-medium">빌라수</th>
-                <th className="text-left px-5 py-3 font-medium">플랜</th>
+                <th className="text-left px-5 py-3 font-medium">카드</th>
                 <th className="text-right px-5 py-3 font-medium">월 금액</th>
+                <th className="text-left px-5 py-3 font-medium">결제일</th>
                 <th className="text-left px-5 py-3 font-medium">상태</th>
               </tr>
             </thead>
             <tbody>
-              {ADMIN_SUBS.map((a) => (
-                <tr key={a.admin} className="border-b border-border last:border-0 hover:bg-white/[.03] transition-colors">
-                  <td className="px-5 py-3.5 font-semibold text-t1">{a.admin}</td>
-                  <td className="px-5 py-3.5 text-right text-t2">{a.villas}</td>
-                  <td className="px-5 py-3.5">
-                    <span className="px-2 py-0.5 rounded text-xs font-medium bg-priL text-priT">{a.plan}</span>
-                  </td>
-                  <td className="px-5 py-3.5 text-right font-semibold">{a.amount.toLocaleString()}원</td>
-                  <td className="px-5 py-3.5">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${STATUS_STYLE[a.status]}`}>
-                      {a.status}
-                    </span>
+              {subsRows.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-5 py-10 text-center text-t3">
+                    아직 등록된 구독이 없습니다
                   </td>
                 </tr>
-              ))}
+              ) : (
+                subsRows.map((s) => {
+                  const items = s.subscription_items ?? [];
+                  const baseAmount = items.reduce((sum, it) => sum + (it.price ?? 0), 0);
+                  const amount = Math.round(baseAmount * (1 - volumeDiscount(items.length)));
+                  const st = STATUS_STYLE[s.status];
+                  return (
+                    <tr key={s.id} className="border-b border-border last:border-0 hover:bg-white/[.03] transition-colors">
+                      <td className="px-5 py-3.5 font-semibold text-t1">
+                        {s.admins?.name ?? s.admins?.email ?? '-'}
+                      </td>
+                      <td className="px-5 py-3.5 text-right text-t2">{items.length}</td>
+                      <td className="px-5 py-3.5 text-t3 text-xs">
+                        {s.card_brand ? `${s.card_brand} ···· ${s.card_last4 ?? ''}` : '미등록'}
+                      </td>
+                      <td className="px-5 py-3.5 text-right font-semibold">{amount.toLocaleString()}원</td>
+                      <td className="px-5 py-3.5 text-t3">매월 {s.billing_day}일</td>
+                      <td className="px-5 py-3.5">
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${st.cls}`}>
+                          {st.label}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>

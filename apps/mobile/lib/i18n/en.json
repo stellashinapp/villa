@@ -1,0 +1,82 @@
+{
+  "common": {
+    "ok": "OK",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "back": "Back",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Done",
+    "retry": "Retry",
+    "won": "KRW"
+  },
+  "nav": {
+    "home": "Home",
+    "bills": "Bills",
+    "notices": "Notices",
+    "community": "Community",
+    "parking": "Parking",
+    "report": "Report",
+    "messages": "Messages",
+    "inbox": "Inbox",
+    "settings": "Settings",
+    "villas": "Villas"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
+    "signUp": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "name": "Name",
+    "phone": "Phone",
+    "adminLogin": "Admin Login",
+    "residentLogin": "Resident Login"
+  },
+  "home": {
+    "greeting": "Home",
+    "managedVillas": "Villas",
+    "totalUnits": "Units",
+    "newMessages": "New",
+    "myVillas": "My Villas",
+    "addVilla": "+ Add New Villa",
+    "noVillas": "No villas registered",
+    "addVillaHint": "Please add a villa",
+    "stats": "📊 Statistics",
+    "paymentRate": "Payment Rate (6 months)",
+    "occupancy": "Occupancy",
+    "pendingReplies": "Pending Replies",
+    "unpaidByVilla": "Unpaid by Villa"
+  },
+  "bills": {
+    "title": "Bills",
+    "currentMonth": "Current Bill",
+    "paid": "Paid",
+    "unpaid": "Unpaid",
+    "paymentAccount": "Payment Account",
+    "lineItems": "Line Items",
+    "previousMonths": "Previous Bills",
+    "pay": "Pay",
+    "payWithToss": "Pay with Toss",
+    "payByTransfer": "Bank Transfer"
+  },
+  "subscription": {
+    "trialing": "Trial",
+    "active": "Active",
+    "pastDue": "Payment Failed",
+    "cancelled": "Cancelled",
+    "pendingCancel": "Pending Cancel",
+    "none": "Not Subscribed",
+    "cardRegistered": "Registered Card",
+    "noCard": "No Card",
+    "changeMethod": "Change Payment Method"
+  },
+  "villas": {
+    "total": "Total Villas",
+    "low": "Low Payment Rate",
+    "avg": "Avg Units/Villa"
+  }
+}

@@ -1,0 +1,34 @@
+diff --git a/node_modules/expo-modules-core/android/ExpoModulesCorePlugin.gradle b/node_modules/expo-modules-core/android/ExpoModulesCorePlugin.gradle
+index 0000000..0000001 100644
+--- a/node_modules/expo-modules-core/android/ExpoModulesCorePlugin.gradle
++++ b/node_modules/expo-modules-core/android/ExpoModulesCorePlugin.gradle
+@@ -89,17 +89,21 @@ ext.useExpoPublishing = {
+   }
+
+   project.afterEvaluate {
+-    publishing {
+-      publications {
+-        release(MavenPublication) {
+-          from components.release
++    try {
++      publishing {
++        publications {
++          release(MavenPublication) {
++            from components.release
++          }
+         }
+-      }
+-      repositories {
+-        maven {
+-          url = mavenLocal().url
++        repositories {
++          maven {
++            url = mavenLocal().url
++          }
+         }
+       }
++    } catch (Exception e) {
++      project.logger.lifecycle("[expo-modules-core] Skipping maven publish: ${e.message}")
+     }
+   }
+ }

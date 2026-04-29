@@ -1,0 +1,82 @@
+{
+  "common": {
+    "ok": "확인",
+    "cancel": "취소",
+    "save": "저장",
+    "delete": "삭제",
+    "edit": "수정",
+    "add": "추가",
+    "back": "뒤로",
+    "loading": "불러오는 중...",
+    "error": "오류",
+    "success": "완료",
+    "retry": "다시 시도",
+    "won": "원"
+  },
+  "nav": {
+    "home": "홈",
+    "bills": "관리비",
+    "notices": "공지",
+    "community": "커뮤니티",
+    "parking": "주차",
+    "report": "민원",
+    "messages": "메시지",
+    "inbox": "수신함",
+    "settings": "설정",
+    "villas": "빌라"
+  },
+  "auth": {
+    "signIn": "로그인",
+    "signOut": "로그아웃",
+    "signUp": "회원가입",
+    "email": "이메일",
+    "password": "비밀번호",
+    "name": "이름",
+    "phone": "전화번호",
+    "adminLogin": "관리자 로그인",
+    "residentLogin": "입주민 로그인"
+  },
+  "home": {
+    "greeting": "홈",
+    "managedVillas": "관리 빌라",
+    "totalUnits": "총 세대",
+    "newMessages": "새 메시지",
+    "myVillas": "내 빌라",
+    "addVilla": "+ 새 빌라 등록",
+    "noVillas": "등록된 빌라가 없어요",
+    "addVillaHint": "새 빌라를 등록해주세요",
+    "stats": "📊 운영 통계",
+    "paymentRate": "최근 6개월 납부율",
+    "occupancy": "입주율",
+    "pendingReplies": "답변 대기",
+    "unpaidByVilla": "빌라별 미납"
+  },
+  "bills": {
+    "title": "관리비",
+    "currentMonth": "관리비",
+    "paid": "납부완료",
+    "unpaid": "미납",
+    "paymentAccount": "납부 계좌",
+    "lineItems": "항목별 내역",
+    "previousMonths": "이전 관리비",
+    "pay": "납부하기",
+    "payWithToss": "토스로 결제",
+    "payByTransfer": "계좌이체 (기존)"
+  },
+  "subscription": {
+    "trialing": "무료체험",
+    "active": "구독중",
+    "pastDue": "결제실패",
+    "cancelled": "해지됨",
+    "pendingCancel": "해지예정",
+    "none": "미가입",
+    "cardRegistered": "등록 카드",
+    "noCard": "카드 미등록",
+    "changeMethod": "결제수단 변경하기"
+  },
+  "villas": {
+    "total": "총 빌라",
+    "low": "미납률 높은 빌라",
+    "avg": "평균 세대/빌라"
+  }
+}

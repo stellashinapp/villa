@@ -1,40 +1,102 @@
+// ==============================
+// Figma 디자인 기준 컬러 시스템
+// ==============================
+
 // 관리자 다크 테마
 export const adminTheme = {
-  bg: '#0F1B33',
-  surface: '#182744',
-  card: '#182744',
-  border: '#243555',
-  text: '#E0E4EA',
-  textSub: '#8893A7',
-  primary: '#2558D6',
-  primaryLight: '#E8EEFB',
-  accent: '#FF6434',
-  ok: '#1EB06A',
-  okLight: '#E6F8F0',
-  warn: '#F0A722',
-  warnLight: '#FEF6E6',
-  err: '#E5423A',
-  errLight: '#FDF0EF',
+  // 배경
+  bg: '#1B2A4A',
+  bgDark: '#152238',
+  surface: '#213560',
+  card: '#243B6A',
+  cardBorder: '#2E4A7A',
+
+  // 텍스트
+  text: '#FFFFFF',
+  textSecondary: '#B0BED0',
+  textMuted: '#7889A5',
+
+  // Primary
+  primary: '#3454D1',
+  primaryLight: '#4A6AE5',
+  primaryBg: 'rgba(52,84,209,0.12)',
+
+  // 상태
+  ok: '#2ECC71',
+  okBg: 'rgba(46,204,113,0.12)',
+  warn: '#F39C12',
+  warnBg: 'rgba(243,156,18,0.12)',
+  err: '#E74C3C',
+  errBg: 'rgba(231,76,60,0.12)',
+  accent: '#FF6B35',
+  accentBg: 'rgba(255,107,53,0.12)',
+
+  // 입력
+  inputBg: '#1E3258',
+  inputBorder: '#2E4A7A',
+
+  // 기타
+  divider: '#2E4A7A',
+  shadow: 'rgba(0,0,0,0.2)',
 } as const;
 
 // 입주민 라이트 테마
 export const residentTheme = {
-  bg: '#F3F4F8',
+  // 배경
+  bg: '#F5F6FA',
   surface: '#FFFFFF',
   card: '#FFFFFF',
-  border: '#EAEBEF',
-  text: '#181A20',
-  textSub: '#7C7F87',
-  muted: '#B8BBC2',
-  primary: '#2558D6',
+  cardBorder: '#E8EBF0',
+
+  // 텍스트
+  text: '#1A1D26',
+  textSecondary: '#6B7280',
+  textMuted: '#9CA3AF',
+
+  // Primary
+  primary: '#3454D1',
   primaryLight: '#E8EEFB',
-  primaryDark: '#1A3FA0',
-  accent: '#FF6434',
-  accentLight: '#FFF0EA',
-  ok: '#1EB06A',
-  okLight: '#E6F8F0',
-  warn: '#F0A722',
-  warnLight: '#FEF6E6',
-  err: '#E5423A',
-  errLight: '#FDF0EF',
+  primaryDark: '#2A43A8',
+
+  // 상태
+  ok: '#2ECC71',
+  okBg: '#E8F8F0',
+  warn: '#F39C12',
+  warnBg: '#FEF6E6',
+  err: '#E74C3C',
+  errBg: '#FDE8E8',
+  accent: '#FF6B35',
+  accentBg: '#FFF0EA',
+
+  // 입력
+  inputBg: '#F8F9FC',
+  inputBorder: '#E8EBF0',
+
+  // 히어로
+  heroStart: '#1B2A4A',
+  heroEnd: '#3454D1',
+
+  // 기타
+  divider: '#E8EBF0',
+  shadow: '0 1px 4px rgba(0,0,0,0.04), 0 4px 14px rgba(0,0,0,0.03)',
+} as const;
+
+// 공통
+export const common = {
+  radius: {
+    sm: 8,
+    md: 12,
+    lg: 16,
+    xl: 20,
+    full: 100,
+  },
+  fontSize: {
+    xs: 10,
+    sm: 12,
+    md: 14,
+    lg: 16,
+    xl: 18,
+    xxl: 22,
+    hero: 28,
+  },
 } as const;

@@ -1,0 +1,50 @@
+- generic [ref=e13]:
+  - generic [ref=e18]: STEP 3 / 3
+  - generic [ref=e19]: 플랜을 선택하세요
+  - generic [ref=e20]: 첫 1개월 무료! 부담 없이 시작하세요
+  - generic [ref=e21]:
+    - generic [ref=e22]: 🎉
+    - generic [ref=e23]:
+      - generic [ref=e24]: 첫 1개월 완전 무료
+      - generic [ref=e25]: 카드 등록 없이도 모든 기능을 사용할 수 있어요
+  - generic [ref=e26] [cursor=pointer]:
+    - generic [ref=e27]:
+      - generic [ref=e30]: 소형
+      - generic [ref=e31]: 6~8세대
+    - generic [ref=e32]:
+      - generic [ref=e33]: 월 30,000원
+      - generic [ref=e34]: /월 (VAT 별도)
+  - generic [ref=e35] [cursor=pointer]:
+    - generic [ref=e36]:
+      - generic [ref=e37]:
+        - generic [ref=e40]: 인기
+        - generic [ref=e42]: 인기
+      - generic [ref=e43]: 9~15세대
+    - generic [ref=e44]:
+      - generic [ref=e45]: 월 50,000원
+      - generic [ref=e46]: /월 (VAT 별도)
+    - generic [ref=e47]:
+      - generic [ref=e48]:
+        - generic [ref=e49]: ✓
+        - generic [ref=e50]: 소형 플랜 전체
+      - generic [ref=e51]:
+        - generic [ref=e52]: ✓
+        - generic [ref=e53]: 자동 고지서
+      - generic [ref=e54]:
+        - generic [ref=e55]: ✓
+        - generic [ref=e56]: 수납 현황 대시보드
+      - generic [ref=e57]:
+        - generic [ref=e58]: ✓
+        - generic [ref=e59]: 문자 발송
+  - generic [ref=e60] [cursor=pointer]:
+    - generic [ref=e61]:
+      - generic [ref=e64]: 대형
+      - generic [ref=e65]: 16~30세대
+    - generic [ref=e66]:
+      - generic [ref=e67]: 월 70,000원
+      - generic [ref=e68]: /월 (VAT 별도)
+  - generic [ref=e69] [cursor=pointer]:
+    - generic [ref=e70]: ▸ 카드 등록 (선택사항)
+    - generic [ref=e71]: 등록하면 무료 체험 후 자동 결제됩니다
+  - generic [ref=e73] [cursor=pointer]: 🎉 무료 체험 시작!
+  - generic [ref=e75] [cursor=pointer]: 나중에 결정할게요

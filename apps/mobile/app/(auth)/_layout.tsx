@@ -8,6 +8,7 @@ export default function AuthLayout() {
       <Stack.Screen name="signup/step2-villa" />
       <Stack.Screen name="signup/step3-plan" />
       <Stack.Screen name="resident-login" />
+      <Stack.Screen name="find-account" />
     </Stack>
   );
 }

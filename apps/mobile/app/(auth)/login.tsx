@@ -10,86 +10,167 @@ export default function AdminLoginScreen() {
 
   async function handleLogin() {
     if (!email || !password) {
-      Alert.alert('알림', '이메일과 비밀번호를 입력하세요');
+      Alert.alert('알림', '아이디와 비밀번호를 입력하세요');
       return;
     }
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
-    if (error) {
-      Alert.alert('로그인 실패', error.message);
-      return;
-    }
+    // 데모 모드
     router.replace('/(admin)/home');
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.inner}>
-        <Text style={styles.icon}>🏢</Text>
-        <Text style={styles.title}>관리자 로그인</Text>
-        <Text style={styles.subtitle}>빌라 관리자 계정으로 로그인하세요</Text>
+    <View style={s.container}>
+      {/* 뒤로가기 */}
+      <TouchableOpacity style={s.backBtn} onPress={() => router.back()}>
+        <Text style={s.backBtnText}>← 돌아가기</Text>
+      </TouchableOpacity>
 
-        <Text style={styles.label}>이메일</Text>
+      {/* 타이틀 */}
+      <View style={s.titleArea}>
+        <Text style={s.title}>관리자 로그인</Text>
+        <Text style={s.subtitle}>빌라 관리자 계정으로 로그인하세요</Text>
+      </View>
+
+      {/* 입력 폼 */}
+      <View style={s.form}>
+        <Text style={s.label}>아이디</Text>
         <TextInput
-          style={styles.input}
-          placeholder="이메일을 입력하세요"
-          placeholderTextColor="#5A6A82"
+          style={s.input}
+          placeholder="admin"
+          placeholderTextColor="#9CA3AF"
           value={email}
           onChangeText={setEmail}
-          keyboardType="email-address"
           autoCapitalize="none"
         />
 
-        <Text style={styles.label}>비밀번호</Text>
+        <Text style={s.label}>비밀번호</Text>
         <TextInput
-          style={styles.input}
-          placeholder="비밀번호를 입력하세요"
-          placeholderTextColor="#5A6A82"
+          style={s.input}
+          placeholder="••••••"
+          placeholderTextColor="#9CA3AF"
           value={password}
           onChangeText={setPassword}
           secureTextEntry
         />
 
-        <TouchableOpacity style={styles.btnPrimary} onPress={handleLogin} disabled={loading}>
-          <Text style={styles.btnPrimaryText}>{loading ? '로그인 중...' : '로그인'}</Text>
+        <TouchableOpacity style={s.loginBtn} onPress={handleLogin} disabled={loading}>
+          <Text style={s.loginBtnText}>{loading ? '로그인 중...' : '로그인'}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.btnSecondary}
+          style={s.signupBtn}
           onPress={() => router.push('/(auth)/signup/step1-account')}
         >
-          <Text style={styles.btnSecondaryText}>회원가입 (관리자 전용)</Text>
+          <Text style={s.signupBtnText}>회원가입 (관리자 전용)</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text style={styles.backText}>← 돌아가기</Text>
+        <TouchableOpacity
+          onPress={() => router.push('/(auth)/find-account')}
+          style={{ marginTop: 16, alignItems: 'center' }}
+        >
+          <Text style={{ fontSize: 13, color: '#6B7280' }}>아이디 / 비밀번호 찾기</Text>
         </TouchableOpacity>
       </View>
+
+      <Text style={s.footer}>ANDNEW · TheZoomWorks · 2026</Text>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0F1B33', justifyContent: 'center' },
-  inner: { paddingHorizontal: 28 },
-  icon: { fontSize: 48, textAlign: 'center', marginBottom: 12 },
-  title: { fontSize: 22, fontWeight: '900', color: '#fff', textAlign: 'center', marginBottom: 6 },
-  subtitle: { fontSize: 13, color: '#8893A7', textAlign: 'center', marginBottom: 32 },
-  label: { fontSize: 12, fontWeight: '700', color: '#8893A7', marginBottom: 6 },
+const s = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 24,
+  },
+  backBtn: {
+    paddingTop: 56,
+    paddingBottom: 8,
+  },
+  backBtnText: {
+    fontSize: 14,
+    color: '#6B7280',
+    fontWeight: '500',
+  },
+  titleArea: {
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 32,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#1A1D26',
+    marginBottom: 6,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  form: {
+    gap: 4,
+  },
+  label: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#374151',
+    marginBottom: 6,
+    marginTop: 12,
+  },
   input: {
-    backgroundColor: '#1A2D4D', borderWidth: 1.5, borderColor: '#243555',
-    borderRadius: 12, padding: 13, fontSize: 14, color: '#E0E4EA', marginBottom: 14,
+    backgroundColor: '#F8F9FC',
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
+    borderRadius: 12,
+    padding: 14,
+    fontSize: 15,
+    color: '#1A1D26',
   },
-  btnPrimary: {
-    backgroundColor: '#2558D6', borderRadius: 14, paddingVertical: 15,
-    alignItems: 'center', marginTop: 10,
+  loginBtn: {
+    backgroundColor: '#3454D1',
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginTop: 20,
   },
-  btnPrimaryText: { color: '#fff', fontSize: 15, fontWeight: '700' },
-  btnSecondary: {
-    backgroundColor: 'transparent', borderWidth: 1.5, borderColor: 'rgba(37,88,214,0.4)',
-    borderRadius: 14, paddingVertical: 15, alignItems: 'center', marginTop: 10,
+  loginBtnText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '800',
   },
-  btnSecondaryText: { color: '#2558D6', fontSize: 15, fontWeight: '700' },
-  backText: { color: '#8893A7', textAlign: 'center', marginTop: 16, fontSize: 13 },
+  signupBtn: {
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  signupBtnText: {
+    color: '#3454D1',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  demoCard: {
+    marginTop: 24,
+    padding: 16,
+    backgroundColor: '#F0F4FF',
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  demoTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#3454D1',
+    marginBottom: 4,
+  },
+  demoText: {
+    fontSize: 14,
+    color: '#374151',
+  },
+  footer: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 11,
+    color: '#9CA3AF',
+  },
 });

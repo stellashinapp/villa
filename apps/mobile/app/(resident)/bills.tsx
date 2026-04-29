@@ -1,111 +1,180 @@
-import { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-
-const BILL_ITEMS = [
-  { label: '공용전기', amount: 189000, color: '#3B5BDB' },
-  { label: '상하수도', amount: 234000, color: '#1EB06A' },
-  { label: '건물보험', amount: 124000, color: '#F0A722' },
-  { label: '청소용역', amount: 200000, color: '#EC4899' },
-  { label: '소독/방역', amount: 80000, color: '#E5423A' },
-  { label: '수선충당금', amount: 50000, color: '#7C7F87' },
-];
-
-const TOTAL = BILL_ITEMS.reduce((s, i) => s + i.amount, 0);
-
-const PREV_MONTHS = [
-  { month: '2026년 2월', amount: 105200, paid: true },
-  { month: '2026년 1월', amount: 112300, paid: true },
-  { month: '2025년 12월', amount: 98700, paid: true },
-];
+import { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { router } from 'expo-router';
+import { store, subscribe, confirmPayment } from '@/lib/store';
 
 function fmt(n: number) {
   return n.toLocaleString('ko-KR');
 }
 
+const ITEM_COLORS = ['#3454D1', '#2ECC71', '#F39C12', '#EC4899', '#E74C3C', '#6B7280', '#6366F1', '#06B6D4'];
+
 export default function BillsScreen() {
-  const [paid, setPaid] = useState(false);
+  const [_, setTick] = useState(0);
+  useEffect(() => subscribe(() => setTick(t => t + 1)), []);
+
+  const villa = store.villas.find(v => v.id === store.loggedVillaId);
+  const resident = store.loggedResident;
+
+  if (!villa || !resident) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>빌라 정보를 불러올 수 없습니다</Text>
+        </View>
+      </View>
+    );
+  }
+
+  // Current month = latest published
+  const currentMonth = villa.billMonths.find(m => m.status === 'published');
+  const previousMonths = villa.billMonths.filter(m => m.id !== currentMonth?.id);
+
+  const total = currentMonth ? currentMonth.items.reduce((s, i) => s + i.amount, 0) : 0;
+  const perUnit = currentMonth ? Math.round(total / villa.totalUnits) : 0;
+  const isPaid = currentMonth ? !!currentMonth.paid[resident.ho] : false;
+
+  function handlePay() {
+    if (!currentMonth) return;
+    Alert.alert('납부 방법', `${currentMonth.label} 관리비 ${perUnit.toLocaleString()}원`, [
+      { text: '취소', style: 'cancel' },
+      {
+        text: '계좌이체 (기존)',
+        onPress: () => {
+          confirmPayment(villa!.id, currentMonth.id, resident!.ho);
+          Alert.alert('납부 완료', '계좌이체로 납부 처리되었습니다');
+        },
+      },
+      {
+        text: '토스로 결제',
+        onPress: () => {
+          router.push({
+            pathname: '/payment/checkout',
+            params: {
+              amount: String(perUnit),
+              orderId: `bill_${villa!.id}_${currentMonth.id}_${resident!.ho}_${Date.now()}`,
+              orderName: `${currentMonth.label} 관리비 (${villa!.name} ${resident!.ho})`,
+              customerName: resident!.name ?? '입주민',
+            },
+          });
+        },
+      },
+    ]);
+  }
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 100 }}>
       <View style={styles.header}>
-        <Text style={styles.title}>관리비</Text>
-      </View>
-
-      {/* Hero Card */}
-      <View style={styles.heroCard}>
-        <View style={styles.heroGradient}>
-          <Text style={styles.heroLabel}>2026년 3월 관리비</Text>
-          <Text style={styles.heroAmount}>109,625원</Text>
-          <Text style={styles.heroSub}>총 {fmt(TOTAL)}원 ÷ 8세대</Text>
-          <View style={[styles.badge, paid ? styles.badgePaid : styles.badgeUnpaid]}>
-            <Text style={[styles.badgeText, paid ? styles.badgePaidText : styles.badgeUnpaidText]}>
-              {paid ? '납부완료' : '미납'}
-            </Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <View>
+            <Text style={styles.headerTitle}>관리비</Text>
+            <Text style={styles.headerSub}>{villa.name} {resident.ho}</Text>
           </View>
+          <TouchableOpacity
+            style={{ backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6 }}
+            onPress={() => { store.loggedResident = null; store.loggedVillaId = null; router.replace('/'); }}
+          >
+            <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, fontWeight: '600' }}>로그아웃</Text>
+          </TouchableOpacity>
         </View>
       </View>
 
-      {/* Payment Button / Account */}
-      {!paid ? (
-        <TouchableOpacity style={styles.payButton} onPress={() => setPaid(true)} activeOpacity={0.8}>
-          <Text style={styles.payButtonText}>💳 납부하기</Text>
-        </TouchableOpacity>
-      ) : null}
+      {/* Hero Card */}
+      {currentMonth && (
+        <View style={styles.heroCard}>
+          <View style={styles.heroGradient}>
+            <Text style={styles.heroLabel}>{currentMonth.label} 관리비</Text>
+            <Text style={styles.heroAmount}>{fmt(perUnit)}원</Text>
+            <Text style={styles.heroSub}>총 {fmt(total)}원 / {villa.totalUnits}세대</Text>
+            <View style={[styles.badge, isPaid ? styles.badgePaid : styles.badgeUnpaid]}>
+              <Text style={[styles.badgeText, isPaid ? styles.badgePaidText : styles.badgeUnpaidText]}>
+                {isPaid ? '납부완료' : '미납'}
+              </Text>
+            </View>
+          </View>
+        </View>
+      )}
 
+      {/* Pay Button */}
+      {currentMonth && !isPaid && (
+        <TouchableOpacity style={styles.payButton} onPress={handlePay} activeOpacity={0.8}>
+          <Text style={styles.payButtonText}>납부하기</Text>
+        </TouchableOpacity>
+      )}
+
+      {/* Account Info */}
       <View style={styles.accountCard}>
         <Text style={styles.accountLabel}>납부 계좌</Text>
-        <Text style={styles.accountNumber}>국민 123-456-789012</Text>
+        <Text style={styles.accountNumber}>{villa.account}</Text>
       </View>
 
       {/* Bill Items */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>항목별 내역</Text>
-        {BILL_ITEMS.map((item) => {
-          const pct = (item.amount / TOTAL) * 100;
-          return (
-            <View key={item.label} style={styles.itemCard}>
-              <View style={styles.itemRow}>
-                <Text style={styles.itemLabel}>{item.label}</Text>
-                <Text style={styles.itemAmount}>{fmt(item.amount)}원</Text>
+      {currentMonth && currentMonth.items.length > 0 && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>항목별 내역</Text>
+          {currentMonth.items.map((item, idx) => {
+            const pct = total > 0 ? (item.amount / total) * 100 : 0;
+            const color = ITEM_COLORS[idx % ITEM_COLORS.length];
+            return (
+              <View key={idx} style={styles.itemCard}>
+                <View style={styles.itemRow}>
+                  <Text style={styles.itemLabel}>{item.name}</Text>
+                  <Text style={styles.itemAmount}>{fmt(item.amount)}원</Text>
+                </View>
+                <View style={styles.progressBg}>
+                  <View style={[styles.progressBar, { width: `${pct}%`, backgroundColor: color }]} />
+                </View>
+                <Text style={styles.itemPct}>{pct.toFixed(1)}%</Text>
               </View>
-              <View style={styles.progressBg}>
-                <View
-                  style={[styles.progressBar, { width: `${pct}%`, backgroundColor: item.color }]}
-                />
-              </View>
-              <Text style={styles.itemPct}>{pct.toFixed(1)}%</Text>
-            </View>
-          );
-        })}
-      </View>
+            );
+          })}
+        </View>
+      )}
 
       {/* Previous Months */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>이전 관리비</Text>
-        {PREV_MONTHS.map((m) => (
-          <View key={m.month} style={styles.prevCard}>
-            <View>
-              <Text style={styles.prevMonth}>{m.month}</Text>
-              <Text style={styles.prevAmount}>{fmt(m.amount)}원</Text>
-            </View>
-            <View style={[styles.badge, styles.badgePaid]}>
-              <Text style={[styles.badgeText, styles.badgePaidText]}>납부완료</Text>
-            </View>
-          </View>
-        ))}
-      </View>
+      {previousMonths.length > 0 && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>이전 관리비</Text>
+          {previousMonths.map(m => {
+            const mTotal = m.items.reduce((s, i) => s + i.amount, 0);
+            const mPerUnit = Math.round(mTotal / villa.totalUnits);
+            const mPaid = !!m.paid[resident.ho];
+            return (
+              <View key={m.id} style={styles.prevCard}>
+                <View>
+                  <Text style={styles.prevMonth}>{m.label}</Text>
+                  <Text style={styles.prevAmount}>{fmt(mPerUnit)}원</Text>
+                </View>
+                <View style={[styles.badge, mPaid ? styles.badgePaid : styles.badgeUnpaid]}>
+                  <Text style={[styles.badgeText, mPaid ? styles.badgePaidText : styles.badgeUnpaidText]}>
+                    {mPaid ? '납부완료' : '미납'}
+                  </Text>
+                </View>
+              </View>
+            );
+          })}
+        </View>
+      )}
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F3F4F8' },
-  header: { paddingHorizontal: 20, paddingTop: 60, paddingBottom: 12 },
-  title: { fontSize: 22, fontWeight: '900', color: '#181A20' },
+  container: { flex: 1, backgroundColor: '#F5F6FA' },
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 16,
+  },
+  headerTitle: { fontSize: 22, fontWeight: '900', color: '#1A1D26' },
+  headerSub: { fontSize: 13, color: '#6B7280', marginTop: 2 },
+
+  emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  emptyText: { fontSize: 15, color: '#6B7280', fontWeight: '600' },
 
   heroCard: { marginHorizontal: 16, borderRadius: 16, overflow: 'hidden', marginBottom: 12 },
   heroGradient: {
-    backgroundColor: '#1B2845',
+    backgroundColor: '#1B2A4A',
     padding: 24,
     alignItems: 'center',
   },
@@ -114,15 +183,15 @@ const styles = StyleSheet.create({
   heroSub: { color: '#ffffff99', fontSize: 13, marginBottom: 12 },
 
   badge: { paddingHorizontal: 14, paddingVertical: 5, borderRadius: 20 },
-  badgePaid: { backgroundColor: '#1EB06A22' },
-  badgeUnpaid: { backgroundColor: '#E5423A22' },
+  badgePaid: { backgroundColor: '#2ECC7122' },
+  badgeUnpaid: { backgroundColor: '#E74C3C22' },
   badgeText: { fontSize: 13, fontWeight: '700' },
-  badgePaidText: { color: '#1EB06A' },
-  badgeUnpaidText: { color: '#E5423A' },
+  badgePaidText: { color: '#2ECC71' },
+  badgeUnpaidText: { color: '#E74C3C' },
 
   payButton: {
     marginHorizontal: 16,
-    backgroundColor: '#3B5BDB',
+    backgroundColor: '#3454D1',
     borderRadius: 12,
     paddingVertical: 15,
     alignItems: 'center',
@@ -140,11 +209,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
   },
-  accountLabel: { color: '#3B5BDB', fontSize: 13, fontWeight: '700' },
-  accountNumber: { color: '#181A20', fontSize: 15, fontWeight: '800' },
+  accountLabel: { color: '#3454D1', fontSize: 13, fontWeight: '700' },
+  accountNumber: { color: '#1A1D26', fontSize: 15, fontWeight: '800' },
 
   section: { marginHorizontal: 16, marginBottom: 20 },
-  sectionTitle: { fontSize: 16, fontWeight: '800', color: '#181A20', marginBottom: 12 },
+  sectionTitle: { fontSize: 16, fontWeight: '800', color: '#1A1D26', marginBottom: 12 },
 
   itemCard: {
     backgroundColor: '#FFFFFF',
@@ -152,7 +221,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#EAEBEF',
+    borderColor: '#E8EBF0',
     shadowColor: '#000',
     shadowOpacity: 0.04,
     shadowRadius: 8,
@@ -160,17 +229,17 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   itemRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
-  itemLabel: { fontSize: 14, fontWeight: '600', color: '#181A20' },
-  itemAmount: { fontSize: 14, fontWeight: '800', color: '#181A20' },
+  itemLabel: { fontSize: 14, fontWeight: '600', color: '#1A1D26' },
+  itemAmount: { fontSize: 14, fontWeight: '800', color: '#1A1D26' },
   progressBg: {
     height: 8,
-    backgroundColor: '#F3F4F8',
+    backgroundColor: '#F5F6FA',
     borderRadius: 4,
     overflow: 'hidden',
     marginBottom: 4,
   },
   progressBar: { height: 8, borderRadius: 4 },
-  itemPct: { fontSize: 11, color: '#7C7F87', textAlign: 'right' },
+  itemPct: { fontSize: 11, color: '#6B7280', textAlign: 'right' },
 
   prevCard: {
     backgroundColor: '#FFFFFF',
@@ -178,7 +247,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#EAEBEF',
+    borderColor: '#E8EBF0',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -188,6 +257,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     elevation: 2,
   },
-  prevMonth: { fontSize: 14, fontWeight: '600', color: '#181A20', marginBottom: 2 },
-  prevAmount: { fontSize: 13, color: '#7C7F87' },
+  prevMonth: { fontSize: 14, fontWeight: '600', color: '#1A1D26', marginBottom: 2 },
+  prevAmount: { fontSize: 13, color: '#6B7280' },
 });

@@ -1,0 +1,63 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e6] [cursor=pointer]:
+      - generic [ref=e8]: "2"
+      - generic [ref=e9]: "A React Element from an older version of React was rendered. This is not supported. It can happen if: - Multiple copies of the \"react\" package is used. - A library pre-bundled an old copy of \"react\" or \"react/jsx-runtime\". - A compiler tries to \"inline\" JSX instead of using the runtime."
+    - generic:
+      - img
+  - generic [ref=e14]:
+    - generic [ref=e22]: Log 1 of 2
+    - generic [ref=e27]:
+      - generic [ref=e29]: Uncaught Error
+      - generic [ref=e30]: "A React Element from an older version of React was rendered. This is not supported. It can happen if: - Multiple copies of the \"react\" package is used. - A library pre-bundled an old copy of \"react\" or \"react/jsx-runtime\". - A compiler tries to \"inline\" JSX instead of using the runtime."
+    - generic [ref=e32]:
+      - generic [ref=e33]:
+        - generic [ref=e35]: Call Stack
+        - generic [ref=e36]:
+          - generic [ref=e38] [cursor=pointer]:
+            - generic [ref=e39]: throwOnInvalidObjectTypeImpl
+            - generic [ref=e40]: node_modules/react-dom/cjs/react-dom-client.development.js
+          - generic [ref=e42] [cursor=pointer]:
+            - generic [ref=e43]: throwOnInvalidObjectType
+            - generic [ref=e44]: node_modules/react-dom/cjs/react-dom-client.development.js
+          - generic [ref=e46] [cursor=pointer]:
+            - generic [ref=e47]: reconcileChildFibersImpl
+            - generic [ref=e48]: node_modules/react-dom/cjs/react-dom-client.development.js
+          - generic [ref=e50] [cursor=pointer]:
+            - generic [ref=e51]: <anonymous>
+            - generic [ref=e52]: node_modules/react-dom/cjs/react-dom-client.development.js
+          - generic [ref=e54] [cursor=pointer]:
+            - generic [ref=e55]: reconcileChildren
+            - generic [ref=e56]: node_modules/react-dom/cjs/react-dom-client.development.js
+          - generic [ref=e58] [cursor=pointer]:
+            - generic [ref=e59]: updateFunctionComponent
+            - generic [ref=e60]: node_modules/react-dom/cjs/react-dom-client.development.js
+          - generic [ref=e62] [cursor=pointer]:
+            - generic [ref=e63]: beginWork
+            - generic [ref=e64]: node_modules/react-dom/cjs/react-dom-client.development.js
+          - generic [ref=e66] [cursor=pointer]:
+            - generic [ref=e67]: runWithFiberInDEV
+            - generic [ref=e68]: node_modules/react-dom/cjs/react-dom-client.development.js
+          - generic [ref=e70] [cursor=pointer]:
+            - generic [ref=e71]: performUnitOfWork
+            - generic [ref=e72]: node_modules/react-dom/cjs/react-dom-client.development.js
+          - generic [ref=e74] [cursor=pointer]:
+            - generic [ref=e75]: workLoopSync
+            - generic [ref=e76]: node_modules/react-dom/cjs/react-dom-client.development.js
+          - generic [ref=e80] [cursor=pointer]: Collapse all 10 frames
+      - generic [ref=e81]:
+        - generic [ref=e83]: Component Stack
+        - generic [ref=e84]:
+          - generic [ref=e87] [cursor=pointer]:
+            - generic [ref=e88]: App
+            - generic [ref=e89]: <anonymous>:-1:0
+          - generic [ref=e92] [cursor=pointer]:
+            - generic [ref=e93]: ErrorOverlay
+            - generic [ref=e94]: <anonymous>:-1:0
+          - generic [ref=e97] [cursor=pointer]:
+            - generic [ref=e98]: withDevTools(ErrorOverlay)
+            - generic [ref=e99]: <anonymous>:-1:0
+          - generic [ref=e103] [cursor=pointer]: See 2 more frames
+    - generic [ref=e104]:
+      - generic [ref=e108] [cursor=pointer]: Dismiss
+      - generic [ref=e112] [cursor=pointer]: Minimize

@@ -1,0 +1,123 @@
+- generic [active] [ref=e1]:
+  - complementary [ref=e2]:
+    - generic [ref=e3]:
+      - heading "ANDNEW" [level=1] [ref=e4]
+      - text: ADMIN CONSOLE
+    - navigation [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]: OVERVIEW
+        - link "📊 대시보드" [ref=e8] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e9]: 📊
+          - text: 대시보드
+      - generic [ref=e10]:
+        - generic [ref=e11]: MANAGEMENT
+        - link "👤 관리자 관리" [ref=e12] [cursor=pointer]:
+          - /url: /admins
+          - generic [ref=e13]: 👤
+          - text: 관리자 관리
+        - link "🏘️ 빌라 관리" [ref=e14] [cursor=pointer]:
+          - /url: /villas
+          - generic [ref=e15]: 🏘️
+          - text: 빌라 관리
+        - link "👥 입주민" [ref=e16] [cursor=pointer]:
+          - /url: /residents
+          - generic [ref=e17]: 👥
+          - text: 입주민
+      - generic [ref=e18]:
+        - generic [ref=e19]: REVENUE
+        - link "📈 구독·매출" [ref=e20] [cursor=pointer]:
+          - /url: /subscriptions
+          - generic [ref=e21]: 📈
+          - text: 구독·매출
+        - link "💳 결제 내역" [ref=e22] [cursor=pointer]:
+          - /url: /payments
+          - generic [ref=e23]: 💳
+          - text: 결제 내역
+      - generic [ref=e24]:
+        - generic [ref=e25]: SUPPORT
+        - link "💬 관리자 문의" [ref=e26] [cursor=pointer]:
+          - /url: /inquiries
+          - generic [ref=e27]: 💬
+          - text: 관리자 문의
+        - link "📢 공지 발송" [ref=e28] [cursor=pointer]:
+          - /url: /notices
+          - generic [ref=e29]: 📢
+          - text: 공지 발송
+      - generic [ref=e30]:
+        - generic [ref=e31]: SYSTEM
+        - link "⚙️ 설정" [ref=e32] [cursor=pointer]:
+          - /url: /settings
+          - generic [ref=e33]: ⚙️
+          - text: 설정
+  - main [ref=e34]:
+    - generic [ref=e35]:
+      - generic [ref=e36]: ANDNEW Admin
+      - textbox "관리자, 빌라명 검색..." [ref=e37]
+    - generic [ref=e39]:
+      - heading "관리자 관리" [level=2] [ref=e40]
+      - generic [ref=e41]:
+        - generic [ref=e42]:
+          - generic [ref=e43]: 총 관리자
+          - generic [ref=e44]: 5명
+        - generic [ref=e45]:
+          - generic [ref=e46]: 총 빌라
+          - generic [ref=e47]: 25개
+        - generic [ref=e48]:
+          - generic [ref=e49]: 평균 빌라/관리자
+          - generic [ref=e50]: "5.0"
+      - generic [ref=e51]:
+        - heading "관리자 목록" [level=3] [ref=e53]
+        - table [ref=e55]:
+          - rowgroup [ref=e56]:
+            - row "관리자명 연락처 빌라수 세대수 월 구독료 가입일 상태" [ref=e57]:
+              - columnheader "관리자명" [ref=e58]
+              - columnheader "연락처" [ref=e59]
+              - columnheader "빌라수" [ref=e60]
+              - columnheader "세대수" [ref=e61]
+              - columnheader "월 구독료" [ref=e62]
+              - columnheader "가입일" [ref=e63]
+              - columnheader "상태" [ref=e64]
+          - rowgroup [ref=e65]:
+            - row "김철수 010-1234-5678 3 87 150,000원 2025-08-12 활성" [ref=e66] [cursor=pointer]:
+              - cell "김철수" [ref=e67]
+              - cell "010-1234-5678" [ref=e68]
+              - cell "3" [ref=e69]
+              - cell "87" [ref=e70]
+              - cell "150,000원" [ref=e71]
+              - cell "2025-08-12" [ref=e72]
+              - cell "활성" [ref=e73]
+            - row "박영희 010-2345-6789 7 210 350,000원 2025-09-03 활성" [ref=e74] [cursor=pointer]:
+              - cell "박영희" [ref=e75]
+              - cell "010-2345-6789" [ref=e76]
+              - cell "7" [ref=e77]
+              - cell "210" [ref=e78]
+              - cell "350,000원" [ref=e79]
+              - cell "2025-09-03" [ref=e80]
+              - cell "활성" [ref=e81]
+            - row "이민호 010-3456-7890 1 24 30,000원 2025-11-20 미정산" [ref=e82] [cursor=pointer]:
+              - cell "이민호" [ref=e83]
+              - cell "010-3456-7890" [ref=e84]
+              - cell "1" [ref=e85]
+              - cell "24" [ref=e86]
+              - cell "30,000원" [ref=e87]
+              - cell "2025-11-20" [ref=e88]
+              - cell "미정산" [ref=e89]
+            - row "정수진 010-4567-8901 12 360 600,000원 2025-07-01 활성" [ref=e90] [cursor=pointer]:
+              - cell "정수진" [ref=e91]
+              - cell "010-4567-8901" [ref=e92]
+              - cell "12" [ref=e93]
+              - cell "360" [ref=e94]
+              - cell "600,000원" [ref=e95]
+              - cell "2025-07-01" [ref=e96]
+              - cell "활성" [ref=e97]
+            - row "최동욱 010-5678-9012 2 48 100,000원 2026-01-15 결제실패" [ref=e98] [cursor=pointer]:
+              - cell "최동욱" [ref=e99]
+              - cell "010-5678-9012" [ref=e100]
+              - cell "2" [ref=e101]
+              - cell "48" [ref=e102]
+              - cell "100,000원" [ref=e103]
+              - cell "2026-01-15" [ref=e104]
+              - cell "결제실패" [ref=e105]
+  - button "Open Next.js Dev Tools" [ref=e111] [cursor=pointer]:
+    - img [ref=e112]
