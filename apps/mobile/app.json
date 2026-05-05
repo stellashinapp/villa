@@ -11,7 +11,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0F1B33"
+      "backgroundColor": "#FFFFFF"
     },
     "ios": {
       "supportsTablet": false,
@@ -24,10 +24,9 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#0F1B33"
+        "backgroundColor": "#3F67F2"
       },
-      "package": "kr.andnew.villatolk",
-      "googleServicesFile": "./google-services.json"
+      "package": "kr.andnew.villatolk"
     },
     "plugins": [
       "expo-router",
@@ -39,8 +38,9 @@
         "origin": false
       },
       "eas": {
-        "projectId": "YOUR_EAS_PROJECT_ID"
+        "projectId": "ca34158d-3e22-433c-95e5-561afa2d7e44"
       }
-    }
+    },
+    "owner": "stella_shin"
   }
 }
