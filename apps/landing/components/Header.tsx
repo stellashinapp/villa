@@ -1,6 +1,11 @@
+'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export default function Header() {
+  const pathname = usePathname();
+  if (pathname === '/') return null;
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
