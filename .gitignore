@@ -51,6 +51,9 @@ supabase/.temp/
 
 # Claude
 .claude/settings.local.json
+.claude/*.lock
+.claude/cache/
+.claude/sessions/
 
 .vercel
 
