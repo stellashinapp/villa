@@ -8,9 +8,11 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { saveSignupData } from '@/lib/signup-store';
+import NiceAuthModal, { type NiceAuthSuccess } from '@/components/NiceAuthModal';
 
 const C = {
   bg: '#F5F6FA',
@@ -59,6 +61,45 @@ export default function SignupStep1Screen() {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  // 본인인증 (NICE 체크플러스)
+  const [phoneVerified, setPhoneVerified] = useState(false);
+  const [niceModalVisible, setNiceModalVisible] = useState(false);
+
+  const handlePassVerify = () => setNiceModalVisible(true);
+
+  const handleNiceSuccess = (result: NiceAuthSuccess) => {
+    setNiceModalVisible(false);
+    const inputPhone = phone.replace(/\D/g, '');
+    if (inputPhone && inputPhone !== result.phone) {
+      Alert.alert(
+        '전화번호 불일치',
+        `입력한 번호(${phone})와 인증된 번호가 다릅니다.\n인증된 번호로 자동 변경할까요?`,
+        [
+          { text: '취소', style: 'cancel' },
+          {
+            text: '자동 변경',
+            onPress: () => {
+              setPhone(result.phone);
+              if (!name.trim()) setName(result.name);
+              setPhoneVerified(true);
+            },
+          },
+        ],
+      );
+      return;
+    }
+    if (!name.trim()) setName(result.name);
+    if (!phone.trim()) setPhone(result.phone);
+    setPhoneVerified(true);
+  };
+
+  const handleNiceFail = (reason: string) => {
+    setNiceModalVisible(false);
+    Alert.alert('본인인증 실패', reason);
+  };
+
+  const handleDevBypassVerify = () => setPhoneVerified(true);
 
   const handleAgreeAll = () => {
     const next = !agreeAll;
@@ -118,6 +159,10 @@ export default function SignupStep1Screen() {
   };
 
   const handleNext = async () => {
+    if (!phoneVerified) {
+      Alert.alert('알림', '본인인증을 먼저 완료해주세요');
+      return;
+    }
     if (validate()) {
       await saveSignupData({
         name,
@@ -299,12 +344,35 @@ export default function SignupStep1Screen() {
           )}
         </View>
 
+        {/* 본인인증 (PASS) */}
+        <View style={styles.passCard}>
+          <Text style={styles.label}>본인인증</Text>
+          <TouchableOpacity
+            style={[styles.passButton, phoneVerified && styles.passButtonDone]}
+            onPress={handlePassVerify}
+            disabled={phoneVerified}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.passButtonText, phoneVerified && { color: C.success }]}>
+              {phoneVerified ? '✓ 본인인증 완료' : '본인인증 (PASS)'}
+            </Text>
+          </TouchableOpacity>
+          {__DEV__ && !phoneVerified && (
+            <TouchableOpacity style={styles.devBypassBtn} onPress={handleDevBypassVerify} activeOpacity={0.7}>
+              <Text style={styles.devBypassText}>(개발용) 테스트 인증 통과</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
         <TouchableOpacity
-          style={styles.primaryButton}
+          style={[styles.primaryButton, !phoneVerified && { opacity: 0.5 }]}
           onPress={handleNext}
+          disabled={!phoneVerified}
           activeOpacity={0.8}
         >
-          <Text style={styles.primaryButtonText}>다음 → 빌라 등록</Text>
+          <Text style={styles.primaryButtonText}>
+            {phoneVerified ? '다음 → 빌라 등록' : '본인인증 후 진행 가능'}
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -317,6 +385,13 @@ export default function SignupStep1Screen() {
 
         <View style={{ height: 40 }} />
       </ScrollView>
+
+      <NiceAuthModal
+        visible={niceModalVisible}
+        onSuccess={handleNiceSuccess}
+        onCancel={() => setNiceModalVisible(false)}
+        onFail={handleNiceFail}
+      />
     </KeyboardAvoidingView>
   );
 }
@@ -482,5 +557,41 @@ const styles = StyleSheet.create({
   linkText: {
     color: C.sub,
     fontSize: 14,
+  },
+
+  passCard: {
+    backgroundColor: C.card,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: C.cardBorder,
+    padding: 20,
+    marginBottom: 16,
+  },
+  passButton: {
+    backgroundColor: C.inputBg,
+    borderRadius: 10,
+    paddingVertical: 14,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: C.inputBorder,
+  },
+  passButtonDone: {
+    backgroundColor: '#E8F5E9',
+    borderColor: C.success,
+  },
+  passButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: C.text,
+  },
+  devBypassBtn: {
+    marginTop: 8,
+    paddingVertical: 8,
+    alignItems: 'center',
+  },
+  devBypassText: {
+    fontSize: 12,
+    color: C.sub,
+    textDecorationLine: 'underline',
   },
 });
