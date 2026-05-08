@@ -3,6 +3,7 @@
  * Supabase 연동 전까지 앱 전체가 이 데이터를 공유합니다.
  * 관리자가 수정하면 → 입주민 화면에 반영
  */
+import { supabase as _supabase } from './supabase';
 
 let listeners: (() => void)[] = [];
 export function subscribe(fn: () => void) { listeners.push(fn); return () => { listeners = listeners.filter(l => l !== fn); }; }
@@ -613,8 +614,48 @@ export function removeParking(villaId: string, parkingId: string) {
 export function addPost(villaId: string, from: string, fromName: string, title: string, body: string) {
   const villa = store.villas.find(v => v.id === villaId);
   if (!villa) return;
-  villa.community.unshift({ id: genId(), from, fromName, title, body, date: now(), likes: 0, comments: [] });
+  const localId = genId();
+  villa.community.unshift({ id: localId, from, fromName, title, body, date: now(), likes: 0, comments: [] });
   notify();
+  bgWrite('addPost', (async () => {
+    let unitId: string | null = null;
+    let residentId: string | null = null;
+    if (from) {
+      const { data: unitRow } = await _supabase
+        .from('units')
+        .select('id')
+        .eq('villa_id', villaId)
+        .eq('ho_number', from)
+        .maybeSingle();
+      if (unitRow) {
+        unitId = unitRow.id;
+        const resident = store.loggedResident;
+        if (resident && resident.ho === from) {
+          const normalized = resident.phone.replace(/\D/g, '');
+          const { data: r } = await _supabase
+            .from('residents')
+            .select('id')
+            .eq('unit_id', unitId)
+            .eq('phone', normalized)
+            .eq('name', resident.name)
+            .maybeSingle();
+          if (r) residentId = r.id;
+        }
+      }
+    }
+    const { data } = await _supabase.from('posts').insert({
+      villa_id: villaId,
+      unit_id: unitId,
+      resident_id: residentId,
+      title,
+      body,
+      likes: 0,
+    }).select().single();
+    if (data) {
+      const p = villa.community.find(x => x.id === localId);
+      if (p) { p.id = data.id; notify(); }
+    }
+  })());
 }
 
 // 커뮤니티 댓글
@@ -625,6 +666,40 @@ export function addComment(villaId: string, postId: string, from: string, fromNa
   if (!post) return;
   post.comments.push({ from, fromName, text, date: now() });
   notify();
+  bgWrite('addComment', (async () => {
+    if (postId.length < 32) return; // local-only id, skip
+    let unitId: string | null = null;
+    let residentId: string | null = null;
+    if (from) {
+      const { data: unitRow } = await _supabase
+        .from('units')
+        .select('id')
+        .eq('villa_id', villaId)
+        .eq('ho_number', from)
+        .maybeSingle();
+      if (unitRow) {
+        unitId = unitRow.id;
+        const resident = store.loggedResident;
+        if (resident && resident.ho === from) {
+          const normalized = resident.phone.replace(/\D/g, '');
+          const { data: r } = await _supabase
+            .from('residents')
+            .select('id')
+            .eq('unit_id', unitId)
+            .eq('phone', normalized)
+            .eq('name', resident.name)
+            .maybeSingle();
+          if (r) residentId = r.id;
+        }
+      }
+    }
+    await _supabase.from('comments').insert({
+      post_id: postId,
+      unit_id: unitId,
+      resident_id: residentId,
+      text,
+    });
+  })());
 }
 
 // 좋아요
@@ -635,6 +710,10 @@ export function likePost(villaId: string, postId: string) {
   if (!post) return;
   post.likes++;
   notify();
+  bgWrite('likePost', (async () => {
+    if (postId.length < 32) return; // local-only id, skip
+    await _supabase.from('posts').update({ likes: post.likes }).eq('id', postId);
+  })());
 }
 
 // 입주민 로그인

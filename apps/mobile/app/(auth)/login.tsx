@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { router } from 'expo-router';
-import { supabase } from '@/lib/supabase';
+import { signInAdmin } from '@/lib/auth';
 
 export default function AdminLoginScreen() {
   const [email, setEmail] = useState('');
@@ -9,12 +9,19 @@ export default function AdminLoginScreen() {
   const [loading, setLoading] = useState(false);
 
   async function handleLogin() {
-    if (!email || !password) {
-      Alert.alert('알림', '아이디와 비밀번호를 입력하세요');
+    if (!email.trim() || !password.trim()) {
+      Alert.alert('알림', '이메일과 비밀번호를 입력해주세요');
       return;
     }
-    // 데모 모드
-    router.replace('/(admin)/home');
+    setLoading(true);
+    try {
+      await signInAdmin(email.trim(), password);
+      router.replace('/(admin)/home');
+    } catch (e) {
+      Alert.alert('로그인 실패', e instanceof Error ? e.message : '알 수 없는 오류');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -32,14 +39,16 @@ export default function AdminLoginScreen() {
 
       {/* 입력 폼 */}
       <View style={s.form}>
-        <Text style={s.label}>아이디</Text>
+        <Text style={s.label}>이메일</Text>
         <TextInput
           style={s.input}
-          placeholder="admin"
+          placeholder="admin@example.com"
           placeholderTextColor="#9CA3AF"
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"
+          keyboardType="email-address"
+          autoCorrect={false}
         />
 
         <Text style={s.label}>비밀번호</Text>
@@ -50,15 +59,18 @@ export default function AdminLoginScreen() {
           value={password}
           onChangeText={setPassword}
           secureTextEntry
+          returnKeyType="go"
+          onSubmitEditing={handleLogin}
         />
 
-        <TouchableOpacity style={s.loginBtn} onPress={handleLogin} disabled={loading}>
+        <TouchableOpacity style={[s.loginBtn, loading && { opacity: 0.6 }]} onPress={handleLogin} disabled={loading}>
           <Text style={s.loginBtnText}>{loading ? '로그인 중...' : '로그인'}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={s.signupBtn}
           onPress={() => router.push('/(auth)/signup/step1-account')}
+          disabled={loading}
         >
           <Text style={s.signupBtnText}>회원가입 (관리자 전용)</Text>
         </TouchableOpacity>
@@ -66,8 +78,17 @@ export default function AdminLoginScreen() {
         <TouchableOpacity
           onPress={() => router.push('/(auth)/find-account')}
           style={{ marginTop: 16, alignItems: 'center' }}
+          disabled={loading}
         >
           <Text style={{ fontSize: 13, color: '#6B7280' }}>아이디 / 비밀번호 찾기</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => router.push('/(auth)/resident-login')}
+          style={{ marginTop: 12, alignItems: 'center' }}
+          disabled={loading}
+        >
+          <Text style={{ fontSize: 13, color: '#3454D1', fontWeight: '600' }}>입주민 로그인</Text>
         </TouchableOpacity>
       </View>
 

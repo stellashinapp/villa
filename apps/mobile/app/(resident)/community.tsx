@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
+import { router } from 'expo-router';
 import { store, subscribe, addPost, likePost, addComment } from '@/lib/store';
 
 function PostCard({ post, villaId, resident }: {
@@ -161,6 +162,17 @@ export default function CommunityScreen() {
           ))
         )}
       </View>
+
+      {/* Legal Footer */}
+      <View style={styles.legalFooter}>
+        <TouchableOpacity onPress={() => router.push('/legal/terms')} activeOpacity={0.6}>
+          <Text style={styles.legalLink}>이용약관</Text>
+        </TouchableOpacity>
+        <Text style={styles.legalDot}>·</Text>
+        <TouchableOpacity onPress={() => router.push('/legal/privacy')} activeOpacity={0.6}>
+          <Text style={styles.legalLink}>개인정보 처리방침</Text>
+        </TouchableOpacity>
+      </View>
     </ScrollView>
   );
 }
@@ -286,4 +298,14 @@ const styles = StyleSheet.create({
   },
   emptyPostTitle: { fontSize: 15, fontWeight: '700', color: '#1A1D26', marginBottom: 4 },
   emptyPostSub: { fontSize: 13, color: '#9CA3AF' },
+
+  legalFooter: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 20,
+    gap: 8,
+  },
+  legalLink: { fontSize: 11, color: '#9CA3AF', fontWeight: '500' },
+  legalDot: { fontSize: 11, color: '#D1D5DB' },
 });

@@ -165,6 +165,7 @@ export async function syncAdminFromSupabase() {
       notices ( id, title, body, created_at, is_pinned ),
       messages ( id, text, is_read, created_at, unit_id, resident_id, message_replies ( text, author_type, author_name, created_at ) ),
       parking ( id, plate_number, vehicle_type, memo, unit_id ),
+      posts ( id, title, body, likes, created_at, resident_id, comments ( text, created_at, resident_id ) ),
       subscription_items!inner ( plan, price )
     `)
     .eq('admin_id', admin.id)
@@ -182,7 +183,8 @@ export async function syncAdminFromSupabase() {
         bill_months ( id, year_month, label, status, bill_items ( name, amount ) ),
         notices ( id, title, body, created_at, is_pinned ),
         messages ( id, text, is_read, created_at, unit_id, resident_id, message_replies ( text, author_type, author_name, created_at ) ),
-        parking ( id, plate_number, vehicle_type, memo, unit_id )
+        parking ( id, plate_number, vehicle_type, memo, unit_id ),
+        posts ( id, title, body, likes, created_at, resident_id, comments ( text, created_at, resident_id ) )
       `)
       .eq('admin_id', admin.id)
       .eq('status', 'active');
@@ -247,7 +249,8 @@ export async function syncResidentFromSupabase(phone: string, name: string): Pro
       bill_months ( id, year_month, label, status, bill_items ( name, amount ) ),
       notices ( id, title, body, created_at, is_pinned ),
       messages ( id, text, is_read, created_at, unit_id, resident_id, message_replies ( text, author_type, author_name, created_at ) ),
-      parking ( id, plate_number, vehicle_type, memo, unit_id )
+      parking ( id, plate_number, vehicle_type, memo, unit_id ),
+      posts ( id, title, body, likes, created_at, resident_id, comments ( text, created_at, resident_id ) )
     `)
     .eq('id', villaId)
     .single();

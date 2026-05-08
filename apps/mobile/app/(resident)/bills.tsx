@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { router } from 'expo-router';
-import { store, subscribe, confirmPayment } from '@/lib/store';
+import { store, subscribe } from '@/lib/store';
+import { supabase } from '@/lib/supabase';
 
 function fmt(n: number) {
   return n.toLocaleString('ko-KR');
@@ -64,15 +65,57 @@ export default function BillsScreen() {
     return [dateLabel, methodLabel].filter(Boolean).join(' · ');
   };
 
+  async function requestBankTransfer(billMonthId: string, ho: string, amount: number) {
+    try {
+      const { data: unitRow } = await supabase
+        .from('units')
+        .select('id')
+        .eq('villa_id', villa!.id)
+        .eq('ho_number', ho)
+        .maybeSingle();
+      if (!unitRow) {
+        Alert.alert('실패', '세대 정보를 찾을 수 없습니다');
+        return;
+      }
+      // Find or create payment row with method='bank_transfer_pending', is_paid=false
+      const { data: existing } = await supabase
+        .from('payments')
+        .select('id, is_paid')
+        .eq('bill_month_id', billMonthId)
+        .eq('unit_id', unitRow.id)
+        .maybeSingle();
+      if (existing) {
+        if (existing.is_paid) {
+          Alert.alert('알림', '이미 납부 완료되었습니다');
+          return;
+        }
+        await supabase
+          .from('payments')
+          .update({ method: 'bank_transfer_pending' })
+          .eq('id', existing.id);
+      } else {
+        await supabase.from('payments').insert({
+          bill_month_id: billMonthId,
+          unit_id: unitRow.id,
+          is_paid: false,
+          method: 'bank_transfer_pending',
+          amount, // admin will adjust when approving
+        });
+      }
+      Alert.alert('요청 완료', '관리자 확인 후 납부 처리됩니다.');
+    } catch (e) {
+      Alert.alert('실패', e instanceof Error ? e.message : '다시 시도해주세요');
+    }
+  }
+
   function handlePay() {
     if (!currentMonth) return;
     Alert.alert('납부 방법', `${currentMonth.label} 관리비 ${perUnit.toLocaleString()}원`, [
       { text: '취소', style: 'cancel' },
       {
-        text: '계좌이체 (기존)',
+        text: '계좌이체 (관리자 확인 필요)',
         onPress: () => {
-          confirmPayment(villa!.id, currentMonth.id, resident!.ho, 'bank_transfer');
-          Alert.alert('납부 완료', '계좌이체로 납부 처리되었습니다');
+          requestBankTransfer(currentMonth.id, resident!.ho, perUnit);
         },
       },
       {

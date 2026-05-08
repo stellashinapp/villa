@@ -9,7 +9,10 @@ import {
   Alert,
 } from 'react-native';
 import { router } from 'expo-router';
-import { store, subscribe } from '@/lib/store';
+import { store, subscribe, notify } from '@/lib/store';
+import { signOut } from '@/lib/auth';
+import { supabase } from '@/lib/supabase';
+import { syncAdminFromSupabase } from '@/lib/sync';
 
 const C = {
   bg: '#F5F6FA',
@@ -75,25 +78,44 @@ export default function AdminSettingsScreen() {
   };
   const st = statusMap[sub.status] || statusMap.none;
 
-  function handleDeleteItem(id: string) {
-    const item = items.find(i => i.id === id);
+  function handleDeleteItem(villaId: string) {
+    const item = items.find(i => i.id === villaId);
     Alert.alert(
-      '빌라 구독 삭제',
-      `${item?.villaName} 구독을 삭제하시겠습니까?\n다음 결제일부터 반영됩니다.`,
+      '빌라 삭제',
+      `정말 ${item?.villaName ?? '이 빌라'}를 삭제하시겠습니까?`,
       [
         { text: '취소', style: 'cancel' },
         {
           text: '삭제',
           style: 'destructive',
-          onPress: () => {
-            Alert.alert('삭제됨', `${item?.villaName} 구독이 삭제되었습니다.`);
+          onPress: async () => {
+            try {
+              const { error } = await supabase
+                .from('villas')
+                .update({ status: 'inactive' })
+                .eq('id', villaId);
+              if (error) throw error;
+              // local cleanup
+              store.villas = store.villas.filter((v) => v.id !== villaId);
+              notify();
+              // resync
+              await syncAdminFromSupabase();
+              Alert.alert('완료', '빌라가 삭제되었습니다');
+            } catch (e) {
+              Alert.alert('실패', e instanceof Error ? e.message : '삭제에 실패했습니다');
+            }
           },
         },
       ],
     );
   }
 
-  function handleLogout() {
+  async function handleLogout() {
+    try {
+      await signOut();
+    } catch (e) {
+      console.warn('[settings] signOut failed:', e);
+    }
     router.replace('/');
   }
 
@@ -337,6 +359,28 @@ export default function AdminSettingsScreen() {
         <LangButton lang="en" label="English" />
       </View>
 
+      {/* ====== 약관 및 정책 ====== */}
+      <Text style={s.sectionTitle}>약관 및 정책</Text>
+      <View style={s.card}>
+        <TouchableOpacity
+          style={s.legalRow}
+          onPress={() => router.push('/legal/terms')}
+          activeOpacity={0.7}
+        >
+          <Text style={s.legalLabel}>이용약관</Text>
+          <Text style={s.legalChevron}>›</Text>
+        </TouchableOpacity>
+        <View style={s.divider} />
+        <TouchableOpacity
+          style={s.legalRow}
+          onPress={() => router.push('/legal/privacy')}
+          activeOpacity={0.7}
+        >
+          <Text style={s.legalLabel}>개인정보 처리방침</Text>
+          <Text style={s.legalChevron}>›</Text>
+        </TouchableOpacity>
+      </View>
+
       {/* ====== 로그아웃 ====== */}
       <TouchableOpacity style={s.logoutBtn} onPress={handleLogout}>
         <Text style={s.logoutText}>로그아웃</Text>
@@ -515,5 +559,13 @@ const s = StyleSheet.create({
     alignItems: 'center',
   },
   logoutText: { color: C.err, fontSize: 15, fontWeight: '700' },
+  legalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
+  legalLabel: { fontSize: 14, fontWeight: '600', color: C.text },
+  legalChevron: { fontSize: 20, color: C.muted, fontWeight: '400' },
   footer: { textAlign: 'center', marginTop: 20, fontSize: 11, color: C.muted },
 });

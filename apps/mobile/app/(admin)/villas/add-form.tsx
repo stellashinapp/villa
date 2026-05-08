@@ -11,6 +11,9 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { addVilla, store } from '@/lib/store';
+import { getMyAdmin } from '@/lib/auth';
+import { createVilla } from '@/lib/villas';
+import { syncAdminFromSupabase } from '@/lib/sync';
 
 const C = {
   bg: '#F5F6FA', card: '#FFFFFF', border: '#E8EBF0',
@@ -119,28 +122,57 @@ export default function AddVillaFormScreen() {
   const discRate = villaCount >= 20 ? 0.4 : villaCount >= 10 ? 0.3 : villaCount >= 5 ? 0.2 : 0;
   const finalTotal = Math.round(newTotal * (1 - discRate));
 
-  function doRegister() {
+  async function doRegister() {
     setShowCostPopup(false);
     setSubmitted(true);
 
     const accountStr = bank.trim() && accountNumber.trim() ? `${bank.trim()} ${accountNumber.trim()}` : '';
-    addVilla({
-      name: name.trim(),
-      address: address.trim(),
-      totalUnits,
-      unitsPerFloor: Math.max(1, Math.round(totalUnits / floors.length)),
-      account: accountStr,
-    });
+    const trimmedName = name.trim();
+    const trimmedAddress = address.trim();
+    const upf = Math.max(1, Math.round(totalUnits / Math.max(1, floors.length)));
 
-    const newVilla = store.villas[store.villas.length - 1];
-    Alert.alert(
-      '🎉 등록 완료!',
-      `${name.trim()} (${totalUnits}세대)가 등록되었습니다.\n\n다음 단계:\n1. 입주민 정보 등록\n2. 관리비 항목 설정\n3. 관리비 고지 발송`,
-      [
-        { text: '홈으로', onPress: () => router.replace('/(admin)/home') },
-        { text: '빌라 설정', onPress: () => router.replace(`/(admin)/villas/${newVilla?.id || ''}`) },
-      ]
-    );
+    try {
+      const me = await getMyAdmin();
+      if (!me) {
+        setSubmitted(false);
+        Alert.alert('로그인 필요', '관리자로 로그인 후 시도해주세요');
+        return;
+      }
+
+      // 1) Supabase 영속화
+      await createVilla({
+        name: trimmedName,
+        address: trimmedAddress,
+        totalUnits,
+        unitsPerFloor: upf,
+        accountBank: bank.trim() || undefined,
+        accountNumber: accountNumber.trim() || undefined,
+        accountHolder: me.name ?? undefined,
+      });
+
+      // 2) 로컬 store 갱신 (즉시 반영) + 서버 sync
+      addVilla({
+        name: trimmedName,
+        address: trimmedAddress,
+        totalUnits,
+        unitsPerFloor: upf,
+        account: accountStr,
+      });
+      await syncAdminFromSupabase().catch(() => {});
+
+      const newVilla = store.villas[store.villas.length - 1];
+      Alert.alert(
+        '🎉 등록 완료!',
+        `${trimmedName} (${totalUnits}세대)가 등록되었습니다.\n\n다음 단계:\n1. 입주민 정보 등록\n2. 관리비 항목 설정\n3. 관리비 고지 발송`,
+        [
+          { text: '홈으로', onPress: () => router.replace('/(admin)/home') },
+          { text: '빌라 설정', onPress: () => router.replace(`/(admin)/villas/${newVilla?.id || ''}`) },
+        ]
+      );
+    } catch (e) {
+      setSubmitted(false);
+      Alert.alert('등록 실패', e instanceof Error ? e.message : '다시 시도해주세요');
+    }
   }
 
   function handleSubmit() {

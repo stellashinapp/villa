@@ -1,3 +1,4 @@
+// TODO: Add UI to approve pending bank-transfer payments (payments.method='bank_transfer_pending')
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { useState, useEffect } from 'react';
 import { useLocalSearchParams } from 'expo-router';

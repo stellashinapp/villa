@@ -3,6 +3,8 @@ import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'rea
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { residentTheme as T, common } from '@/constants/theme';
+import { getSession, getMyAdmin } from '@/lib/auth';
+import { syncAdminFromSupabase } from '@/lib/sync';
 
 const NAVY_DARK = '#0D1A33';
 const NAVY = '#1B2A4A';
@@ -76,14 +78,30 @@ function BuildingLogo({ size = 88 }: { size?: number }) {
 }
 
 export default function EntryScreen() {
-  const [checking, setChecking] = useState(true);
+  const [phase, setPhase] = useState<'checking' | 'splash'>('checking');
 
   useEffect(() => {
-    const timer = setTimeout(() => setChecking(false), 600);
-    return () => clearTimeout(timer);
+    let cancelled = false;
+    (async () => {
+      try {
+        const session = await getSession();
+        if (session) {
+          const me = await getMyAdmin();
+          if (me) {
+            await syncAdminFromSupabase().catch(() => {});
+            if (!cancelled) router.replace('/(admin)/home');
+            return;
+          }
+        }
+      } catch {}
+      if (!cancelled) setPhase('splash');
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  if (checking) {
+  if (phase === 'checking') {
     return (
       <LinearGradient colors={[NAVY_DARK, NAVY, NAVY_LIGHT]} style={s.splashContainer}>
         <BuildingLogo size={92} />
