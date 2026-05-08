@@ -4,5 +4,11 @@
   "installCommand": "npm install",
   "outputDirectory": "apps/admin-web/.next",
   "framework": "nextjs",
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./apps/admin-web ./packages"
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./apps/admin-web ./packages",
+  "crons": [
+    {
+      "path": "/api/keep-alive",
+      "schedule": "0 19 * * *"
+    }
+  ]
 }
