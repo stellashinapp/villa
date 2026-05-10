@@ -1,6 +1,6 @@
 import { Modal, View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Platform } from 'react-native';
 import { WebView } from 'react-native-webview';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface AddressSelected {
   address: string; // 도로명 or 지번 주소
@@ -14,12 +14,24 @@ interface Props {
 }
 
 const IS_WEB = Platform.OS === 'web';
+const POSTCODE_SCRIPT_SRC = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
 
-// Daum/Kakao Postcode embedded HTML.
-// 네이티브: window.ReactNativeWebView.postMessage 로 RN 과 통신.
-// 웹(iframe): window.parent.postMessage 로 부모 윈도우에 통신.
-// 둘 다 지원하도록 두 채널 모두 호출.
-const HTML = `<!DOCTYPE html>
+declare global {
+  interface Window {
+    daum?: {
+      Postcode: new (options: {
+        width?: string;
+        height?: string;
+        popupKey?: string;
+        oncomplete: (data: { roadAddress?: string; jibunAddress?: string; address?: string; zonecode?: string }) => void;
+        onclose?: (state: string) => void;
+      }) => { embed: (el: HTMLElement) => void; open: (options?: { popupKey?: string }) => void };
+    };
+  }
+}
+
+// 네이티브용 HTML — WebView 안에서 embed.
+const NATIVE_HTML = `<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
@@ -32,31 +44,16 @@ const HTML = `<!DOCTYPE html>
 </head>
 <body>
   <div id="wrap"></div>
-  <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+  <script src="${POSTCODE_SCRIPT_SRC}"></script>
   <script>
-    function send(payload) {
-      var json = JSON.stringify(payload);
-      try {
-        if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
-          window.ReactNativeWebView.postMessage(json);
-        }
-      } catch (e) {}
-      try {
-        if (window.parent && window.parent !== window) {
-          window.parent.postMessage(json, '*');
-        }
-      } catch (e) {}
-    }
     new daum.Postcode({
       width: '100%',
       height: '100%',
       oncomplete: function(data) {
         var addr = data.roadAddress || data.jibunAddress || data.address || '';
-        send({ type: 'selected', address: addr, zonecode: data.zonecode || '' });
-      },
-      onclose: function(state) {
-        if (state === 'FORCE_CLOSE') {
-          send({ type: 'closed' });
+        var payload = JSON.stringify({ type: 'selected', address: addr, zonecode: data.zonecode || '' });
+        if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+          window.ReactNativeWebView.postMessage(payload);
         }
       }
     }).embed(document.getElementById('wrap'));
@@ -64,69 +61,125 @@ const HTML = `<!DOCTYPE html>
 </body>
 </html>`;
 
+// 부모 페이지에 daum.Postcode 스크립트 주입 (웹 전용).
+let scriptPromise: Promise<void> | null = null;
+function ensurePostcodeScript(): Promise<void> {
+  if (typeof window === 'undefined') return Promise.resolve();
+  if (window.daum?.Postcode) return Promise.resolve();
+  if (scriptPromise) return scriptPromise;
+  scriptPromise = new Promise<void>((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = POSTCODE_SCRIPT_SRC;
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => {
+      scriptPromise = null;
+      reject(new Error('postcode.v2.js 로드 실패'));
+    };
+    document.head.appendChild(script);
+  });
+  return scriptPromise;
+}
+
 export default function AddressSearchModal({ visible, onClose, onSelected }: Props) {
   const [loading, setLoading] = useState(true);
+  const [webError, setWebError] = useState<string | null>(null);
+  const onSelectedRef = useRef(onSelected);
+  const onCloseRef = useRef(onClose);
+  onSelectedRef.current = onSelected;
+  onCloseRef.current = onClose;
 
-  // 웹: iframe 의 postMessage 수신
+  // 웹: 모달이 열리면 daum.Postcode 를 본 페이지에 embed.
+  // postMessage 우회 — oncomplete 가 같은 윈도우 컨텍스트에서 직접 호출됨.
   useEffect(() => {
     if (!IS_WEB || !visible) return;
-    const handler = (event: MessageEvent) => {
+
+    let cancelled = false;
+    const containerId = 'andnew-postcode-container';
+
+    (async () => {
       try {
-        const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-        if (data?.type === 'selected') {
-          onSelected({ address: data.address || '', zonecode: data.zonecode || '' });
-          onClose();
+        await ensurePostcodeScript();
+        if (cancelled) return;
+
+        const container = document.getElementById(containerId);
+        if (!container || !window.daum) {
+          setWebError('주소 검색을 불러오지 못했습니다');
+          return;
         }
-      } catch {
-        /* ignore */
+        container.innerHTML = '';
+        new window.daum.Postcode({
+          width: '100%',
+          height: '100%',
+          oncomplete: (data) => {
+            const addr = data.roadAddress || data.jibunAddress || data.address || '';
+            onSelectedRef.current({ address: addr, zonecode: data.zonecode || '' });
+            onCloseRef.current();
+          },
+        }).embed(container);
+        setLoading(false);
+      } catch (err) {
+        if (!cancelled) {
+          setWebError(err instanceof Error ? err.message : '주소 검색을 불러오지 못했습니다');
+          setLoading(false);
+        }
       }
+    })();
+
+    return () => {
+      cancelled = true;
     };
-    window.addEventListener('message', handler);
-    return () => window.removeEventListener('message', handler);
-  }, [visible, onSelected, onClose]);
+  }, [visible]);
 
   return (
     <Modal visible={visible} animationType="slide" transparent={IS_WEB} onRequestClose={onClose}>
-      <View style={[styles.container, IS_WEB && styles.webContainer]}>
-        <View style={[styles.header, IS_WEB && { paddingTop: 16 }]}>
-          <Text style={styles.title}>주소 검색</Text>
-          <TouchableOpacity onPress={onClose}>
-            <Text style={styles.closeText}>닫기</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={{ flex: 1 }}>
-          {IS_WEB ? (
-            <iframe
-              srcDoc={HTML}
-              style={{ flex: 1, border: 'none', width: '100%', height: '100%' } as object}
-              title="주소 검색"
-              onLoad={() => setLoading(false)}
-            />
-          ) : (
-            <WebView
-              originWhitelist={['*']}
-              source={{ html: HTML, baseUrl: 'https://postcode.map.daum.net' }}
-              javaScriptEnabled
-              domStorageEnabled
-              onLoadEnd={() => setLoading(false)}
-              onMessage={(event) => {
-                try {
-                  const data = JSON.parse(event.nativeEvent.data);
-                  if (data?.type === 'selected') {
-                    onSelected({ address: data.address || '', zonecode: data.zonecode || '' });
-                    onClose();
+      <View style={[styles.container, IS_WEB && styles.webOverlay]}>
+        <View style={[styles.card, IS_WEB && styles.webCard]}>
+          <View style={[styles.header, IS_WEB && { paddingTop: 16 }]}>
+            <Text style={styles.title}>주소 검색</Text>
+            <TouchableOpacity onPress={onClose}>
+              <Text style={styles.closeText}>닫기</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={{ flex: 1, position: 'relative' }}>
+            {IS_WEB ? (
+              <>
+                <div
+                  id="andnew-postcode-container"
+                  style={{ width: '100%', height: '100%' } as object}
+                />
+                {webError && (
+                  <View style={styles.errorBox}>
+                    <Text style={styles.errorText}>{webError}</Text>
+                  </View>
+                )}
+              </>
+            ) : (
+              <WebView
+                originWhitelist={['*']}
+                source={{ html: NATIVE_HTML, baseUrl: 'https://postcode.map.daum.net' }}
+                javaScriptEnabled
+                domStorageEnabled
+                onLoadEnd={() => setLoading(false)}
+                onMessage={(event) => {
+                  try {
+                    const data = JSON.parse(event.nativeEvent.data);
+                    if (data?.type === 'selected') {
+                      onSelected({ address: data.address || '', zonecode: data.zonecode || '' });
+                      onClose();
+                    }
+                  } catch {
+                    /* ignore */
                   }
-                } catch {
-                  /* ignore */
-                }
-              }}
-            />
-          )}
-          {loading && (
-            <View style={styles.loading}>
-              <ActivityIndicator size="large" color="#4263E8" />
-            </View>
-          )}
+                }}
+              />
+            )}
+            {loading && (
+              <View style={styles.loading}>
+                <ActivityIndicator size="large" color="#4263E8" />
+              </View>
+            )}
+          </View>
         </View>
       </View>
     </Modal>
@@ -135,9 +188,21 @@ export default function AddressSearchModal({ visible, onClose, onSelected }: Pro
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
-  webContainer: {
-    // 웹에서는 모달 안쪽 박스 형태로 — 전체화면이지만 디자인은 동일
-    margin: 0,
+  webOverlay: {
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+  },
+  card: { flex: 1, backgroundColor: '#FFFFFF' },
+  webCard: {
+    width: '100%',
+    maxWidth: 520,
+    height: '90%',
+    maxHeight: 720,
+    borderRadius: 16,
+    overflow: 'hidden',
+    flex: 0,
   },
   header: {
     paddingTop: 50,
@@ -157,4 +222,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'rgba(255,255,255,0.7)',
   },
+  errorBox: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+    backgroundColor: '#FFFFFF',
+  },
+  errorText: { fontSize: 14, color: '#E74C3C', textAlign: 'center' },
 });
