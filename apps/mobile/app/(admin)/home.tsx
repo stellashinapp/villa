@@ -401,6 +401,8 @@ function StatsDashboard({ villas }: { villas: typeof store.villas }) {
     const pub = v.billMonths.find((b) => b.status === 'published');
     const regUnits = v.units.filter((u) => u.name);
     const unpaidCount = pub ? regUnits.filter((u) => !pub.paid[u.ho]).length : 0;
+    const paidCount = pub ? regUnits.filter((u) => pub.paid[u.ho]).length : 0;
+    const monthRate = pub && regUnits.length > 0 ? Math.round((paidCount / regUnits.length) * 100) : null;
     const unreadMsg = v.messages.filter((m) => !m.read).length;
     const pendingMsg = v.messages.filter((m) => m.replies.length === 0).length;
 
@@ -427,7 +429,7 @@ function StatsDashboard({ villas }: { villas: typeof store.villas }) {
     const totalOverdueCount = Object.values(overdueByHo).reduce((s, v) => s + v.count, 0);
     const totalOverdueAmount = Object.values(overdueByHo).reduce((s, v) => s + v.amount, 0);
 
-    return { id: v.id, name: v.name, unpaidCount, unreadMsg, pendingMsg, chronicUnpaid, totalOverdueCount, totalOverdueAmount };
+    return { id: v.id, name: v.name, unpaidCount, paidCount, monthRate, registeredUnits: regUnits.length, unreadMsg, pendingMsg, chronicUnpaid, totalOverdueCount, totalOverdueAmount };
   });
 
   const totalRegisteredResidents = villas.reduce(
@@ -524,13 +526,63 @@ function StatsDashboard({ villas }: { villas: typeof store.villas }) {
 
       {villaStats.filter((v) => v.unpaidCount > 0).length > 0 && (
         <View style={{ backgroundColor: '#fff', borderWidth: 1, borderColor: '#E8EBF0', borderRadius: 12, padding: 14, marginBottom: 10 }}>
-          <Text style={{ fontSize: 12, color: '#6B7280', marginBottom: 8 }}>빌라별 미납 (이번달)</Text>
+          <Text style={{ fontSize: 12, color: '#6B7280', fontWeight: '700', marginBottom: 8, letterSpacing: 0.2 }}>빌라별 미납 · 이번달</Text>
           {villaStats.filter((v) => v.unpaidCount > 0).map((v) => (
             <View key={v.id} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
               <Text style={{ fontSize: 13, color: '#1A1D26', fontWeight: '600' }}>{v.name}</Text>
               <Text style={{ fontSize: 13, color: '#E74C3C', fontWeight: '800' }}>{v.unpaidCount}세대</Text>
             </View>
           ))}
+        </View>
+      )}
+
+      {/* 빌라별 납부율 비교 — 빌라 2개 이상일 때만 노출 */}
+      {villas.length >= 2 && (
+        <View style={{ backgroundColor: '#fff', borderWidth: 1, borderColor: '#E8EBF0', borderRadius: 12, padding: 14, marginBottom: 10 }}>
+          <Text style={{ fontSize: 12, color: '#6B7280', fontWeight: '700', marginBottom: 12, letterSpacing: 0.2 }}>빌라별 비교 · 이번달 납부율</Text>
+          {villaStats.map((v) => {
+            const rate = v.monthRate;
+            const barColor = rate === null ? '#E5E7EB' : rate >= 90 ? '#10B981' : rate >= 70 ? '#F59E0B' : '#E74C3C';
+            const barWidth = rate === null ? 0 : Math.max(2, rate);
+            return (
+              <View key={v.id} style={{ marginBottom: 12 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <Text style={{ fontSize: 13, color: '#1A1D26', fontWeight: '600' }} numberOfLines={1}>
+                    {v.name}
+                  </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 6 }}>
+                    {rate !== null ? (
+                      <>
+                        <Text style={{ fontSize: 14, fontWeight: '900', color: barColor }}>{rate}%</Text>
+                        <Text style={{ fontSize: 10, color: '#9CA3AF', fontWeight: '600' }}>
+                          {v.paidCount}/{v.registeredUnits}세대
+                        </Text>
+                      </>
+                    ) : (
+                      <Text style={{ fontSize: 11, color: '#9CA3AF', fontWeight: '600' }}>발행 전</Text>
+                    )}
+                  </View>
+                </View>
+                {/* progress bar */}
+                <View style={{ height: 6, backgroundColor: '#F3F4F6', borderRadius: 3, overflow: 'hidden' }}>
+                  <View style={{ width: `${barWidth}%`, height: '100%', backgroundColor: barColor, borderRadius: 3 }} />
+                </View>
+              </View>
+            );
+          })}
+          {/* 평균 라인 */}
+          {villaStats.some((v) => v.monthRate !== null) && (() => {
+            const valid = villaStats.filter((v) => v.monthRate !== null);
+            const avg = Math.round(valid.reduce((s, v) => s + (v.monthRate ?? 0), 0) / valid.length);
+            return (
+              <View style={{ marginTop: 4, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#E8EBF0', flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Text style={{ fontSize: 12, color: '#6B7280', fontWeight: '700' }}>전체 평균</Text>
+                <Text style={{ fontSize: 14, fontWeight: '900', color: avg >= 90 ? '#10B981' : avg >= 70 ? '#F59E0B' : '#E74C3C' }}>
+                  {avg}%
+                </Text>
+              </View>
+            );
+          })()}
         </View>
       )}
 
