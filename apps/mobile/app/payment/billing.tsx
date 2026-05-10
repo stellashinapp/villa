@@ -243,18 +243,26 @@ export default function BillingScreen() {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.tossPreviewLabel}>
-        <Text style={styles.tossPreviewLabelText}>아래는 토스페이먼츠 실연동 미리보기 (참고용)</Text>
-      </View>
+      {!IS_WEB && (
+        <View style={styles.tossPreviewLabel}>
+          <Text style={styles.tossPreviewLabelText}>아래는 토스페이먼츠 실연동 미리보기 (참고용)</Text>
+        </View>
+      )}
 
       {IS_WEB ? (
-        // 웹: iframe 으로 토스 폼 보여주기. 실제 등록은 위쪽 더미 버튼으로.
-        <View style={styles.iframeWrap}>
-          <iframe
-            srcDoc={html}
-            style={{ border: 'none', width: '100%', height: '100%', display: 'block' } as object}
-            title="TossPayments billing"
-          />
+        // 웹 미리보기: react-native-webview 가 안정적이지 않고 iframe 도 토스 페이지가
+        // 모바일 폭에 맞춰져 있어 데스크탑에서는 레이아웃이 깨짐. 디자인 검증용
+        // 기능이라기보단 더미 등록만 가이드.
+        <View style={styles.webNoticeWrap}>
+          <View style={styles.webNoticeIcon}>
+            <Text style={{ fontSize: 28 }}>📱</Text>
+          </View>
+          <Text style={styles.webNoticeTitle}>토스페이먼츠 실연동은 모바일 앱 전용</Text>
+          <Text style={styles.webNoticeBody}>
+            웹 미리보기에서는 카드 등록 폼을 정상적으로 표시할 수 없습니다.{'\n'}
+            테스트하려면 위의 <Text style={{ color: '#F59E0B', fontWeight: '900' }}>더미 카드로 등록 완료</Text> 버튼을 사용해주세요.{'\n\n'}
+            실제 카드 등록은 EAS 빌드된 모바일 앱(iOS / Android)에서만 가능합니다.
+          </Text>
         </View>
       ) : (
         <WebView
@@ -382,5 +390,36 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F5F6FA',
     overflow: 'hidden',
+  },
+  webNoticeWrap: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 32,
+    backgroundColor: '#F5F6FA',
+  },
+  webNoticeIcon: {
+    width: 72,
+    height: 72,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E8EBF0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 18,
+  },
+  webNoticeTitle: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#1A1D26',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  webNoticeBody: {
+    fontSize: 13,
+    color: '#6B7280',
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });
