@@ -436,6 +436,15 @@ function StatsDashboard({ villas }: { villas: typeof store.villas }) {
   const totalResidents = villas.reduce((s, v) => s + v.totalUnits, 0);
   const occupancyRate = totalResidents > 0 ? Math.round((totalRegisteredResidents / totalResidents) * 100) : 0;
 
+  // 추가 지표
+  const totalNotices = villas.reduce((s, v) => s + v.notices.length, 0);
+  const totalParking = villas.reduce((s, v) => s + v.parking.length, 0);
+  const totalPendingMsg = villaStats.reduce((s, v) => s + v.pendingMsg, 0);
+
+  // 데이터 유무 판단 — 빈 상태 분기
+  const hasAnyBillData = chart.some((c) => c.total > 0);
+  const hasAnyData = totalRegisteredResidents > 0 || totalNotices > 0 || totalParking > 0 || hasAnyBillData;
+
   return (
     <View style={{ marginHorizontal: 20, marginBottom: 20 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14, marginTop: 4 }}>
@@ -443,36 +452,75 @@ function StatsDashboard({ villas }: { villas: typeof store.villas }) {
         <Text style={{ fontSize: 15, fontWeight: '900', color: '#1A1D26', letterSpacing: -0.3 }}>운영 통계</Text>
       </View>
 
-      <View style={{ backgroundColor: '#fff', borderWidth: 1, borderColor: '#E8EBF0', borderRadius: 14, padding: 16, marginBottom: 10 }}>
-        <Text style={{ fontSize: 12, color: '#6B7280', marginBottom: 10 }}>최근 6개월 납부율</Text>
-        <View style={{ flexDirection: 'row', alignItems: 'flex-end', height: 100, gap: 6 }}>
-          {chart.map((c) => {
-            const h = maxRate > 0 ? (c.rate / maxRate) * 80 : 0;
-            return (
-              <View key={c.yearMonth} style={{ flex: 1, alignItems: 'center' }}>
-                <Text style={{ fontSize: 10, color: '#1A1D26', fontWeight: '700', marginBottom: 2 }}>{c.rate}%</Text>
-                <View style={{ width: '100%', height: 80, justifyContent: 'flex-end' }}>
-                  <View style={{ height: h, backgroundColor: c.rate >= 90 ? '#4CAF50' : c.rate >= 70 ? '#F39C12' : '#E74C3C', borderTopLeftRadius: 4, borderTopRightRadius: 4 }} />
+      {/* 납부율 차트 — 데이터 없으면 빈 상태 */}
+      <View style={{ backgroundColor: '#fff', borderWidth: 1, borderColor: '#E8EBF0', borderRadius: 14, padding: 16, marginBottom: 12 }}>
+        <Text style={{ fontSize: 12, color: '#6B7280', fontWeight: '700', marginBottom: 12, letterSpacing: 0.2 }}>최근 6개월 납부율</Text>
+        {hasAnyBillData ? (
+          <View style={{ flexDirection: 'row', alignItems: 'flex-end', height: 100, gap: 6 }}>
+            {chart.map((c) => {
+              const h = maxRate > 0 ? (c.rate / maxRate) * 80 : 0;
+              return (
+                <View key={c.yearMonth} style={{ flex: 1, alignItems: 'center' }}>
+                  <Text style={{ fontSize: 10, color: '#1A1D26', fontWeight: '700', marginBottom: 2 }}>{c.rate}%</Text>
+                  <View style={{ width: '100%', height: 80, justifyContent: 'flex-end' }}>
+                    <View style={{ height: h, backgroundColor: c.rate >= 90 ? '#4CAF50' : c.rate >= 70 ? '#F39C12' : '#E74C3C', borderTopLeftRadius: 4, borderTopRightRadius: 4 }} />
+                  </View>
+                  <Text style={{ fontSize: 10, color: '#6B7280', marginTop: 4 }}>{c.label}</Text>
                 </View>
-                <Text style={{ fontSize: 10, color: '#6B7280', marginTop: 4 }}>{c.label}</Text>
-              </View>
-            );
-          })}
-        </View>
+              );
+            })}
+          </View>
+        ) : (
+          <View style={{ alignItems: 'center', paddingVertical: 28 }}>
+            <Text style={{ fontSize: 13, color: '#9CA3AF', fontWeight: '600' }}>아직 등록된 관리비가 없어요</Text>
+            <Text style={{ fontSize: 11, color: '#9CA3AF', marginTop: 4 }}>관리비 항목 등록 후 고지하면 통계가 보입니다</Text>
+          </View>
+        )}
       </View>
 
+      {/* 4개 미니 카드 — 입주율 / 공지 / 차량 / 답변 대기 */}
       <View style={{ flexDirection: 'row', gap: 8, marginBottom: 10 }}>
-        <View style={{ flex: 1, backgroundColor: '#fff', borderWidth: 1, borderColor: '#E8EBF0', borderRadius: 12, padding: 14 }}>
-          <Text style={{ fontSize: 11, color: '#6B7280', marginBottom: 4 }}>입주율</Text>
-          <Text style={{ fontSize: 22, fontWeight: '900', color: '#4263E8' }}>{occupancyRate}%</Text>
-          <Text style={{ fontSize: 10, color: '#9CA3AF', marginTop: 2 }}>{totalRegisteredResidents}/{totalResidents}세대</Text>
-        </View>
-        <View style={{ flex: 1, backgroundColor: '#fff', borderWidth: 1, borderColor: '#E8EBF0', borderRadius: 12, padding: 14 }}>
-          <Text style={{ fontSize: 11, color: '#6B7280', marginBottom: 4 }}>답변 대기</Text>
-          <Text style={{ fontSize: 22, fontWeight: '900', color: '#F39C12' }}>{villaStats.reduce((s, v) => s + v.pendingMsg, 0)}건</Text>
-          <Text style={{ fontSize: 10, color: '#9CA3AF', marginTop: 2 }}>빌라 전체</Text>
-        </View>
+        <MiniStat
+          label="입주율"
+          value={totalResidents > 0 ? `${occupancyRate}%` : '—'}
+          sub={totalResidents > 0 ? `${totalRegisteredResidents}/${totalResidents}세대` : '아직 미등록'}
+          color="#4263E8"
+          empty={totalRegisteredResidents === 0}
+        />
+        <MiniStat
+          label="공지 발송"
+          value={totalNotices > 0 ? `${totalNotices}건` : '—'}
+          sub={totalNotices > 0 ? '전체 누적' : '아직 미등록'}
+          color="#7C3AED"
+          empty={totalNotices === 0}
+        />
       </View>
+      <View style={{ flexDirection: 'row', gap: 8, marginBottom: 10 }}>
+        <MiniStat
+          label="차량 등록"
+          value={totalParking > 0 ? `${totalParking}대` : '—'}
+          sub={totalParking > 0 ? '전체 누적' : '아직 미등록'}
+          color="#10B981"
+          empty={totalParking === 0}
+        />
+        <MiniStat
+          label="답변 대기"
+          value={totalPendingMsg > 0 ? `${totalPendingMsg}건` : '—'}
+          sub={totalPendingMsg > 0 ? '미답변 민원' : '모두 답변됨'}
+          color="#F59E0B"
+          empty={totalPendingMsg === 0}
+        />
+      </View>
+
+      {/* 모든 지표가 비어있으면 안내 노출 */}
+      {!hasAnyData && (
+        <View style={{ backgroundColor: '#F8F9FC', borderWidth: 1, borderColor: '#E8EBF0', borderRadius: 12, padding: 18, alignItems: 'center', marginBottom: 10 }}>
+          <Text style={{ fontSize: 13, color: '#6B7280', fontWeight: '700', marginBottom: 4 }}>아직 정보가 등록되지 않았습니다</Text>
+          <Text style={{ fontSize: 11, color: '#9CA3AF', textAlign: 'center', lineHeight: 17 }}>
+            입주민 / 관리비 / 공지 / 차량을 등록하시면{'\n'}여기에 현황 통계가 표시됩니다
+          </Text>
+        </View>
+      )}
 
       {villaStats.filter((v) => v.unpaidCount > 0).length > 0 && (
         <View style={{ backgroundColor: '#fff', borderWidth: 1, borderColor: '#E8EBF0', borderRadius: 12, padding: 14, marginBottom: 10 }}>
@@ -529,6 +577,31 @@ function StatsDashboard({ villas }: { villas: typeof store.villas }) {
           ))}
         </View>
       )}
+    </View>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// MiniStat — 운영 통계 미니 카드 (값 / 부제 / 빈 상태)
+// ---------------------------------------------------------------------------
+function MiniStat({ label, value, sub, color, empty }: { label: string; value: string; sub: string; color: string; empty?: boolean }) {
+  return (
+    <View style={{
+      flex: 1,
+      backgroundColor: '#fff',
+      borderWidth: 1,
+      borderColor: '#E8EBF0',
+      borderRadius: 12,
+      padding: 14,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.04,
+      shadowRadius: 6,
+      elevation: 1,
+    }}>
+      <Text style={{ fontSize: 11, color: '#6B7280', fontWeight: '700', letterSpacing: 0.2, marginBottom: 6 }}>{label}</Text>
+      <Text style={{ fontSize: 20, fontWeight: '900', color: empty ? '#D1D5DB' : color, letterSpacing: -0.3 }}>{value}</Text>
+      <Text style={{ fontSize: 10, color: '#9CA3AF', marginTop: 4, fontWeight: '500' }}>{sub}</Text>
     </View>
   );
 }
