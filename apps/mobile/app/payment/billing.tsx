@@ -6,6 +6,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { buildBillingHtml, issueBillingKeyOnServer } from '@/lib/payment';
 import { syncAdminFromSupabase } from '@/lib/sync';
 import { supabase } from '@/lib/supabase';
+import { showToast } from '@/lib/toast';
 
 const IS_WEB = Platform.OS === 'web';
 
@@ -160,23 +161,26 @@ export default function BillingScreen() {
   }
 
   async function handleDummyRegister() {
+    console.log('[handleDummyRegister] click — adminId=', adminId);
     if (!adminId) {
-      Alert.alert('오류', '관리자 정보가 없습니다');
+      showToast('관리자 정보가 없습니다. 다시 로그인해주세요.', 'error', 6000);
       return;
     }
     setLoading(true);
     try {
       await registerDummyCard(adminId);
-      try { await syncAdminFromSupabase(); } catch {}
-      Alert.alert(
-        '더미 카드 등록 완료',
-        '더미카드 ****0000 으로 처리되었습니다.\n실제 결제는 발생하지 않습니다.',
-        [{ text: '확인', onPress: exitFlowAfterSuccess }],
-      );
+      try { await syncAdminFromSupabase(); } catch (e) { console.warn('[handleDummyRegister] sync failed', e); }
+      showToast('더미 카드 등록 완료 — 홈으로 이동합니다', 'success', 3000);
+      // Alert.alert 의 onPress 가 웹에서 안 불리는 이슈 회피 — 직접 라우팅
+      if (fromSignup) {
+        router.replace('/(admin)/home');
+      } else {
+        router.back();
+      }
     } catch (err: any) {
       const msg = err?.message ?? String(err);
-      console.error('[dummyCard] failed:', msg, err);
-      Alert.alert('등록 실패', msg);
+      console.error('[handleDummyRegister] FAILED:', msg, err);
+      showToast(`등록 실패: ${msg}`, 'error', 8000);
     } finally {
       setLoading(false);
     }
