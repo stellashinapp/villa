@@ -7,40 +7,60 @@ import { buildBillingHtml, issueBillingKeyOnServer } from '@/lib/payment';
 import { syncAdminFromSupabase } from '@/lib/sync';
 import { supabase } from '@/lib/supabase';
 import { showToast } from '@/lib/toast';
+import { getMyAdmin } from '@/lib/auth';
 
 const IS_WEB = Platform.OS === 'web';
 
 // 토스 실연동 전 임시 — subscription 에 더미 카드 정보 입력해서 바로 active 로 전환.
-// nextBilling 은 trial_ends_at 또는 30일 후로 잡는다.
-async function registerDummyCard(adminId: string) {
-  console.log('[dummyCard] start adminId=', adminId);
+// adminId 는 인자로 받아도 stale 가능성이 있어 항상 getMyAdmin() 으로 다시 검증.
+async function registerDummyCard(passedAdminId: string) {
+  console.log('[dummyCard] start passed adminId=', passedAdminId);
+
+  // 현재 인증된 admin id 를 신뢰 — RLS 가 current_admin_id() 와 매칭 검사하므로
+  // params 에서 받은 ID 가 stale 하면 RLS 거부됨
+  const me = await getMyAdmin();
+  if (!me) {
+    throw new Error('로그인 세션이 없습니다. 다시 로그인 후 시도해주세요');
+  }
+  const adminId = me.id;
+  console.log('[dummyCard] resolved adminId from auth=', adminId);
+
   const now = Date.now();
   const periodStart = new Date(now);
   const periodEnd = new Date(now + 30 * 24 * 60 * 60 * 1000);
 
-  // 1) 기존 trialing/active/past_due 구독 찾아 update
-  const { data: updated, error } = await supabase
+  // 1) 기존 활성/대기 구독 모두 찾기 — 'cancelled' 도 포함해서 폭넓게
+  const { data: existing, error: selErr } = await supabase
     .from('subscriptions')
-    .update({
-      card_brand: '더미카드',
-      card_last4: '0000',
-      billing_key: `DUMMY_${adminId}_${now}`,
-      status: 'active',
-      current_period_start: periodStart.toISOString(),
-      current_period_end: periodEnd.toISOString(),
-    })
-    .eq('admin_id', adminId)
-    .in('status', ['trialing', 'active', 'past_due'])
-    .select();
-
-  if (error) {
-    console.error('[dummyCard] update error:', error);
-    throw new Error(`구독 업데이트 실패: ${error.message}`);
+    .select('id, status')
+    .eq('admin_id', adminId);
+  if (selErr) {
+    console.error('[dummyCard] select error:', selErr);
+    throw new Error(`구독 조회 실패: ${selErr.message}`);
   }
-  console.log('[dummyCard] updated rows:', updated?.length ?? 0);
+  console.log('[dummyCard] existing subscriptions:', existing?.length ?? 0, existing);
 
-  // 2) update 된 row 가 0 이면 신규 INSERT — 구독이 아예 없는 케이스
-  if (!updated || updated.length === 0) {
+  if (existing && existing.length > 0) {
+    // 가장 최근(또는 첫번째) 구독 update
+    const target = existing[0];
+    const { error: updErr } = await supabase
+      .from('subscriptions')
+      .update({
+        card_brand: '더미카드',
+        card_last4: '0000',
+        billing_key: `DUMMY_${adminId}_${now}`,
+        status: 'active',
+        current_period_start: periodStart.toISOString(),
+        current_period_end: periodEnd.toISOString(),
+      })
+      .eq('id', target.id);
+    if (updErr) {
+      console.error('[dummyCard] update error:', updErr);
+      throw new Error(`구독 업데이트 실패: ${updErr.message}`);
+    }
+    console.log('[dummyCard] updated subscription', target.id);
+  } else {
+    // 신규 INSERT — admin_id 는 반드시 현재 auth 의 admin
     console.log('[dummyCard] no existing subscription, inserting new');
     const { error: insErr } = await supabase.from('subscriptions').insert({
       admin_id: adminId,
@@ -58,6 +78,10 @@ async function registerDummyCard(adminId: string) {
     }
   }
   console.log('[dummyCard] done');
+  // passed adminId 가 다르면 경고
+  if (passedAdminId && passedAdminId !== adminId) {
+    console.warn('[dummyCard] passed adminId mismatch:', passedAdminId, '→ used:', adminId);
+  }
 }
 
 export default function BillingScreen() {
