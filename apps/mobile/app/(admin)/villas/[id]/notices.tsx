@@ -4,6 +4,8 @@ import { useLocalSearchParams } from 'expo-router';
 import { router } from 'expo-router';
 import { store, subscribe, addNotice, updateNotice, removeNotice, togglePinNotice } from '@/lib/store';
 import VillaSectionHeader from '@/components/VillaSectionHeader';
+import { confirmAction } from '@/lib/confirm';
+import { showToast } from '@/lib/toast';
 
 const C = {
   bg: '#F5F6FA',
@@ -43,21 +45,17 @@ export default function VillaNoticesScreen() {
   const handleSubmit = () => {
     const trimTitle = title.trim();
     const trimBody = body.trim();
-    if (!trimTitle) { Alert.alert('오류', '공지 제목을 입력하세요'); return; }
-    if (!trimBody) { Alert.alert('오류', '공지 내용을 입력하세요'); return; }
-    Alert.alert('공지 등록', `"${trimTitle}" 공지를 등록하시겠습니까?`, [
-      { text: '취소', style: 'cancel' },
-      {
-        text: '등록',
-        onPress: () => {
-          addNotice(id!, trimTitle, trimBody);
-          setTitle('');
-          setBody('');
-          const unitCount = villa!.units.filter(u => u.name).length;
-          Alert.alert('공지 등록 완료', `"${trimTitle}" 공지가 전체 입주민(${unitCount}세대)에게 발송되었습니다`);
-        },
-      },
-    ]);
+    if (!trimTitle) { showToast('공지 제목을 입력하세요', 'warn'); return; }
+    if (!trimBody) { showToast('공지 내용을 입력하세요', 'warn'); return; }
+    addNotice(id!, trimTitle, trimBody);
+    setTitle('');
+    setBody('');
+    const unitCount = villa!.units.filter(u => u.name).length;
+    showToast(
+      `"${trimTitle}" 공지 등록 완료 — 입주민 ${unitCount}세대에게 발송됨`,
+      'success',
+      4000,
+    );
   };
 
   return (
@@ -121,11 +119,16 @@ export default function VillaNoticesScreen() {
                 }}>
                   <Text style={s.actionText}>{isEditing ? '취소' : '수정'}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => {
-                  Alert.alert('공지 삭제', `"${n.title}" 공지를 삭제하시겠습니까?`, [
-                    { text: '취소', style: 'cancel' },
-                    { text: '삭제', style: 'destructive', onPress: () => removeNotice(id!, n.id) },
-                  ]);
+                <TouchableOpacity onPress={async () => {
+                  const ok = await confirmAction({
+                    title: '공지 삭제',
+                    message: `"${n.title}" 공지를 삭제하시겠습니까?`,
+                    confirmText: '삭제',
+                    destructive: true,
+                  });
+                  if (!ok) return;
+                  removeNotice(id!, n.id);
+                  showToast('공지 삭제 완료', 'success');
                 }}>
                   <Text style={[s.actionText, { color: '#E74C3C' }]}>삭제</Text>
                 </TouchableOpacity>
@@ -144,10 +147,10 @@ export default function VillaNoticesScreen() {
                     onPress={() => {
                       const t = editTitle.trim();
                       const b = editBody.trim();
-                      if (!t || !b) { Alert.alert('오류', '제목과 내용을 입력하세요'); return; }
+                      if (!t || !b) { showToast('제목과 내용을 입력하세요', 'warn'); return; }
                       updateNotice(id!, n.id, t, b);
                       setEditingId(null);
-                      Alert.alert('수정 완료', '공지가 수정되었습니다');
+                      showToast('공지 수정 완료', 'success');
                     }}
                   >
                     <Text style={s.submitBtnText}>저장</Text>
