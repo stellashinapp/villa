@@ -19,6 +19,7 @@ import { createVilla } from '@/lib/villas';
 import { syncAdminFromSupabase } from '@/lib/sync';
 import { BANK_NAMES, planFor, formatKRW } from '@villatolk/shared';
 import { showToast } from '@/lib/toast';
+import AddressSearchModal from '@/components/AddressSearchModal';
 
 const C = {
   bg: '#F5F6FA', card: '#FFFFFF', border: '#E8EBF0',
@@ -129,6 +130,7 @@ export default function AddVillaFormScreen() {
   const [errors, setErrors] = useState<string[]>([]);
   const [showCostPopup, setShowCostPopup] = useState(false);
   const [bankPickerOpen, setBankPickerOpen] = useState(false);
+  const [addressModalOpen, setAddressModalOpen] = useState(false);
 
   // 볼륨 할인율 — 현재 보유 빌라 수 + 새 빌라 1개 기준
   const villaCount = store.villas.length + 1;
@@ -227,7 +229,15 @@ export default function AddVillaFormScreen() {
         {errors.includes('name') && <Text style={s.errorText}>빌라 이름을 입력해주세요</Text>}
 
         <Text style={s.label}>주소 *</Text>
-        <TextInput style={[s.input, errors.includes('address') && s.inputError]} placeholder="서울 마포구 연남동 123-4" placeholderTextColor={C.muted} value={address} onChangeText={(t) => { setAddress(t); setErrors(e => e.filter(x => x !== 'address')); }} />
+        <TouchableOpacity
+          style={[s.input, { justifyContent: 'center' }, errors.includes('address') && s.inputError]}
+          onPress={() => setAddressModalOpen(true)}
+          activeOpacity={0.7}
+        >
+          <Text style={{ fontSize: 14, color: address ? C.text : C.muted }}>
+            {address || '주소 검색하기'}
+          </Text>
+        </TouchableOpacity>
         {errors.includes('address') && <Text style={s.errorText}>주소를 입력해주세요</Text>}
 
         <Text style={s.label}>관리비 입금 은행</Text>
@@ -474,6 +484,16 @@ export default function AddVillaFormScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* 주소 검색 (다음/카카오 우편번호) */}
+      <AddressSearchModal
+        visible={addressModalOpen}
+        onClose={() => setAddressModalOpen(false)}
+        onSelected={({ address: picked }) => {
+          setAddress(picked);
+          setErrors((prev) => prev.filter((x) => x !== 'address'));
+        }}
+      />
 
       {/* 등록 버튼 */}
       <View style={{ paddingHorizontal: 20, marginTop: 16 }}>

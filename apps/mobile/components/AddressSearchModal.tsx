@@ -1,6 +1,6 @@
-import { Modal, View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Platform } from 'react-native';
 import { WebView } from 'react-native-webview';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface AddressSelected {
   address: string; // 도로명 or 지번 주소
@@ -13,8 +13,12 @@ interface Props {
   onSelected: (data: AddressSelected) => void;
 }
 
+const IS_WEB = Platform.OS === 'web';
+
 // Daum/Kakao Postcode embedded HTML.
-// 별도 API key 없이 동작하며, postMessage로 RN과 통신.
+// 네이티브: window.ReactNativeWebView.postMessage 로 RN 과 통신.
+// 웹(iframe): window.parent.postMessage 로 부모 윈도우에 통신.
+// 둘 다 지원하도록 두 채널 모두 호출.
 const HTML = `<!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -31,9 +35,15 @@ const HTML = `<!DOCTYPE html>
   <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
   <script>
     function send(payload) {
+      var json = JSON.stringify(payload);
       try {
         if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
-          window.ReactNativeWebView.postMessage(JSON.stringify(payload));
+          window.ReactNativeWebView.postMessage(json);
+        }
+      } catch (e) {}
+      try {
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage(json, '*');
         }
       } catch (e) {}
     }
@@ -57,34 +67,61 @@ const HTML = `<!DOCTYPE html>
 export default function AddressSearchModal({ visible, onClose, onSelected }: Props) {
   const [loading, setLoading] = useState(true);
 
+  // 웹: iframe 의 postMessage 수신
+  useEffect(() => {
+    if (!IS_WEB || !visible) return;
+    const handler = (event: MessageEvent) => {
+      try {
+        const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+        if (data?.type === 'selected') {
+          onSelected({ address: data.address || '', zonecode: data.zonecode || '' });
+          onClose();
+        }
+      } catch {
+        /* ignore */
+      }
+    };
+    window.addEventListener('message', handler);
+    return () => window.removeEventListener('message', handler);
+  }, [visible, onSelected, onClose]);
+
   return (
-    <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-      <View style={styles.container}>
-        <View style={styles.header}>
+    <Modal visible={visible} animationType="slide" transparent={IS_WEB} onRequestClose={onClose}>
+      <View style={[styles.container, IS_WEB && styles.webContainer]}>
+        <View style={[styles.header, IS_WEB && { paddingTop: 16 }]}>
           <Text style={styles.title}>주소 검색</Text>
           <TouchableOpacity onPress={onClose}>
             <Text style={styles.closeText}>닫기</Text>
           </TouchableOpacity>
         </View>
         <View style={{ flex: 1 }}>
-          <WebView
-            originWhitelist={['*']}
-            source={{ html: HTML, baseUrl: 'https://postcode.map.daum.net' }}
-            javaScriptEnabled
-            domStorageEnabled
-            onLoadEnd={() => setLoading(false)}
-            onMessage={(event) => {
-              try {
-                const data = JSON.parse(event.nativeEvent.data);
-                if (data?.type === 'selected') {
-                  onSelected({ address: data.address || '', zonecode: data.zonecode || '' });
-                  onClose();
+          {IS_WEB ? (
+            <iframe
+              srcDoc={HTML}
+              style={{ flex: 1, border: 'none', width: '100%', height: '100%' } as object}
+              title="주소 검색"
+              onLoad={() => setLoading(false)}
+            />
+          ) : (
+            <WebView
+              originWhitelist={['*']}
+              source={{ html: HTML, baseUrl: 'https://postcode.map.daum.net' }}
+              javaScriptEnabled
+              domStorageEnabled
+              onLoadEnd={() => setLoading(false)}
+              onMessage={(event) => {
+                try {
+                  const data = JSON.parse(event.nativeEvent.data);
+                  if (data?.type === 'selected') {
+                    onSelected({ address: data.address || '', zonecode: data.zonecode || '' });
+                    onClose();
+                  }
+                } catch {
+                  /* ignore */
                 }
-              } catch {
-                // ignore
-              }
-            }}
-          />
+              }}
+            />
+          )}
           {loading && (
             <View style={styles.loading}>
               <ActivityIndicator size="large" color="#4263E8" />
@@ -98,6 +135,10 @@ export default function AddressSearchModal({ visible, onClose, onSelected }: Pro
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
+  webContainer: {
+    // 웹에서는 모달 안쪽 박스 형태로 — 전체화면이지만 디자인은 동일
+    margin: 0,
+  },
   header: {
     paddingTop: 50,
     paddingBottom: 12,

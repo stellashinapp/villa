@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { saveSignupData } from '@/lib/signup-store';
 import { completeSignup } from '@/lib/signup-complete';
 import { BANK_NAMES } from '@villatolk/shared';
+import AddressSearchModal from '@/components/AddressSearchModal';
 
 const C = {
   bg: '#F5F6FA',
@@ -60,6 +61,7 @@ export default function SignupStep2Screen() {
   const [accountNumber, setAccountNumber] = useState(__DEV__ ? '123-456-789012' : '');
   const [accountHolder, setAccountHolder] = useState(__DEV__ ? '김테스트' : '');
   const [bankPickerOpen, setBankPickerOpen] = useState(false);
+  const [addressModalOpen, setAddressModalOpen] = useState(false);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -203,9 +205,26 @@ export default function SignupStep2Screen() {
           {renderInput('빌라 이름', villaName, setVillaName, 'villaName', {
             placeholder: '예: 행복빌라, 그린파크 201동',
           })}
-          {renderInput('주소', address, setAddress, 'address', {
-            placeholder: '서울시 강남구 역삼동 123-45',
-          })}
+          {/* 주소 — 다음/카카오 우편번호 검색 (탭으로 모달 열기) */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>주소</Text>
+            <TouchableOpacity
+              style={[
+                styles.input,
+                { justifyContent: 'center' },
+                touched.address && errors.address ? styles.inputError : null,
+              ]}
+              onPress={() => setAddressModalOpen(true)}
+              activeOpacity={0.7}
+            >
+              <Text style={{ fontSize: 15, color: address ? C.text : '#9CA3AF' }}>
+                {address || '주소 검색하기'}
+              </Text>
+            </TouchableOpacity>
+            {touched.address && errors.address && (
+              <Text style={styles.errorText}>{errors.address}</Text>
+            )}
+          </View>
 
           {renderInput(
             '총 세대수',
@@ -306,6 +325,22 @@ export default function SignupStep2Screen() {
             </View>
           </TouchableOpacity>
         </Modal>
+
+        {/* 주소 검색 (다음/카카오 우편번호) */}
+        <AddressSearchModal
+          visible={addressModalOpen}
+          onClose={() => setAddressModalOpen(false)}
+          onSelected={({ address: picked }) => {
+            setAddress(picked);
+            if (errors.address) {
+              setErrors((prev) => {
+                const next = { ...prev };
+                delete next.address;
+                return next;
+              });
+            }
+          }}
+        />
 
         <TouchableOpacity
           style={styles.primaryButton}
