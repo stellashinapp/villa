@@ -8,7 +8,9 @@ import {
   store, subscribe,
   createBillMonth, addBillItem, removeBillItem,
   publishBill, confirmPayment, copyBillItemsFromPrevious, closeBillMonth,
+  setBillingMode, setUnitAmount, applyUnitAmountToAll,
 } from '@/lib/store';
+import { showToast } from '@/lib/toast';
 
 const C = {
   bg: '#F5F6FA',
@@ -81,9 +83,15 @@ export default function VillaBillsScreen() {
   const currentMonth = sortedMonths.find(m => m.status === 'draft') ?? sortedMonths[0] ?? null;
 
   const items = currentMonth?.items ?? [];
-  const total = items.reduce((s, i) => s + i.amount, 0);
+  const billingMode: 'equal' | 'per_unit' = currentMonth?.billingMode === 'per_unit' ? 'per_unit' : 'equal';
+  const perUnitMap = currentMonth?.perUnitAmounts ?? {};
+  const total = billingMode === 'per_unit'
+    ? Object.values(perUnitMap).reduce((s, v) => s + (v ?? 0), 0)
+    : items.reduce((s, i) => s + i.amount, 0);
   const unitCount = villa.units.length;
-  const perUnit = unitCount > 0 ? Math.round(total / unitCount) : 0;
+  const perUnit = billingMode === 'per_unit'
+    ? (unitCount > 0 ? Math.round(total / unitCount) : 0)
+    : (unitCount > 0 ? Math.round(items.reduce((s, i) => s + i.amount, 0) / unitCount) : 0);
 
   const paidCount = villa.units.filter(u => currentMonth?.paid[u.ho]).length;
   const unpaidCount = unitCount - paidCount;
@@ -203,7 +211,78 @@ export default function VillaBillsScreen() {
         </View>
       </View>
 
-      {/* 관리비 항목 */}
+      {/* 청구 방식 토글 — 작성중일 때만 변경 가능 */}
+      {currentMonth.status === 'draft' && (
+        <View style={s.modeToggleRow}>
+          <TouchableOpacity
+            style={[s.modeToggleBtn, billingMode === 'equal' && s.modeToggleBtnActive]}
+            onPress={() => setBillingMode(id!, currentMonth.id, 'equal')}
+          >
+            <Text style={[s.modeToggleText, billingMode === 'equal' && s.modeToggleTextActive]}>
+              항목별 균등 분배
+            </Text>
+            <Text style={[s.modeToggleSub, billingMode === 'equal' && s.modeToggleSubActive]}>
+              전기·수도 등 항목 → 세대수로 나누기
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[s.modeToggleBtn, billingMode === 'per_unit' && s.modeToggleBtnActive]}
+            onPress={() => setBillingMode(id!, currentMonth.id, 'per_unit')}
+          >
+            <Text style={[s.modeToggleText, billingMode === 'per_unit' && s.modeToggleTextActive]}>
+              세대별 직접 입력
+            </Text>
+            <Text style={[s.modeToggleSub, billingMode === 'per_unit' && s.modeToggleSubActive]}>
+              호실마다 다른 금액 / 단순 금액
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* per_unit 모드: 호실별 금액 입력 */}
+      {billingMode === 'per_unit' && (
+        <View style={{ paddingHorizontal: 20 }}>
+          <View style={s.bulkRow}>
+            <TextInput
+              style={[s.input, { flex: 1 }]}
+              placeholder="모든 세대에 일괄 적용 (₩)"
+              placeholderTextColor={C.muted}
+              keyboardType="number-pad"
+              onSubmitEditing={(e) => {
+                const v = parseInt(e.nativeEvent.text.replace(/\D/g, ''), 10);
+                if (!v || v <= 0) { showToast('금액을 입력하세요', 'warn'); return; }
+                applyUnitAmountToAll(id!, currentMonth.id, v);
+                showToast(`전체 ${unitCount}세대에 ${fmt(v)}원 일괄 적용`, 'success');
+              }}
+            />
+          </View>
+          <Text style={[s.sectionTitle, { paddingHorizontal: 0, marginTop: 12 }]}>세대별 금액</Text>
+          {villa.units.map((u) => (
+            <View key={u.ho} style={s.unitAmountRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={s.unitHoLabel}>{u.ho}</Text>
+                <Text style={s.unitNameLabel}>{u.name || '미등록'}</Text>
+              </View>
+              <TextInput
+                style={[s.input, { width: 130, textAlign: 'right' }]}
+                placeholder="0"
+                placeholderTextColor={C.muted}
+                keyboardType="number-pad"
+                defaultValue={perUnitMap[u.ho] ? String(perUnitMap[u.ho]) : ''}
+                onEndEditing={(e) => {
+                  const v = parseInt(e.nativeEvent.text.replace(/\D/g, ''), 10);
+                  setUnitAmount(id!, currentMonth.id, u.ho, isNaN(v) ? 0 : v);
+                }}
+              />
+              <Text style={{ fontSize: 13, color: C.sub, marginLeft: 4 }}>원</Text>
+            </View>
+          ))}
+        </View>
+      )}
+
+      {/* 관리비 항목 (equal 모드만 노출) */}
+      {billingMode === 'equal' && (
+      <>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, marginBottom: 8 }}>
         <Text style={[s.sectionTitle, { marginBottom: 0, paddingHorizontal: 0 }]}>관리비 항목</Text>
         {items.length === 0 && (
@@ -328,6 +407,8 @@ export default function VillaBillsScreen() {
           </View>
         </TouchableOpacity>
       </Modal>
+      </>
+      )}
 
       {/* 납부 현황 */}
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 20, marginBottom: 8, paddingHorizontal: 20 }}>
@@ -458,4 +539,41 @@ const s = StyleSheet.create({
     fontSize: 15,
     color: C.text,
   },
+  // 청구 모드 토글
+  modeToggleRow: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingHorizontal: 20,
+    marginBottom: 16,
+  },
+  modeToggleBtn: {
+    flex: 1,
+    backgroundColor: C.card,
+    borderWidth: 1.5,
+    borderColor: C.border,
+    borderRadius: 12,
+    padding: 12,
+  },
+  modeToggleBtnActive: {
+    borderColor: C.pri,
+    backgroundColor: '#EBF1FF',
+  },
+  modeToggleText: { fontSize: 13, fontWeight: '800', color: C.sub },
+  modeToggleTextActive: { color: C.pri },
+  modeToggleSub: { fontSize: 10, color: C.muted, marginTop: 4, lineHeight: 14 },
+  modeToggleSubActive: { color: C.pri, opacity: 0.8 },
+  // per_unit 모드 입력
+  bulkRow: { marginBottom: 8 },
+  unitAmountRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: C.card,
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 8,
+  },
+  unitHoLabel: { fontSize: 14, fontWeight: '800', color: C.text },
+  unitNameLabel: { fontSize: 11, color: C.sub, marginTop: 2 },
 });

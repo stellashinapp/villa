@@ -39,7 +39,7 @@ type VillaRaw = {
   total_units: number; units_per_floor: number;
   account_bank: string | null; account_number: string | null;
   units: Array<{ id: string; ho_number: string; floor: number | null; residents: Array<{ name: string; phone: string; status: string }> }>;
-  bill_months: Array<{ id: string; year_month: string; label: string | null; status: 'draft' | 'published' | 'closed'; bill_items: Array<{ name: string; amount: number }> }>;
+  bill_months: Array<{ id: string; year_month: string; label: string | null; status: 'draft' | 'published' | 'closed'; billing_mode?: 'equal' | 'per_unit'; per_unit_amounts?: Record<string, number>; bill_items: Array<{ name: string; amount: number }> }>;
   notices: Array<{ id: string; title: string; body: string; created_at: string; is_pinned?: boolean }>;
   messages: Array<{ id: string; text: string; is_read: boolean; created_at: string; unit_id: string | null; resident_id: string | null; message_replies: Array<{ text: string; author_type: string; author_name: string | null; created_at: string }> }>;
   parking: Array<{ id: string; plate_number: string; vehicle_type: 'resident' | 'visitor'; memo: string | null; unit_id: string | null; expires_at?: string | null }>;
@@ -72,6 +72,8 @@ function toVilla(v: VillaRaw, paymentMap: Map<string, Set<string>>): Villa {
       yearMonth: b.year_month,
       label: b.label ?? MONTH_LABEL(b.year_month),
       status: b.status,
+      billingMode: b.billing_mode,
+      perUnitAmounts: b.per_unit_amounts ?? {},
       items: (b.bill_items ?? []).map((i) => ({ name: i.name, amount: i.amount })),
       paid,
     };
@@ -230,7 +232,7 @@ export async function syncAdminFromSupabase() {
       .in('villa_id', villaIds),
     supabase
       .from('bill_months')
-      .select('id, villa_id, year_month, label, status, bill_items ( name, amount )')
+      .select('id, villa_id, year_month, label, status, billing_mode, per_unit_amounts, bill_items ( name, amount )')
       .in('villa_id', villaIds),
     supabase
       .from('notices')
@@ -383,7 +385,7 @@ export async function syncResidentFromSupabase(phone: string, name: string): Pro
     .select(`
       id, name, address, total_units, units_per_floor, account_bank, account_number,
       units ( id, ho_number, floor, residents ( name, phone, status ) ),
-      bill_months ( id, year_month, label, status, bill_items ( name, amount ) ),
+      bill_months ( id, year_month, label, status, billing_mode, per_unit_amounts, bill_items ( name, amount ) ),
       notices ( id, title, body, created_at, is_pinned ),
       messages ( id, text, is_read, created_at, unit_id, resident_id, message_replies ( text, author_type, author_name, created_at ) ),
       parking ( id, plate_number, vehicle_type, memo, unit_id ),

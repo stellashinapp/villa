@@ -82,6 +82,10 @@ export interface BillMonth {
   items: { name: string; amount: number }[];
   paid: Record<string, boolean>; // ho → paid
   paidInfo?: Record<string, { method?: string; paidAt?: string }>; // ho → 납부 메타
+  /** 청구 방식. equal=항목 균등분배, per_unit=호실별 직접금액 */
+  billingMode?: 'equal' | 'per_unit';
+  /** per_unit 모드 시 호실별 금액 — { "101호": 50000 } */
+  perUnitAmounts?: Record<string, number>;
 }
 
 export interface Notice {
@@ -302,6 +306,60 @@ export function removeBillItem(villaId: string, monthId: string, idx: number) {
   });
 }
 
+// 관리비 청구 방식 변경 (equal ↔ per_unit)
+export function setBillingMode(villaId: string, monthId: string, mode: 'equal' | 'per_unit') {
+  const villa = store.villas.find(v => v.id === villaId);
+  if (!villa) return;
+  const month = villa.billMonths.find(m => m.id === monthId);
+  if (!month) return;
+  month.billingMode = mode;
+  if (mode === 'per_unit' && !month.perUnitAmounts) month.perUnitAmounts = {};
+  notify();
+  bgWrite('setBillingMode', async () => {
+    const { supabase } = await import('./supabase');
+    if (monthId.length < 32) return;
+    await supabase.from('bill_months').update({ billing_mode: mode }).eq('id', monthId);
+  });
+}
+
+// per_unit 모드에서 호실별 금액 설정
+export function setUnitAmount(villaId: string, monthId: string, ho: string, amount: number) {
+  const villa = store.villas.find(v => v.id === villaId);
+  if (!villa) return;
+  const month = villa.billMonths.find(m => m.id === monthId);
+  if (!month) return;
+  month.perUnitAmounts = { ...(month.perUnitAmounts ?? {}), [ho]: amount };
+  notify();
+  bgWrite('setUnitAmount', async () => {
+    const { supabase } = await import('./supabase');
+    if (monthId.length < 32) return;
+    await supabase
+      .from('bill_months')
+      .update({ per_unit_amounts: month.perUnitAmounts })
+      .eq('id', monthId);
+  });
+}
+
+// 모든 세대에 동일 금액 일괄 적용 (per_unit 모드)
+export function applyUnitAmountToAll(villaId: string, monthId: string, amount: number) {
+  const villa = store.villas.find(v => v.id === villaId);
+  if (!villa) return;
+  const month = villa.billMonths.find(m => m.id === monthId);
+  if (!month) return;
+  const map: Record<string, number> = {};
+  villa.units.forEach((u) => { map[u.ho] = amount; });
+  month.perUnitAmounts = map;
+  notify();
+  bgWrite('applyUnitAmountToAll', async () => {
+    const { supabase } = await import('./supabase');
+    if (monthId.length < 32) return;
+    await supabase
+      .from('bill_months')
+      .update({ per_unit_amounts: map })
+      .eq('id', monthId);
+  });
+}
+
 // 관리비 발행
 export function publishBill(villaId: string, monthId: string) {
   const villa = store.villas.find(v => v.id === villaId);
@@ -309,12 +367,25 @@ export function publishBill(villaId: string, monthId: string) {
   const month = villa.billMonths.find(m => m.id === monthId);
   if (!month) return;
   month.status = 'published';
-  const total = month.items.reduce((s, i) => s + i.amount, 0);
-  const perUnit = villa.units.length > 0 ? Math.round(total / villa.units.length) : 0;
+
+  // 청구 방식에 따라 호실별 금액 계산
+  const isPerUnit = month.billingMode === 'per_unit';
+  const equalPerUnit = villa.units.length > 0
+    ? Math.round(month.items.reduce((s, i) => s + i.amount, 0) / villa.units.length)
+    : 0;
+  const amountForHo = (ho: string): number => {
+    if (isPerUnit) return month.perUnitAmounts?.[ho] ?? 0;
+    return equalPerUnit;
+  };
+
+  const summary = isPerUnit
+    ? '세대별 차등 청구'
+    : `세대별 ${equalPerUnit.toLocaleString()}원`;
+
   villa.notices.unshift({
     id: genId(),
     title: `${month.label} 관리비 고지`,
-    body: `${month.label} 관리비가 고지되었습니다.\n세대별 ${perUnit.toLocaleString()}원\n\n납부계좌: ${villa.account}\n※ 기한 내 납부 부탁드립니다.`,
+    body: `${month.label} 관리비가 고지되었습니다.\n${summary}\n\n납부계좌: ${villa.account}\n※ 기한 내 납부 부탁드립니다.`,
     date: now(),
     isNew: true,
   });
@@ -329,13 +400,13 @@ export function publishBill(villaId: string, monthId: string) {
 
     const { data: units } = await supabase
       .from('units')
-      .select('id')
+      .select('id, ho_number')
       .eq('villa_id', villaId);
     if (units && units.length > 0) {
-      const payments = units.map((u: { id: string }) => ({
+      const payments = units.map((u: { id: string; ho_number: string }) => ({
         bill_month_id: monthId,
         unit_id: u.id,
-        amount: perUnit,
+        amount: amountForHo(u.ho_number),
         is_paid: false,
       }));
       await supabase.from('payments').insert(payments);
