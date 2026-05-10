@@ -126,6 +126,15 @@ export default function BillingScreen() {
         domStorageEnabled
         onMessage={handleMessage}
         onNavigationStateChange={handleNavChange}
+        // 결제 완료/실패 redirect URL 은 WebView 가 실제 로드하지 못하도록 가로챈다
+        // (villatolk.app 미등록 도메인이라 WebView 가 직접 로드하면 에러 페이지가 뜸).
+        onShouldStartLoadWithRequest={(req) => {
+          if (req.url.includes('/billing-success') || req.url.includes('/billing-fail')) {
+            handleNavChange({ url: req.url });
+            return false;
+          }
+          return true;
+        }}
         style={{ flex: 1 }}
       />
       {loading && (
