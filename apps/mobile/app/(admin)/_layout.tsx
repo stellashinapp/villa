@@ -1,4 +1,4 @@
-import { Tabs } from 'expo-router';
+import { Tabs, router } from 'expo-router';
 import { View, Text, StyleSheet } from 'react-native';
 
 function TabIcon({ label, focused }: { label: string; focused: boolean }) {
@@ -48,6 +48,13 @@ export default function AdminLayout() {
         options={{
           title: '빌라',
           tabBarIcon: ({ focused }) => <TabIcon label="빌라" focused={focused} />,
+        }}
+        listeners={{
+          // 탭 클릭 시 항상 빌라 목록(index) 으로 — 이전에 /add 깊이 들어가 있어도 리셋
+          tabPress: (e) => {
+            e.preventDefault();
+            router.replace('/(admin)/villas');
+          },
         }}
       />
       <Tabs.Screen
