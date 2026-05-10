@@ -1,9 +1,9 @@
 // TODO: Add UI to approve pending bank-transfer payments (payments.method='bank_transfer_pending')
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert, Modal } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState, useEffect } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import { BILL_ITEM_PRESETS } from '@villatolk/shared';
+import VillaSectionHeader from '@/components/VillaSectionHeader';
 import {
   store, subscribe,
   createBillMonth, addBillItem, removeBillItem,
@@ -32,7 +32,6 @@ export default function VillaBillsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [_, setTick] = useState(0);
   useEffect(() => subscribe(() => setTick(t => t + 1)), []);
-  const insets = useSafeAreaInsets();
 
   const villa = store.villas.find(v => v.id === id);
 
@@ -177,7 +176,9 @@ export default function VillaBillsScreen() {
   }
 
   return (
-    <ScrollView style={s.container} contentContainerStyle={{ paddingTop: insets.top + 12, paddingBottom: 40 }}>
+    <View style={{ flex: 1, backgroundColor: C.bg }}>
+      <VillaSectionHeader villaName={villa.name} section="관리비" />
+      <ScrollView style={s.container} contentContainerStyle={{ paddingTop: 16, paddingBottom: 40 }}>
       {/* 요약 카드 — 화이트 카드 + 다크 텍스트 */}
       <View style={s.summaryCardWrap}>
         <View style={s.summaryCard}>
@@ -379,7 +380,8 @@ export default function VillaBillsScreen() {
           <Text style={[s.publishBtnText, { color: C.sub }]}>마감됨</Text>
         </View>
       )}
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 

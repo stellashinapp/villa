@@ -1,9 +1,9 @@
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState, useEffect } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import { router } from 'expo-router';
 import { store, subscribe, addParking, removeParking } from '@/lib/store';
+import VillaSectionHeader from '@/components/VillaSectionHeader';
 
 const C = {
   bg: '#F5F6FA',
@@ -24,7 +24,6 @@ export default function VillaParkingScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [_, setTick] = useState(0);
   useEffect(() => subscribe(() => setTick(t => t + 1)), []);
-  const insets = useSafeAreaInsets();
 
   const villa = store.villas.find(v => v.id === id);
 
@@ -64,7 +63,9 @@ export default function VillaParkingScreen() {
   };
 
   return (
-    <ScrollView style={s.container} contentContainerStyle={{ paddingTop: insets.top + 12, paddingBottom: 40 }}>
+    <View style={{ flex: 1, backgroundColor: C.bg }}>
+      <VillaSectionHeader villaName={villa.name} section="주차" />
+      <ScrollView style={s.container} contentContainerStyle={{ paddingTop: 16, paddingBottom: 40 }}>
       {/* 요약 카드 */}
       <View style={s.summaryRow}>
         {[
@@ -139,7 +140,8 @@ export default function VillaParkingScreen() {
           </View>
         </View>
       ))}
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 

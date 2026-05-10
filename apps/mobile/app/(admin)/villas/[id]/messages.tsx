@@ -1,9 +1,9 @@
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState, useEffect } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import { router } from 'expo-router';
 import { store, subscribe, replyMessage } from '@/lib/store';
+import VillaSectionHeader from '@/components/VillaSectionHeader';
 
 const C = {
   bg: '#F5F6FA',
@@ -23,7 +23,6 @@ export default function VillaMessagesScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [_, setTick] = useState(0);
   useEffect(() => subscribe(() => setTick(t => t + 1)), []);
-  const insets = useSafeAreaInsets();
 
   const villa = store.villas.find(v => v.id === id);
 
@@ -61,7 +60,9 @@ export default function VillaMessagesScreen() {
   };
 
   return (
-    <ScrollView style={s.container} contentContainerStyle={{ paddingTop: insets.top + 12, paddingBottom: 40 }}>
+    <View style={{ flex: 1, backgroundColor: C.bg }}>
+      <VillaSectionHeader villaName={villa.name} section="메시지" />
+      <ScrollView style={s.container} contentContainerStyle={{ paddingTop: 16, paddingBottom: 40 }}>
       {unreadCount > 0 && (
         <View style={s.unreadBanner}>
           <Text style={s.unreadText}>읽지 않은 메시지 {unreadCount}건</Text>
@@ -118,7 +119,8 @@ export default function VillaMessagesScreen() {
           <Text style={s.emptyText}>받은 메시지가 없습니다</Text>
         </View>
       )}
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 

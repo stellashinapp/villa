@@ -1,9 +1,11 @@
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState, useEffect } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import { router } from 'expo-router';
 import { store, subscribe, registerResident, moveOutResident } from '@/lib/store';
+import VillaSectionHeader from '@/components/VillaSectionHeader';
+import { confirmAction } from '@/lib/confirm';
+import { showToast } from '@/lib/toast';
 
 const C = {
   bg: '#F5F6FA',
@@ -23,7 +25,6 @@ export default function VillaResidentsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [_, setTick] = useState(0);
   useEffect(() => subscribe(() => setTick(t => t + 1)), []);
-  const insets = useSafeAreaInsets();
 
   const villa = store.villas.find(v => v.id === id);
 
@@ -64,8 +65,10 @@ export default function VillaResidentsScreen() {
   };
 
   return (
-    <ScrollView style={s.container} contentContainerStyle={{ paddingTop: insets.top + 12, paddingBottom: 40 }}>
-      <Text style={s.summary}>{villa.units.length}세대 · 등록 {registered} / 미등록 {villa.units.length - registered}</Text>
+    <View style={{ flex: 1, backgroundColor: C.bg }}>
+      <VillaSectionHeader villaName={villa.name} section="입주민" />
+      <ScrollView style={s.container} contentContainerStyle={{ paddingTop: 16, paddingBottom: 40 }}>
+        <Text style={s.summary}>{villa.units.length}세대 · 등록 {registered} / 미등록 {villa.units.length - registered}</Text>
 
       {villa.units.map((u) => (
         <View key={u.ho} style={s.card}>
@@ -91,22 +94,16 @@ export default function VillaResidentsScreen() {
               {u.name && (
                 <TouchableOpacity
                   style={s.moveOutBtn}
-                  onPress={() => {
-                    Alert.alert(
-                      '이사 처리',
-                      `${u.ho} ${u.name}님을 이사 처리하시겠습니까?\n\n호실 정보는 비워지고, 새 입주민을 등록할 수 있습니다.\n과거 납부 이력은 보존됩니다.`,
-                      [
-                        { text: '취소', style: 'cancel' },
-                        {
-                          text: '이사 처리',
-                          style: 'destructive',
-                          onPress: () => {
-                            moveOutResident(id!, u.ho);
-                            Alert.alert('완료', `${u.ho} 이사 처리되었습니다.`);
-                          },
-                        },
-                      ],
-                    );
+                  onPress={async () => {
+                    const ok = await confirmAction({
+                      title: '이사 처리',
+                      message: `${u.ho} ${u.name}님을 이사 처리하시겠습니까?\n\n호실 정보는 비워지고, 새 입주민을 등록할 수 있습니다.\n과거 납부 이력은 보존됩니다.`,
+                      confirmText: '이사 처리',
+                      destructive: true,
+                    });
+                    if (!ok) return;
+                    moveOutResident(id!, u.ho);
+                    showToast(`${u.ho} 이사 처리 완료`, 'success', 3000);
                   }}
                 >
                   <Text style={s.moveOutBtnText}>이사</Text>
@@ -146,7 +143,8 @@ export default function VillaResidentsScreen() {
           )}
         </View>
       ))}
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
