@@ -7,80 +7,28 @@ import { buildBillingHtml, issueBillingKeyOnServer } from '@/lib/payment';
 import { syncAdminFromSupabase } from '@/lib/sync';
 import { supabase } from '@/lib/supabase';
 import { showToast } from '@/lib/toast';
-import { getMyAdmin } from '@/lib/auth';
 
 const IS_WEB = Platform.OS === 'web';
 
-// 토스 실연동 전 임시 — subscription 에 더미 카드 정보 입력해서 바로 active 로 전환.
-// adminId 는 인자로 받아도 stale 가능성이 있어 항상 getMyAdmin() 으로 다시 검증.
-async function registerDummyCard(passedAdminId: string) {
-  console.log('[dummyCard] start passed adminId=', passedAdminId);
-
-  // 현재 인증된 admin id 를 신뢰 — RLS 가 current_admin_id() 와 매칭 검사하므로
-  // params 에서 받은 ID 가 stale 하면 RLS 거부됨
-  const me = await getMyAdmin();
-  if (!me) {
-    throw new Error('로그인 세션이 없습니다. 다시 로그인 후 시도해주세요');
+// 토스 실연동 전 임시 — Edge Function (register-dummy-card) 을 호출해서
+// service_role 로 INSERT/UPDATE. RLS 와 무관하게 안정 동작.
+// 함수 내부에서 JWT 의 auth.user 를 검증해 admin_id 를 직접 도출하므로
+// 클라가 임의의 adminId 를 보낼 수 없음(권한 안전).
+async function registerDummyCard() {
+  const { data, error } = await supabase.functions.invoke('register-dummy-card', {
+    body: {},
+  });
+  if (error) {
+    // FunctionsHttpError 는 본문(JSON.error) 을 함께 노출
+    let detail = error.message;
+    try {
+      const ctx: any = (error as any).context;
+      if (ctx?.json?.error) detail = ctx.json.error;
+    } catch {}
+    throw new Error(detail);
   }
-  const adminId = me.id;
-  console.log('[dummyCard] resolved adminId from auth=', adminId);
-
-  const now = Date.now();
-  const periodStart = new Date(now);
-  const periodEnd = new Date(now + 30 * 24 * 60 * 60 * 1000);
-
-  // 1) 기존 활성/대기 구독 모두 찾기 — 'cancelled' 도 포함해서 폭넓게
-  const { data: existing, error: selErr } = await supabase
-    .from('subscriptions')
-    .select('id, status')
-    .eq('admin_id', adminId);
-  if (selErr) {
-    console.error('[dummyCard] select error:', selErr);
-    throw new Error(`구독 조회 실패: ${selErr.message}`);
-  }
-  console.log('[dummyCard] existing subscriptions:', existing?.length ?? 0, existing);
-
-  if (existing && existing.length > 0) {
-    // 가장 최근(또는 첫번째) 구독 update
-    const target = existing[0];
-    const { error: updErr } = await supabase
-      .from('subscriptions')
-      .update({
-        card_brand: '더미카드',
-        card_last4: '0000',
-        billing_key: `DUMMY_${adminId}_${now}`,
-        status: 'active',
-        current_period_start: periodStart.toISOString(),
-        current_period_end: periodEnd.toISOString(),
-      })
-      .eq('id', target.id);
-    if (updErr) {
-      console.error('[dummyCard] update error:', updErr);
-      throw new Error(`구독 업데이트 실패: ${updErr.message}`);
-    }
-    console.log('[dummyCard] updated subscription', target.id);
-  } else {
-    // 신규 INSERT — admin_id 는 반드시 현재 auth 의 admin
-    console.log('[dummyCard] no existing subscription, inserting new');
-    const { error: insErr } = await supabase.from('subscriptions').insert({
-      admin_id: adminId,
-      status: 'active',
-      billing_day: 1,
-      card_brand: '더미카드',
-      card_last4: '0000',
-      billing_key: `DUMMY_${adminId}_${now}`,
-      current_period_start: periodStart.toISOString(),
-      current_period_end: periodEnd.toISOString(),
-    });
-    if (insErr) {
-      console.error('[dummyCard] insert error:', insErr);
-      throw new Error(`구독 INSERT 실패: ${insErr.message}`);
-    }
-  }
-  console.log('[dummyCard] done');
-  // passed adminId 가 다르면 경고
-  if (passedAdminId && passedAdminId !== adminId) {
-    console.warn('[dummyCard] passed adminId mismatch:', passedAdminId, '→ used:', adminId);
+  if (data && data.error) {
+    throw new Error(data.error);
   }
 }
 
@@ -185,14 +133,10 @@ export default function BillingScreen() {
   }
 
   async function handleDummyRegister() {
-    console.log('[handleDummyRegister] click — adminId=', adminId);
-    if (!adminId) {
-      showToast('관리자 정보가 없습니다. 다시 로그인해주세요.', 'error', 6000);
-      return;
-    }
+    console.log('[handleDummyRegister] click — adminId(param)=', adminId);
     setLoading(true);
     try {
-      await registerDummyCard(adminId);
+      await registerDummyCard();
       try { await syncAdminFromSupabase(); } catch (e) { console.warn('[handleDummyRegister] sync failed', e); }
       showToast('더미 카드 등록 완료 — 홈으로 이동합니다', 'success', 3000);
       // Alert.alert 의 onPress 가 웹에서 안 불리는 이슈 회피 — 직접 라우팅
@@ -233,7 +177,7 @@ export default function BillingScreen() {
         </Text>
         <TouchableOpacity
           style={[styles.dummyBarBtn, loading && { opacity: 0.5 }]}
-          disabled={loading || !adminId}
+          disabled={loading}
           onPress={handleDummyRegister}
           activeOpacity={0.85}
         >
