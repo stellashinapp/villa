@@ -1,11 +1,20 @@
 import { Tabs } from 'expo-router';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import Icon, { type IconName } from '@/components/Icon';
+
+const RES_TAB_ICONS: Record<string, IconName> = {
+  '관리비': 'bills',
+  '주차': 'parking',
+  '공지': 'notice',
+  '커뮤니티': 'community',
+  '신고': 'report',
+  '설정': 'settings',
+};
 
 function TabIcon({ label, focused }: { label: string; focused: boolean }) {
-  const icons: Record<string, string> = { '관리비': '💰', '주차': '🚗', '공지': '📢', '커뮤니티': '👥', '신고': '✉️', '설정': '⚙️' };
   return (
     <View style={s.iconWrap}>
-      <Text style={[s.icon, focused && s.iconActive]}>{icons[label] || '📋'}</Text>
+      <Icon name={RES_TAB_ICONS[label] ?? 'bills'} size={22} color={focused ? '#4263E8' : '#9CA3AF'} />
       {focused && <View style={s.dot} />}
     </View>
   );
@@ -58,8 +67,6 @@ export default function ResidentLayout() {
 }
 
 const s = StyleSheet.create({
-  iconWrap: { alignItems: 'center', gap: 2 },
-  icon: { fontSize: 20, opacity: 0.4 },
-  iconActive: { opacity: 1 },
+  iconWrap: { alignItems: 'center', gap: 4 },
   dot: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#4263E8' },
 });

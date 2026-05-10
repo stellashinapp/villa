@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-nati
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { store, subscribe } from '@/lib/store';
+import Icon, { type IconName } from '@/components/Icon';
 
 const C = {
   bg: '#F5F6FA', card: '#FFFFFF', border: '#E8EBF0',
@@ -11,12 +12,12 @@ const C = {
   ok: '#4CAF50', err: '#E74C3C', accent: '#FF6B35',
 };
 
-const TABS = [
-  { id: 'bills', icon: '💰', label: '관리비' },
-  { id: 'residents', icon: '👥', label: '입주민' },
-  { id: 'parking', icon: '🚗', label: '주차' },
-  { id: 'notices', icon: '📢', label: '공지' },
-  { id: 'messages', icon: '✉️', label: '메시지' },
+const TABS: Array<{ id: string; icon: IconName; label: string }> = [
+  { id: 'bills', icon: 'bills', label: '관리비' },
+  { id: 'residents', icon: 'residents', label: '입주민' },
+  { id: 'parking', icon: 'parking', label: '주차' },
+  { id: 'notices', icon: 'notice', label: '공지' },
+  { id: 'messages', icon: 'message', label: '메시지' },
 ];
 
 export default function VillaDetailScreen() {
@@ -97,7 +98,9 @@ export default function VillaDetailScreen() {
               activeOpacity={0.7}
               onPress={() => router.push(`/(admin)/villas/${id}/${tab.id}`)}
             >
-              <Text style={s.tabIcon}>{tab.icon}</Text>
+              <View style={s.tabIconWrap}>
+                <Icon name={tab.icon} size={26} color={C.pri} />
+              </View>
               <Text style={s.tabLabel}>{tab.label}</Text>
               {badge ? (
                 <View style={[s.tabBadge, tab.id === 'bills' && unpaid > 0 ? { backgroundColor: 'rgba(231,76,60,0.08)' } : {}]}>
@@ -140,7 +143,10 @@ const s = StyleSheet.create({
     width: '47%', backgroundColor: C.card, borderWidth: 1, borderColor: C.border, borderRadius: 14, padding: 20, alignItems: 'center', position: 'relative',
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2,
   },
-  tabIcon: { fontSize: 28, marginBottom: 8 },
+  tabIconWrap: {
+    width: 48, height: 48, borderRadius: 14, backgroundColor: C.priL,
+    alignItems: 'center', justifyContent: 'center', marginBottom: 10,
+  },
   tabLabel: { fontSize: 14, fontWeight: '700', color: C.text },
   tabBadge: { position: 'absolute', top: 8, right: 8, backgroundColor: C.priL, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 },
   tabBadgeText: { fontSize: 10, fontWeight: '700', color: C.pri },

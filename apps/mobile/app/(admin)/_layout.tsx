@@ -1,12 +1,19 @@
 import { Tabs, router } from 'expo-router';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { store } from '@/lib/store';
+import Icon, { type IconName } from '@/components/Icon';
+
+const TAB_ICON_MAP: Record<string, IconName> = {
+  '홈': 'home',
+  '메시지': 'message',
+  '빌라': 'villa',
+  '설정': 'settings',
+};
 
 function TabIcon({ label, focused }: { label: string; focused: boolean }) {
-  const icons: Record<string, string> = { '홈': '🏠', '메시지': '✉️', '빌라': '🏘️', '설정': '⚙️' };
   return (
     <View style={s.iconWrap}>
-      <Text style={[s.icon, focused && s.iconActive]}>{icons[label] || '📋'}</Text>
+      <Icon name={TAB_ICON_MAP[label] ?? 'home'} size={22} color={focused ? '#4263E8' : '#9CA3AF'} />
       {focused && <View style={s.dot} />}
     </View>
   );
@@ -78,8 +85,6 @@ export default function AdminLayout() {
 }
 
 const s = StyleSheet.create({
-  iconWrap: { alignItems: 'center', gap: 2 },
-  icon: { fontSize: 20, opacity: 0.4 },
-  iconActive: { opacity: 1 },
+  iconWrap: { alignItems: 'center', gap: 4 },
   dot: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#4263E8' },
 });

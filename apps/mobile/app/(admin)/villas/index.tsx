@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { store, subscribe, activateSubscription } from '@/lib/store';
 import { syncAdminFromSupabase } from '@/lib/sync';
+import Icon, { type IconName } from '@/components/Icon';
 
 const C = {
   bg: '#F5F6FA',
@@ -33,11 +34,11 @@ const C = {
 
 const fmt = (n: number) => n.toLocaleString('ko-KR') + '원';
 
-function QuickMenuBtn({ icon, label, badge, onPress }: { icon: string; label: string; badge?: number; onPress: () => void }) {
+function QuickMenuBtn({ icon, label, badge, onPress }: { icon: IconName; label: string; badge?: number; onPress: () => void }) {
   return (
     <TouchableOpacity style={styles.qmBtn} activeOpacity={0.7} onPress={onPress}>
       <View style={styles.qmIconWrap}>
-        <Text style={styles.qmIcon}>{icon}</Text>
+        <Icon name={icon} size={20} color={C.pri} />
         {badge ? (
           <View style={styles.qmBadge}>
             <Text style={styles.qmBadgeText}>{badge}</Text>
@@ -193,11 +194,11 @@ export default function VillasListScreen() {
 
               {/* 빠른 진입 — 5개 메뉴 */}
               <View style={styles.quickMenu}>
-                <QuickMenuBtn icon="💰" label="관리비" onPress={() => router.push(`/(admin)/villas/${villa.id}/bills`)} />
-                <QuickMenuBtn icon="👥" label="입주민" onPress={() => router.push(`/(admin)/villas/${villa.id}/residents`)} />
-                <QuickMenuBtn icon="🚗" label="주차" onPress={() => router.push(`/(admin)/villas/${villa.id}/parking`)} />
-                <QuickMenuBtn icon="📢" label="공지" onPress={() => router.push(`/(admin)/villas/${villa.id}/notices`)} />
-                <QuickMenuBtn icon="✉️" label="메시지" onPress={() => router.push(`/(admin)/villas/${villa.id}/messages`)} badge={unreadMsg > 0 ? unreadMsg : undefined} />
+                <QuickMenuBtn icon="bills" label="관리비" onPress={() => router.push(`/(admin)/villas/${villa.id}/bills`)} />
+                <QuickMenuBtn icon="residents" label="입주민" onPress={() => router.push(`/(admin)/villas/${villa.id}/residents`)} />
+                <QuickMenuBtn icon="parking" label="주차" onPress={() => router.push(`/(admin)/villas/${villa.id}/parking`)} />
+                <QuickMenuBtn icon="notice" label="공지" onPress={() => router.push(`/(admin)/villas/${villa.id}/notices`)} />
+                <QuickMenuBtn icon="message" label="메시지" onPress={() => router.push(`/(admin)/villas/${villa.id}/messages`)} badge={unreadMsg > 0 ? unreadMsg : undefined} />
               </View>
             </TouchableOpacity>
           );
