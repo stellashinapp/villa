@@ -83,12 +83,22 @@ export default function AddVillaFormScreen() {
     setNewFloorLabel('');
   }
 
-  // 층 삭제
+  // 층 삭제 — 웹의 Alert.alert 다중버튼 콜백이 안정적이지 않아 Platform 분기.
   function removeFloor(idx: number) {
-    Alert.alert('층 삭제', `${floors[idx].displayLabel}을 삭제하시겠습니까?`, [
-      { text: '취소' },
-      { text: '삭제', style: 'destructive', onPress: () => setFloors(floors.filter((_, i) => i !== idx)) },
-    ]);
+    const target = floors[idx];
+    const msg = `${target.displayLabel}을 삭제하시겠습니까?`;
+    const doDelete = () => setFloors((prev) => prev.filter((_, i) => i !== idx));
+    if (Platform.OS === 'web') {
+      // eslint-disable-next-line no-alert
+      if (typeof window !== 'undefined' && window.confirm(msg)) {
+        doDelete();
+      }
+    } else {
+      Alert.alert('층 삭제', msg, [
+        { text: '취소', style: 'cancel' },
+        { text: '삭제', style: 'destructive', onPress: doDelete },
+      ]);
+    }
   }
 
   // 세대 추가
