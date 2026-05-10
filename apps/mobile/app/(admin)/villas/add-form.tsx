@@ -19,6 +19,7 @@ import { createVilla } from '@/lib/villas';
 import { syncAdminFromSupabase } from '@/lib/sync';
 import { BANK_NAMES, planFor, formatKRW } from '@villatolk/shared';
 import { showToast } from '@/lib/toast';
+import { reliableWrite } from '@/lib/outbox';
 import AddressSearchModal from '@/components/AddressSearchModal';
 
 const C = {
@@ -136,7 +137,7 @@ export default function AddVillaFormScreen() {
   const villaCount = store.villas.length + 1;
   const discRate = villaCount >= 20 ? 0.4 : villaCount >= 10 ? 0.3 : villaCount >= 5 ? 0.2 : 0;
 
-  async function doRegister() {
+  function doRegister() {
     setShowCostPopup(false);
     setSubmitted(true);
 
@@ -145,15 +146,23 @@ export default function AddVillaFormScreen() {
     const trimmedAddress = address.trim();
     const upf = Math.max(1, Math.round(totalUnits / Math.max(1, floors.length)));
 
-    try {
-      const me = await getMyAdmin();
-      if (!me) {
-        setSubmitted(false);
-        Alert.alert('로그인 필요', '관리자로 로그인 후 시도해주세요');
-        return;
-      }
+    // 1) 로컬 store 즉시 반영 — 홈 화면에서 바로 보임
+    addVilla({
+      name: trimmedName,
+      address: trimmedAddress,
+      totalUnits,
+      unitsPerFloor: upf,
+      account: accountStr,
+    });
 
-      // 1) Supabase 영속화
+    // 2) 사용자에게 즉시 피드백 + 홈 이동 (DB 쓰기 결과 기다리지 않음)
+    showToast(`${trimmedName} 등록 중…`, 'info', 2500);
+    router.replace('/(admin)/home');
+
+    // 3) Supabase 쓰기는 백그라운드 — outbox 가 재시도/실패 토스트 담당
+    reliableWrite('createVilla', async () => {
+      const me = await getMyAdmin();
+      if (!me) throw new Error('로그인이 필요합니다');
       await createVilla({
         name: trimmedName,
         address: trimmedAddress,
@@ -163,24 +172,13 @@ export default function AddVillaFormScreen() {
         accountNumber: accountNumber.trim() || undefined,
         accountHolder: me.name ?? undefined,
       });
-
-      // 2) 로컬 store 갱신 (즉시 반영) + 서버 sync
-      addVilla({
-        name: trimmedName,
-        address: trimmedAddress,
-        totalUnits,
-        unitsPerFloor: upf,
-        account: accountStr,
-      });
-      await syncAdminFromSupabase().catch(() => {});
-
-      // 다중버튼 Alert 가 웹에서 막히는 이슈 → 토스트로 알리고 즉시 홈 이동.
-      showToast(`${trimmedName} (${totalUnits}세대) 등록 완료`, 'success', 4000);
-      router.replace('/(admin)/home');
-    } catch (e) {
-      setSubmitted(false);
-      Alert.alert('등록 실패', e instanceof Error ? e.message : '다시 시도해주세요');
-    }
+      await syncAdminFromSupabase();
+    }).then((result) => {
+      if (result !== null) {
+        showToast(`${trimmedName} (${totalUnits}세대) 등록 완료`, 'success', 3000);
+      }
+      // result === null 이면 reliableWrite 가 이미 실패 토스트 띄움
+    });
   }
 
   function handleSubmit() {
