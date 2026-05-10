@@ -40,16 +40,23 @@ export async function getVillaDetail(villaId: string) {
 /**
  * 빌라 등록 + 세대 자동 생성 + 구독 아이템 추가
  */
+export interface CreateVillaFloor {
+  label: string; // '1', '2', 'B1' 등 — 호수 prefix
+  units: Array<{ name: string }>; // 호실 이름 목록 (예: '101호', 'B101호')
+}
+
 export async function createVilla(params: {
   name: string;
   address: string;
   totalUnits: number;
   unitsPerFloor: number;
+  /** 사용자가 직접 구성한 층/호수 — 있으면 이걸 우선 사용 (자동생성 X) */
+  floorPlan?: CreateVillaFloor[];
   accountBank?: string;
   accountNumber?: string;
   accountHolder?: string;
 }) {
-  console.log('[createVilla] start', { name: params.name, units: params.totalUnits });
+  console.log('[createVilla] start', { name: params.name, units: params.totalUnits, floorPlan: !!params.floorPlan });
   const admin = await getMyAdmin();
   if (!admin) {
     console.error('[createVilla] no admin (not logged in)');
@@ -79,24 +86,40 @@ export async function createVilla(params: {
   }
   console.log('[createVilla] villa inserted:', villa.id);
 
-  // 2) 세대 자동 생성
-  const units = [];
-  for (let i = 0; i < params.totalUnits; i++) {
-    const floor = Math.floor(i / params.unitsPerFloor) + 1;
-    const num = (i % params.unitsPerFloor) + 1;
-    units.push({
-      villa_id: villa.id,
-      ho_number: `${floor}${String(num).padStart(2, '0')}호`,
-      floor,
+  // 2) 세대 — floorPlan 이 있으면 사용자 구성 그대로, 없으면 자동 생성
+  const unitsToInsert: Array<{ villa_id: string; ho_number: string; floor: number | null }> = [];
+  if (params.floorPlan && params.floorPlan.length > 0) {
+    params.floorPlan.forEach((fl) => {
+      // floor 숫자: 'B1' → -1, '1' → 1, '옥탑' 같은 텍스트 → null
+      const floorNum = fl.label.startsWith('B')
+        ? -parseInt(fl.label.slice(1), 10) || null
+        : parseInt(fl.label, 10) || null;
+      fl.units.forEach((u) => {
+        unitsToInsert.push({
+          villa_id: villa.id,
+          ho_number: u.name,
+          floor: floorNum,
+        });
+      });
     });
+  } else {
+    for (let i = 0; i < params.totalUnits; i++) {
+      const floor = Math.floor(i / params.unitsPerFloor) + 1;
+      const num = (i % params.unitsPerFloor) + 1;
+      unitsToInsert.push({
+        villa_id: villa.id,
+        ho_number: `${floor}${String(num).padStart(2, '0')}호`,
+        floor,
+      });
+    }
   }
 
-  const { error: unitsError } = await supabase.from('units').insert(units);
+  const { error: unitsError } = await supabase.from('units').insert(unitsToInsert);
   if (unitsError) {
     console.error('[createVilla] units insert failed:', unitsError);
     throw new Error(`세대 INSERT 실패: ${unitsError.message}`);
   }
-  console.log('[createVilla] units inserted:', units.length);
+  console.log('[createVilla] units inserted:', unitsToInsert.length);
 
   // 3) 구독 아이템 추가 (기존 구독이 있으면)
   // .maybeSingle() 사용 — 다중 row / 0 row 모두 throw 없이 처리.

@@ -159,6 +159,10 @@ export default function AddVillaFormScreen() {
         address: trimmedAddress,
         totalUnits,
         unitsPerFloor: upf,
+        floorPlan: floors.map((f) => ({
+          label: f.label,
+          units: f.units.map((u) => ({ name: u.name })),
+        })),
         accountBank: bank.trim() || undefined,
         accountNumber: accountNumber.trim() || undefined,
         accountHolder: me.name ?? undefined,
