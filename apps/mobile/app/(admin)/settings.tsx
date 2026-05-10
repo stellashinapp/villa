@@ -424,8 +424,8 @@ function LangButton({ lang, label }: { lang: 'ko' | 'en'; label: string }) {
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg },
   header: { paddingHorizontal: 20, paddingBottom: 12 },
-  headerLabel: { fontSize: 11, color: C.pri, fontWeight: '700', letterSpacing: 2 },
-  headerTitle: { fontSize: 22, fontWeight: '900', color: C.text, marginTop: 6 },
+  headerLabel: { fontSize: 11, color: C.pri, fontWeight: '700', letterSpacing: 2, marginBottom: 6 },
+  headerTitle: { fontSize: 22, fontWeight: '900', color: C.text },
   sectionTitle: {
     fontSize: 13,
     fontWeight: '700',

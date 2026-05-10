@@ -109,11 +109,8 @@ export default function AdminHomeScreen() {
     >
       {/* ── Header ──────────────────────────────────────────────── */}
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
-        <View style={styles.headerTop}>
-          <Text style={styles.adminLabel}>ADMIN</Text>
-        </View>
+        <Text style={styles.adminLabel}>ADMIN</Text>
         <Text style={styles.greeting}>홈</Text>
-        <Text style={styles.greetingSub}>관리자님 로그인됨</Text>
       </View>
 
       {/* ── 우선노출 알림 — 미납·민원 ───────────────────────────── */}
@@ -582,7 +579,7 @@ const styles = StyleSheet.create({
   /* ── Header ─────────────────────────────────────────────── */
   header: {
     paddingHorizontal: 20,
-    paddingBottom: 8,
+    paddingBottom: 12,
   },
   headerTop: {
     flexDirection: 'row',
@@ -593,8 +590,9 @@ const styles = StyleSheet.create({
   adminLabel: {
     fontSize: 11,
     color: C.primaryBlue,
-    fontWeight: '800',
+    fontWeight: '700',
     letterSpacing: 2,
+    marginBottom: 6,
   },
   logoutBtn: {
     paddingVertical: 6,
@@ -609,7 +607,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   greeting: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '900',
     color: C.textPrimary,
   },
