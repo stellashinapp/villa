@@ -5,8 +5,30 @@ import { WebView } from 'react-native-webview';
 import { router, useLocalSearchParams } from 'expo-router';
 import { buildBillingHtml, issueBillingKeyOnServer } from '@/lib/payment';
 import { syncAdminFromSupabase } from '@/lib/sync';
+import { supabase } from '@/lib/supabase';
 
 const IS_WEB = Platform.OS === 'web';
+
+// 토스 실연동 전 임시 — subscription 에 더미 카드 정보 입력해서 바로 active 로 전환.
+// nextBilling 은 trial_ends_at 또는 30일 후로 잡는다.
+async function registerDummyCard(adminId: string) {
+  const now = Date.now();
+  const periodStart = new Date(now);
+  const periodEnd = new Date(now + 30 * 24 * 60 * 60 * 1000);
+  const { error } = await supabase
+    .from('subscriptions')
+    .update({
+      card_brand: '더미카드',
+      card_last4: '0000',
+      billing_key: `DUMMY_${adminId}_${now}`,
+      status: 'active',
+      current_period_start: periodStart.toISOString(),
+      current_period_end: periodEnd.toISOString(),
+    })
+    .eq('admin_id', adminId)
+    .in('status', ['trialing', 'active', 'past_due']);
+  if (error) throw new Error(error.message);
+}
 
 export default function BillingScreen() {
   const insets = useSafeAreaInsets();
@@ -122,44 +144,52 @@ export default function BillingScreen() {
         )}
         <Text style={styles.title}>{fromSignup ? '카드 등록 (무료체험 시작)' : '정기결제 카드 등록'}</Text>
       </View>
+
+      {/* 임시: 토스 실연동 전 더미 카드 등록 — 모든 플랫폼 노출 */}
+      <View style={styles.dummyBar}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.dummyBarTitle}>임시 모의 카드 등록</Text>
+          <Text style={styles.dummyBarSub}>
+            토스페이먼츠 실연동 전입니다. 더미 카드로 등록하고 진행하세요.
+          </Text>
+        </View>
+        <TouchableOpacity
+          style={[styles.dummyBarBtn, loading && { opacity: 0.5 }]}
+          disabled={loading || !adminId}
+          onPress={async () => {
+            if (!adminId) {
+              Alert.alert('오류', '관리자 정보가 없습니다');
+              return;
+            }
+            setLoading(true);
+            try {
+              await registerDummyCard(adminId);
+              try { await syncAdminFromSupabase(); } catch {}
+              Alert.alert(
+                '더미 카드 등록 완료',
+                '더미카드 ****0000 으로 처리되었습니다.\n실제 결제는 발생하지 않습니다.',
+                [{ text: '확인', onPress: exitFlowAfterSuccess }],
+              );
+            } catch (err: any) {
+              Alert.alert('등록 실패', err?.message ?? String(err));
+            } finally {
+              setLoading(false);
+            }
+          }}
+        >
+          <Text style={styles.dummyBarBtnText}>더미로 등록</Text>
+        </TouchableOpacity>
+      </View>
       {IS_WEB ? (
         // 웹 미리보기: react-native-webview 의 web 쉼이 안정적이지 않아 iframe 직접 사용.
-        // postMessage 통신은 native 환경 전용이라 웹에서는 토스 카드등록 UI 만 보여줌.
-        // 디자인 검증/플로우 확인용. 실제 결제는 모바일 앱에서만 동작.
+        // postMessage 통신은 native 환경 전용이라 웹에서는 토스 카드등록 UI 만 참고용.
+        // 실제 카드 등록은 위쪽 더미 등록 또는 모바일 앱에서.
         <View style={{ flex: 1 }}>
           <iframe
             srcDoc={html}
             style={{ flex: 1, border: 'none', width: '100%', height: '100%' } as object}
             title="TossPayments billing"
           />
-          {__DEV__ && (
-            <View style={styles.devBypass}>
-              <Text style={styles.devBypassNote}>
-                ⚠️ 웹 미리보기 — 실제 카드 등록은 모바일 앱에서만 가능합니다
-              </Text>
-              <TouchableOpacity
-                style={styles.devBypassBtn}
-                onPress={() => {
-                  Alert.alert(
-                    '테스트 모드',
-                    '카드 등록을 건너뛰고 홈으로 이동합니다. (실제 결제 미완료)',
-                    [
-                      { text: '취소', style: 'cancel' },
-                      {
-                        text: '건너뛰기',
-                        onPress: () => {
-                          if (fromSignup) router.replace('/(admin)/home');
-                          else router.back();
-                        },
-                      },
-                    ],
-                  );
-                }}
-              >
-                <Text style={styles.devBypassBtnText}>테스트: 건너뛰고 홈으로</Text>
-              </TouchableOpacity>
-            </View>
-          )}
         </View>
       ) : (
         <WebView
@@ -245,4 +275,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   devBypassBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
+  dummyBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#FFFBEB',
+    borderBottomWidth: 1,
+    borderBottomColor: '#FDE68A',
+  },
+  dummyBarTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#92400E',
+    marginBottom: 2,
+  },
+  dummyBarSub: {
+    fontSize: 11,
+    color: '#92400E',
+    lineHeight: 16,
+  },
+  dummyBarBtn: {
+    backgroundColor: '#F59E0B',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  dummyBarBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '800' },
 });
