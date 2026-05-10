@@ -49,8 +49,13 @@ export async function createVilla(params: {
   accountNumber?: string;
   accountHolder?: string;
 }) {
+  console.log('[createVilla] start', { name: params.name, units: params.totalUnits });
   const admin = await getMyAdmin();
-  if (!admin) throw new Error('로그인이 필요합니다');
+  if (!admin) {
+    console.error('[createVilla] no admin (not logged in)');
+    throw new Error('로그인이 필요합니다');
+  }
+  console.log('[createVilla] admin:', admin.id);
 
   // 1) 빌라 생성
   const { data: villa, error: villaError } = await supabase
@@ -68,7 +73,11 @@ export async function createVilla(params: {
     .select()
     .single();
 
-  if (villaError) throw new Error(villaError.message);
+  if (villaError) {
+    console.error('[createVilla] villa insert failed:', villaError);
+    throw new Error(`빌라 INSERT 실패: ${villaError.message}`);
+  }
+  console.log('[createVilla] villa inserted:', villa.id);
 
   // 2) 세대 자동 생성
   const units = [];
@@ -83,7 +92,11 @@ export async function createVilla(params: {
   }
 
   const { error: unitsError } = await supabase.from('units').insert(units);
-  if (unitsError) throw new Error(unitsError.message);
+  if (unitsError) {
+    console.error('[createVilla] units insert failed:', unitsError);
+    throw new Error(`세대 INSERT 실패: ${unitsError.message}`);
+  }
+  console.log('[createVilla] units inserted:', units.length);
 
   // 3) 구독 아이템 추가 (기존 구독이 있으면)
   // .maybeSingle() 사용 — 다중 row / 0 row 모두 throw 없이 처리.
@@ -109,10 +122,13 @@ export async function createVilla(params: {
       // subscription_items 누락은 빌라 표시에 직접적 영향 없음 (sync 가 left join).
       // 단 결제 갱신 시 가격 계산이 빠질 수 있으므로 경고 로그.
       console.warn('[createVilla] subscription_items insert failed:', itemError.message);
+    } else {
+      console.log('[createVilla] subscription_items inserted');
     }
   } else {
     console.warn('[createVilla] no active subscription found — subscription_items 미생성');
   }
+  console.log('[createVilla] done — returning villa', villa.id);
 
   return villa;
 }

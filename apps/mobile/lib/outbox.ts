@@ -114,21 +114,25 @@ export async function reliableWrite<T>(
 }
 
 async function runWithRetry(op: PendingOp): Promise<unknown> {
+  let lastMsg = '';
   while (true) {
     try {
       return await op.fn();
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      console.warn(
+      lastMsg = msg;
+      console.error(
         `[outbox:${op.label}] attempt ${op.attempt + 1}/${MAX_RETRIES} failed:`,
         msg,
+        err,
       );
       op.attempt++;
       if (op.attempt >= MAX_RETRIES) {
+        // 실제 에러 메시지를 토스트에 노출 — 어디가 막혔는지 즉시 보임
         showToast(
-          `저장 실패: ${userLabel(op.label)}.\n네트워크 확인 후 다시 시도해주세요.`,
+          `저장 실패: ${userLabel(op.label)}\n사유: ${truncate(lastMsg, 120)}`,
           'error',
-          6000,
+          8000,
         );
         return null;
       }
@@ -136,6 +140,10 @@ async function runWithRetry(op: PendingOp): Promise<unknown> {
       await sleep(delay);
     }
   }
+}
+
+function truncate(s: string, n: number): string {
+  return s.length <= n ? s : s.slice(0, n) + '…';
 }
 
 function sleep(ms: number): Promise<void> {
