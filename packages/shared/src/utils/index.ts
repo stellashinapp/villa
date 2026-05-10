@@ -2,12 +2,27 @@ import type { PlanType, SubscriptionItem } from '../types';
 import { PLAN_PRICES, DISCOUNT_TIERS } from '../constants';
 
 /**
- * 세대수에 따라 적합한 플랜을 반환
+ * 세대수에 따라 적합한 플랜을 반환.
+ *
+ * 가격 정책 (2026-05-11 갱신):
+ * - 6~8세대:  소형  30,000
+ * - 9~15세대: 중형  50,000
+ * - 16~19세대: 대형  70,000
+ * - 20세대 이상: 10세대 단위로 5만원 증가 — 20=10만, 30=15만, 40=20만, 50=25만, 60=30만, ...
+ *
+ * 20세대 이상은 plan 컬럼은 'large' 로 통일 (DB 의 CHECK 제약 호환).
+ * 가격은 동적으로 계산.
  */
-export function planFor(units: number): { plan: PlanType; price: number } {
-  if (units <= 8) return { plan: 'small', price: PLAN_PRICES.small };
-  if (units <= 15) return { plan: 'popular', price: PLAN_PRICES.popular };
-  return { plan: 'large', price: PLAN_PRICES.large };
+export function planFor(units: number): { plan: PlanType; price: number; name: string; range: string } {
+  if (units <= 8) return { plan: 'small', price: PLAN_PRICES.small, name: '소형', range: '6~8세대' };
+  if (units <= 15) return { plan: 'popular', price: PLAN_PRICES.popular, name: '중형', range: '9~15세대' };
+  if (units <= 19) return { plan: 'large', price: PLAN_PRICES.large, name: '대형', range: '16~19세대' };
+  // 20+ : 10단위 가격 계산. 20s→10만, 30s→15만, 40s→20만, ...
+  const tens = Math.floor((units - 20) / 10) + 2;
+  const price = tens * 50_000;
+  const lowerBound = 20 + (tens - 2) * 10;
+  const upperBound = lowerBound + 9;
+  return { plan: 'large', price, name: '특대형', range: `${lowerBound}~${upperBound}세대` };
 }
 
 /**

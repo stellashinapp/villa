@@ -10,6 +10,7 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { completeSignup } from '@/lib/signup-complete';
+import { planFor, formatKRW } from '@villatolk/shared';
 
 const C = {
   bg: '#F5F6FA',
@@ -107,9 +108,8 @@ export default function SignupStep3Screen() {
 
   const totalUnits = params.totalUnits ? Number(params.totalUnits) : 0;
 
-  // 세대수에 따른 자동 플랜 배정 — 사용자가 선택할 항목이 아님
-  const assignedPlanId: PlanId = totalUnits > 0 ? recommendPlan(totalUnits) : 'small';
-  const assignedPlan = PLANS.find((p) => p.id === assignedPlanId) ?? PLANS[0];
+  // 세대수에 따른 자동 플랜 배정 — shared.planFor 가 단일 진실원
+  const assignedPlan = planFor(totalUnits || 6);
 
   const [loading, setLoading] = useState(false);
 
@@ -164,7 +164,7 @@ export default function SignupStep3Screen() {
             <Text style={styles.autoPlanName}>{assignedPlan.name} 플랜</Text>
             <Text style={styles.autoPlanRange}>{assignedPlan.range}</Text>
           </View>
-          <Text style={styles.autoPlanPrice}>월 {assignedPlan.priceLabel}</Text>
+          <Text style={styles.autoPlanPrice}>월 {formatKRW(assignedPlan.price)}</Text>
           {totalUnits > 0 && (
             <View style={styles.autoPlanMetaRow}>
               <Text style={styles.autoPlanMetaLabel}>세대수</Text>

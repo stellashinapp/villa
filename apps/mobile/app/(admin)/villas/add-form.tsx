@@ -17,7 +17,8 @@ import { addVilla, store } from '@/lib/store';
 import { getMyAdmin } from '@/lib/auth';
 import { createVilla } from '@/lib/villas';
 import { syncAdminFromSupabase } from '@/lib/sync';
-import { BANK_NAMES } from '@villatolk/shared';
+import { BANK_NAMES, planFor, formatKRW } from '@villatolk/shared';
+import { showToast } from '@/lib/toast';
 
 const C = {
   bg: '#F5F6FA', card: '#FFFFFF', border: '#E8EBF0',
@@ -54,9 +55,8 @@ export default function AddVillaFormScreen() {
   const [newFloorLabel, setNewFloorLabel] = useState('');
   const totalUnits = floors.reduce((sum, f) => sum + f.units.length, 0);
 
-  const plan = totalUnits <= 8 ? { name: '소형', price: 30000, range: '6~8세대' }
-    : totalUnits <= 15 ? { name: '중형', price: 50000, range: '9~15세대' }
-    : { name: '대형', price: 70000, range: '16~30세대' };
+  // 단일 진실원: shared 패키지의 planFor — 가격표 변경 시 한 곳만 고치면 됨.
+  const plan = planFor(totalUnits || 0);
 
   // 층 추가
   function addFloor(label: string, displayLabel: string) {
@@ -172,15 +172,9 @@ export default function AddVillaFormScreen() {
       });
       await syncAdminFromSupabase().catch(() => {});
 
-      const newVilla = store.villas[store.villas.length - 1];
-      Alert.alert(
-        '🎉 등록 완료!',
-        `${trimmedName} (${totalUnits}세대)가 등록되었습니다.\n\n다음 단계:\n1. 입주민 정보 등록\n2. 관리비 항목 설정\n3. 관리비 고지 발송`,
-        [
-          { text: '홈으로', onPress: () => router.replace('/(admin)/home') },
-          { text: '빌라 설정', onPress: () => router.replace(`/(admin)/villas/${newVilla?.id || ''}`) },
-        ]
-      );
+      // 다중버튼 Alert 가 웹에서 막히는 이슈 → 토스트로 알리고 즉시 홈 이동.
+      showToast(`${trimmedName} (${totalUnits}세대) 등록 완료`, 'success', 4000);
+      router.replace('/(admin)/home');
     } catch (e) {
       setSubmitted(false);
       Alert.alert('등록 실패', e instanceof Error ? e.message : '다시 시도해주세요');
@@ -436,6 +430,18 @@ export default function AddVillaFormScreen() {
                 <Text style={s.costName}>{name.trim() || '새 빌라'}</Text>
                 <Text style={s.costPrice}>{totalUnits}세대 · {plan.name} 플랜</Text>
               </View>
+              <View style={[s.costRow, { marginTop: 10 }]}>
+                <Text style={s.priceLabel}>월 이용료</Text>
+                <Text style={s.priceValue}>{formatKRW(plan.price)}</Text>
+              </View>
+              {discRate > 0 && (
+                <View style={[s.costRow, { marginTop: 6 }]}>
+                  <Text style={s.discLabel}>볼륨 할인 적용 시</Text>
+                  <Text style={s.discValue}>
+                    {formatKRW(Math.round(plan.price * (1 - discRate)))} ({Math.round(discRate * 100)}%)
+                  </Text>
+                </View>
+              )}
             </View>
 
             <View style={s.costDivider} />
@@ -601,6 +607,10 @@ const s = StyleSheet.create({
   costRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4 },
   costName: { fontSize: 14, color: C.text },
   costPrice: { fontSize: 14, fontWeight: '700', color: C.text },
+  priceLabel: { fontSize: 13, color: C.sub, fontWeight: '600' },
+  priceValue: { fontSize: 20, fontWeight: '900', color: C.pri },
+  discLabel: { fontSize: 12, color: '#4CAF50', fontWeight: '600' },
+  discValue: { fontSize: 13, color: '#4CAF50', fontWeight: '800' },
   costEmpty: { fontSize: 13, color: C.muted },
   costDivider: { height: 1, backgroundColor: C.border, marginVertical: 12 },
   costTotalLabel: { fontSize: 15, fontWeight: '800', color: C.text },
