@@ -1,6 +1,9 @@
 import { Tabs, router } from 'expo-router';
 import { View, StyleSheet } from 'react-native';
-import { store } from '@/lib/store';
+import { useEffect, useState } from 'react';
+import { store, subscribe } from '@/lib/store';
+import { syncAdminFromSupabase } from '@/lib/sync';
+import { getMyAdmin } from '@/lib/auth';
 import Icon, { type IconName } from '@/components/Icon';
 
 const TAB_ICON_MAP: Record<string, IconName> = {
@@ -24,7 +27,37 @@ function TabIcon({ label, focused }: { label: string; focused: boolean }) {
   );
 }
 
+// 카드 등록 / 활성 구독 가드 — 미등록 상태에서 admin 진입하면 billing 으로 강제.
+function useSubscriptionGuard() {
+  const [, setTick] = useState(0);
+  useEffect(() => subscribe(() => setTick(t => t + 1)), []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try { await syncAdminFromSupabase(); } catch {}
+      if (cancelled) return;
+      const sub = store.subscription;
+      // 카드 등록되어 있고 active/trialing 이면 통과
+      const ok = !!sub.cardLast4 && (sub.status === 'active' || sub.status === 'trialing');
+      if (ok) return;
+      // 차단 — billing 으로
+      const me = await getMyAdmin().catch(() => null);
+      router.replace({
+        pathname: '/payment/billing',
+        params: {
+          adminId: me?.id ?? '',
+          customerName: me?.name ?? '관리자',
+          fromSignup: '1', // 강제 등록 모드 (취소 불가)
+        },
+      });
+    })();
+    return () => { cancelled = true; };
+  }, []);
+}
+
 export default function AdminLayout() {
+  useSubscriptionGuard();
   return (
     <Tabs
       screenOptions={{
