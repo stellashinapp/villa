@@ -12,10 +12,13 @@ const IS_WEB = Platform.OS === 'web';
 // 토스 실연동 전 임시 — subscription 에 더미 카드 정보 입력해서 바로 active 로 전환.
 // nextBilling 은 trial_ends_at 또는 30일 후로 잡는다.
 async function registerDummyCard(adminId: string) {
+  console.log('[dummyCard] start adminId=', adminId);
   const now = Date.now();
   const periodStart = new Date(now);
   const periodEnd = new Date(now + 30 * 24 * 60 * 60 * 1000);
-  const { error } = await supabase
+
+  // 1) 기존 trialing/active/past_due 구독 찾아 update
+  const { data: updated, error } = await supabase
     .from('subscriptions')
     .update({
       card_brand: '더미카드',
@@ -26,8 +29,34 @@ async function registerDummyCard(adminId: string) {
       current_period_end: periodEnd.toISOString(),
     })
     .eq('admin_id', adminId)
-    .in('status', ['trialing', 'active', 'past_due']);
-  if (error) throw new Error(error.message);
+    .in('status', ['trialing', 'active', 'past_due'])
+    .select();
+
+  if (error) {
+    console.error('[dummyCard] update error:', error);
+    throw new Error(`구독 업데이트 실패: ${error.message}`);
+  }
+  console.log('[dummyCard] updated rows:', updated?.length ?? 0);
+
+  // 2) update 된 row 가 0 이면 신규 INSERT — 구독이 아예 없는 케이스
+  if (!updated || updated.length === 0) {
+    console.log('[dummyCard] no existing subscription, inserting new');
+    const { error: insErr } = await supabase.from('subscriptions').insert({
+      admin_id: adminId,
+      status: 'active',
+      billing_day: 1,
+      card_brand: '더미카드',
+      card_last4: '0000',
+      billing_key: `DUMMY_${adminId}_${now}`,
+      current_period_start: periodStart.toISOString(),
+      current_period_end: periodEnd.toISOString(),
+    });
+    if (insErr) {
+      console.error('[dummyCard] insert error:', insErr);
+      throw new Error(`구독 INSERT 실패: ${insErr.message}`);
+    }
+  }
+  console.log('[dummyCard] done');
 }
 
 export default function BillingScreen() {
@@ -130,6 +159,29 @@ export default function BillingScreen() {
     }
   }
 
+  async function handleDummyRegister() {
+    if (!adminId) {
+      Alert.alert('오류', '관리자 정보가 없습니다');
+      return;
+    }
+    setLoading(true);
+    try {
+      await registerDummyCard(adminId);
+      try { await syncAdminFromSupabase(); } catch {}
+      Alert.alert(
+        '더미 카드 등록 완료',
+        '더미카드 ****0000 으로 처리되었습니다.\n실제 결제는 발생하지 않습니다.',
+        [{ text: '확인', onPress: exitFlowAfterSuccess }],
+      );
+    } catch (err: any) {
+      const msg = err?.message ?? String(err);
+      console.error('[dummyCard] failed:', msg, err);
+      Alert.alert('등록 실패', msg);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
@@ -145,49 +197,34 @@ export default function BillingScreen() {
         <Text style={styles.title}>{fromSignup ? '카드 등록 (무료체험 시작)' : '정기결제 카드 등록'}</Text>
       </View>
 
-      {/* 임시: 토스 실연동 전 더미 카드 등록 — 모든 플랫폼 노출 */}
+      {/* 임시: 토스 실연동 전 더미 카드 등록 — 큰 버튼으로 노출 */}
       <View style={styles.dummyBar}>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.dummyBarTitle}>임시 모의 카드 등록</Text>
-          <Text style={styles.dummyBarSub}>
-            토스페이먼츠 실연동 전입니다. 더미 카드로 등록하고 진행하세요.
-          </Text>
-        </View>
+        <Text style={styles.dummyBarTitle}>🛠 임시 모의 카드 등록</Text>
+        <Text style={styles.dummyBarSub}>
+          토스페이먼츠 실연동 전입니다. 더미 카드로 가입을 완료하세요.
+        </Text>
         <TouchableOpacity
           style={[styles.dummyBarBtn, loading && { opacity: 0.5 }]}
           disabled={loading || !adminId}
-          onPress={async () => {
-            if (!adminId) {
-              Alert.alert('오류', '관리자 정보가 없습니다');
-              return;
-            }
-            setLoading(true);
-            try {
-              await registerDummyCard(adminId);
-              try { await syncAdminFromSupabase(); } catch {}
-              Alert.alert(
-                '더미 카드 등록 완료',
-                '더미카드 ****0000 으로 처리되었습니다.\n실제 결제는 발생하지 않습니다.',
-                [{ text: '확인', onPress: exitFlowAfterSuccess }],
-              );
-            } catch (err: any) {
-              Alert.alert('등록 실패', err?.message ?? String(err));
-            } finally {
-              setLoading(false);
-            }
-          }}
+          onPress={handleDummyRegister}
+          activeOpacity={0.85}
         >
-          <Text style={styles.dummyBarBtnText}>더미로 등록</Text>
+          <Text style={styles.dummyBarBtnText}>
+            {loading ? '처리 중…' : '더미 카드로 등록 완료'}
+          </Text>
         </TouchableOpacity>
       </View>
+
+      <View style={styles.tossPreviewLabel}>
+        <Text style={styles.tossPreviewLabelText}>아래는 토스페이먼츠 실연동 미리보기 (참고용)</Text>
+      </View>
+
       {IS_WEB ? (
-        // 웹 미리보기: react-native-webview 의 web 쉼이 안정적이지 않아 iframe 직접 사용.
-        // postMessage 통신은 native 환경 전용이라 웹에서는 토스 카드등록 UI 만 참고용.
-        // 실제 카드 등록은 위쪽 더미 등록 또는 모바일 앱에서.
-        <View style={{ flex: 1 }}>
+        // 웹: iframe 으로 토스 폼 보여주기. 실제 등록은 위쪽 더미 버튼으로.
+        <View style={styles.iframeWrap}>
           <iframe
             srcDoc={html}
-            style={{ flex: 1, border: 'none', width: '100%', height: '100%' } as object}
+            style={{ border: 'none', width: '100%', height: '100%', display: 'block' } as object}
             title="TossPayments billing"
           />
         </View>
@@ -276,31 +313,46 @@ const styles = StyleSheet.create({
   },
   devBypassBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
   dummyBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
     backgroundColor: '#FFFBEB',
     borderBottomWidth: 1,
     borderBottomColor: '#FDE68A',
+    gap: 8,
   },
   dummyBarTitle: {
-    fontSize: 13,
-    fontWeight: '800',
+    fontSize: 15,
+    fontWeight: '900',
     color: '#92400E',
-    marginBottom: 2,
   },
   dummyBarSub: {
-    fontSize: 11,
+    fontSize: 12,
     color: '#92400E',
-    lineHeight: 16,
+    lineHeight: 17,
+    marginBottom: 4,
   },
   dummyBarBtn: {
     backgroundColor: '#F59E0B',
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
   },
-  dummyBarBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '800' },
+  dummyBarBtnText: { color: '#FFFFFF', fontSize: 15, fontWeight: '800' },
+  tossPreviewLabel: {
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    backgroundColor: '#F5F6FA',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E8EBF0',
+  },
+  tossPreviewLabelText: {
+    fontSize: 11,
+    color: '#9CA3AF',
+    fontWeight: '600',
+  },
+  iframeWrap: {
+    flex: 1,
+    backgroundColor: '#F5F6FA',
+    overflow: 'hidden',
+  },
 });
