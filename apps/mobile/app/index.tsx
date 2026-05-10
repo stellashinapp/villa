@@ -71,8 +71,8 @@ export default function EntryScreen() {
       <View style={s.heroSection}>
         <HeroIllustration size={144} />
         <Text style={s.brandTitle}>
-          <Text style={{ color: NAVY }}>VILLA </Text>
-          <Text style={{ color: BRAND_BLUE }}>TALK</Text>
+          <Text style={{ color: NAVY, fontWeight: '900' }}>VILLA </Text>
+          <Text style={{ color: BRAND_BLUE, fontWeight: '900' }}>TALK</Text>
         </Text>
         <Text style={s.tagline}>관리자와 입주민 모두를 위한</Text>
         <Text style={s.taglineEmphasis}>스마트 공동 관리 서비스</Text>
