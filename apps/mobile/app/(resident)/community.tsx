@@ -220,7 +220,7 @@ const styles = StyleSheet.create({
   },
   newPostActions: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   submitButton: {
-    backgroundColor: '#3454D1',
+    backgroundColor: '#4263E8',
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 10,
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
   },
   postHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10, gap: 6 },
   authorBadge: { backgroundColor: '#E8EEFB', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
-  authorHo: { fontSize: 12, fontWeight: '700', color: '#3454D1' },
+  authorHo: { fontSize: 12, fontWeight: '700', color: '#4263E8' },
   authorName: { fontSize: 13, fontWeight: '600', color: '#1A1D26' },
   postDate: { fontSize: 12, color: '#9CA3AF', marginLeft: 'auto' },
   postTitle: { fontSize: 15, fontWeight: '800', color: '#1A1D26', marginBottom: 6 },
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
   },
   commentCard: { marginBottom: 10 },
   commentHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 },
-  commentAuthor: { fontSize: 12, fontWeight: '700', color: '#3454D1' },
+  commentAuthor: { fontSize: 12, fontWeight: '700', color: '#4263E8' },
   commentDate: { fontSize: 11, color: '#9CA3AF' },
   commentBody: { fontSize: 13, color: '#1A1D26', lineHeight: 18 },
 
@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
     borderColor: '#E8EBF0',
   },
   commentSendBtn: {
-    backgroundColor: '#3454D1',
+    backgroundColor: '#4263E8',
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 8,

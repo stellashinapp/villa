@@ -175,10 +175,10 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 18,
   },
-  hintTitle: { fontSize: 12, fontWeight: '700', color: '#3454D1', marginBottom: 6 },
-  hintText: { fontSize: 13, color: '#3454D1', lineHeight: 20 },
+  hintTitle: { fontSize: 12, fontWeight: '700', color: '#4263E8', marginBottom: 6 },
+  hintText: { fontSize: 13, color: '#4263E8', lineHeight: 20 },
   btn: {
-    backgroundColor: '#3454D1',
+    backgroundColor: '#4263E8',
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: 'center',

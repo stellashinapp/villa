@@ -12,7 +12,7 @@ export const PLAN_PRICES: Record<PlanType, number> = {
 
 export const PLAN_LABELS: Record<PlanType, string> = {
   small: '소형',
-  popular: '인기',
+  popular: '중형',
   large: '대형',
 };
 
@@ -59,10 +59,47 @@ export const BILL_STATUS_LABELS: Record<string, string> = {
 export const APP_NAME = 'ANDNEW';
 export const APP_NAME_KR = '빌라톡';
 export const COMPANY_NAME = '주식회사 더줌웍스';
-export const COMPANY_NAME_EN = 'TheZoomWorks';
+export const COMPANY_NAME_EN = 'ANDNEW';
 
 export const TRIAL_DAYS = 30;
 export const BILLING_RETRY_DAYS = [3, 7] as const;
+
+// ==============================
+// 은행 (금융결제원 표준 코드 — 토스페이먼츠/나이스페이 공통)
+// 가상계좌·자동이체 연동 시 code 사용
+// ==============================
+
+export const BANKS = [
+  { code: '004', name: '국민은행' },
+  { code: '088', name: '신한은행' },
+  { code: '020', name: '우리은행' },
+  { code: '081', name: '하나은행' },
+  { code: '011', name: '농협' },
+  { code: '003', name: '기업은행' },
+  { code: '090', name: '카카오뱅크' },
+  { code: '092', name: '토스뱅크' },
+  { code: '089', name: '케이뱅크' },
+  { code: '045', name: '새마을금고' },
+  { code: '071', name: '우체국' },
+  { code: '032', name: '부산은행' },
+  { code: '031', name: '대구은행' },
+  { code: '007', name: '수협' },
+  { code: '034', name: '광주은행' },
+  { code: '037', name: '전북은행' },
+  { code: '035', name: '제주은행' },
+  { code: '023', name: 'SC제일은행' },
+  { code: '027', name: '한국씨티은행' },
+] as const;
+
+export type BankName = typeof BANKS[number]['name'];
+export type BankCode = typeof BANKS[number]['code'];
+
+export const BANK_NAMES: readonly BankName[] = BANKS.map((b) => b.name);
+
+export function getBankCode(name: string): BankCode | null {
+  const found = BANKS.find((b) => b.name === name);
+  return found?.code ?? null;
+}
 
 // 푸시 알림 시나리오
 export const PUSH_SCENARIOS = {

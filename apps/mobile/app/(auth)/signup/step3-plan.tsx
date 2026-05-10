@@ -9,8 +9,9 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Alert } from 'react-native';
 import { getSignupData, clearSignupData } from '@/lib/signup-store';
-import { signUpAdmin } from '@/lib/auth';
+import { signUpAdmin, getMyAdmin } from '@/lib/auth';
 import { createVilla } from '@/lib/villas';
+import { syncAdminFromSupabase } from '@/lib/sync';
 import { supabase } from '@/lib/supabase';
 
 const C = {
@@ -19,7 +20,7 @@ const C = {
   cardBorder: '#E8EBF0',
   inputBg: '#F0F2F6',
   inputBorder: '#E5E7EB',
-  primary: '#3454D1',
+  primary: '#4263E8',
   success: '#4CAF50',
   text: '#1A1D26',
   sub: '#6B7280',
@@ -54,7 +55,7 @@ const PLANS: Plan[] = [
   },
   {
     id: 'medium',
-    name: '인기',
+    name: '중형',
     range: '9~15세대',
     price: 50000,
     priceLabel: '50,000원',
@@ -70,7 +71,7 @@ const PLANS: Plan[] = [
     price: 70000,
     priceLabel: '70,000원',
     features: [
-      '인기 플랜 전체',
+      '중형 플랜 전체',
       '다중 빌라 관리',
       '정산 리포트',
       '우선 지원',
@@ -122,64 +123,80 @@ export default function SignupStep3Screen() {
     setLoading(true);
     try {
       const signupData = await getSignupData();
+      if (!signupData?.email || !signupData?.password) {
+        Alert.alert('오류', '가입 정보가 누락되었습니다. 처음부터 다시 시도해주세요.');
+        router.replace('/(auth)/signup/step1-account');
+        return;
+      }
 
-      if (signupData?.email && signupData?.password) {
-        // Supabase Auth 회원가입
-        try {
-          await signUpAdmin({
-            email: signupData.email,
-            password: signupData.password,
-            name: signupData.name,
-            phone: signupData.phone,
+      const adminName = signupData.name ?? '관리자';
+
+      // 1) Supabase Auth 회원가입 — 실패하면 즉시 중단
+      try {
+        await signUpAdmin({
+          email: signupData.email,
+          password: signupData.password,
+          name: signupData.name,
+          phone: signupData.phone,
+        });
+      } catch (err: any) {
+        Alert.alert('회원가입 실패', err?.message ?? '계정을 만들 수 없습니다');
+        return;
+      }
+
+      // 2) 구독(trialing) + 빌라 등록 — 실패해도 계정은 살아있으므로 안내 후 진행
+      let adminId: string | null = null;
+      try {
+        const admin = await getMyAdmin();
+        if (!admin) throw new Error('관리자 프로필을 찾을 수 없습니다');
+        adminId = admin.id;
+
+        await supabase.from('subscriptions').insert({
+          admin_id: admin.id,
+          status: 'trialing',
+          billing_day: 1,
+          trial_ends_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        });
+
+        if (signupData.villaName && signupData.totalUnits) {
+          await createVilla({
+            name: signupData.villaName,
+            address: signupData.villaAddress || '',
+            totalUnits: signupData.totalUnits,
+            unitsPerFloor: signupData.unitsPerFloor || 2,
+            accountBank: signupData.accountBank,
+            accountNumber: signupData.accountNumber,
+            accountHolder: signupData.accountHolder,
           });
-
-          // 빌라 등록
-          if (signupData.villaName && signupData.totalUnits) {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-              const { data: admin } = await supabase
-                .from('admins')
-                .select('id')
-                .eq('auth_id', user.id)
-                .single();
-
-              if (admin) {
-                await supabase.from('subscriptions').insert({
-                  admin_id: admin.id,
-                  status: 'trialing',
-                  billing_day: 1,
-                  trial_ends_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-                });
-
-                await createVilla({
-                  name: signupData.villaName,
-                  address: signupData.villaAddress || '',
-                  totalUnits: signupData.totalUnits,
-                  unitsPerFloor: signupData.unitsPerFloor || 2,
-                });
-              }
-            }
-          }
-        } catch (authErr: any) {
-          console.warn('Supabase signup error (continuing to home):', authErr.message);
         }
+
+        // 3) store 동기화 — billing/home 진입 시 빌라가 즉시 보이도록
+        await syncAdminFromSupabase();
+      } catch (err: any) {
+        console.error('[signup] post-auth error:', err);
+        Alert.alert(
+          '일부 정보 등록 실패',
+          (err?.message ?? String(err)) + '\n계정은 생성됐습니다. 설정에서 빌라를 다시 추가해주세요.',
+        );
       }
 
       await clearSignupData();
-      router.replace('/(admin)/home');
+
+      if (adminId) {
+        router.replace({
+          pathname: '/payment/billing',
+          params: { adminId, customerName: adminName, fromSignup: '1' },
+        });
+      } else {
+        router.replace('/(admin)/home');
+      }
     } catch (err: any) {
-      console.error('Signup failed:', err);
-      // 에러가 나도 홈으로 이동 (데모 모드)
+      console.error('[signup] unexpected:', err);
+      Alert.alert('오류', err?.message ?? '예상치 못한 오류가 발생했습니다');
       await clearSignupData();
-      router.replace('/(admin)/home');
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleSkip = async () => {
-    await clearSignupData();
-    router.replace('/(admin)/home');
   };
 
   return (
@@ -210,8 +227,10 @@ export default function SignupStep3Screen() {
       {/* Plan cards */}
       {PLANS.map((plan) => {
         const isSelected = selectedPlan === plan.id;
-        const isRecommended =
-          totalUnits > 0 && recommendPlan(totalUnits) === plan.id;
+        // 세대수가 입력됐으면 그에 맞는 1개만 선택 가능, 나머지는 비활성화
+        const isAvailable = totalUnits > 0
+          ? recommendPlan(totalUnits) === plan.id
+          : true;
 
         return (
           <TouchableOpacity
@@ -219,8 +238,10 @@ export default function SignupStep3Screen() {
             style={[
               styles.planCard,
               isSelected && styles.planCardSelected,
+              !isAvailable && styles.planCardDisabled,
             ]}
-            onPress={() => setSelectedPlan(plan.id)}
+            onPress={() => isAvailable && setSelectedPlan(plan.id)}
+            disabled={!isAvailable}
             activeOpacity={0.7}
           >
             <View style={styles.planHeader}>
@@ -237,35 +258,38 @@ export default function SignupStep3Screen() {
                   style={[
                     styles.planName,
                     isSelected && styles.planNameSelected,
+                    !isAvailable && styles.planTextDisabled,
                   ]}
                 >
                   {plan.name}
                 </Text>
-                {plan.popular && (
-                  <View style={styles.popularBadge}>
-                    <Text style={styles.popularText}>인기</Text>
-                  </View>
-                )}
-                {isRecommended && (
-                  <View style={styles.recommendBadge}>
-                    <Text style={styles.recommendText}>추천</Text>
-                  </View>
-                )}
               </View>
-              <Text style={styles.planRange}>{plan.range}</Text>
+              <Text style={[
+                styles.planRange,
+                isSelected && styles.planRangeSelected,
+                !isAvailable && styles.planTextDisabled,
+              ]}>{plan.range}</Text>
             </View>
 
             <View style={styles.planPriceRow}>
-              <Text style={styles.planPrice}>월 {plan.priceLabel}</Text>
-              <Text style={styles.planPriceNote}>/월 (VAT 별도)</Text>
+              <Text style={[
+                styles.planPrice,
+                isSelected && styles.planPriceSelected,
+                !isAvailable && styles.planTextDisabled,
+              ]}>월 {plan.priceLabel}</Text>
+              <Text style={[
+                styles.planPriceNote,
+                isSelected && styles.planPriceNoteSelected,
+                !isAvailable && styles.planTextDisabled,
+              ]}>/월 (VAT 별도)</Text>
             </View>
 
             {isSelected && (
               <View style={styles.planFeatures}>
                 {plan.features.map((f, i) => (
                   <View key={i} style={styles.featureRow}>
-                    <Text style={styles.featureCheck}>✓</Text>
-                    <Text style={styles.featureText}>{f}</Text>
+                    <Text style={[styles.featureCheck, styles.featureCheckSelected]}>✓</Text>
+                    <Text style={[styles.featureText, styles.featureTextSelected]}>{f}</Text>
                   </View>
                 ))}
               </View>
@@ -275,28 +299,23 @@ export default function SignupStep3Screen() {
       })}
 
       <View style={styles.cardNoticeBox}>
-        <Text style={styles.cardNoticeTitle}>💳 카드 등록은 나중에</Text>
+        <Text style={styles.cardNoticeTitle}>💳 30일 무료체험 안내</Text>
         <Text style={styles.cardNoticeText}>
-          30일 무료체험 종료 7일 전, 설정 &gt; 구독관리에서 카드를 등록해 주세요.
-          토스페이먼츠 보안 페이지로 안전하게 연결됩니다.
+          무료체험 시작 전 카드 등록이 필요합니다. 30일 이내에 해지하시면 요금이 청구되지 않으며,
+          30일 이후에는 등록한 카드로 자동 결제됩니다. 토스페이먼츠 보안 페이지로 안전하게 연결됩니다.
         </Text>
       </View>
 
       {/* CTA */}
       <TouchableOpacity
-        style={styles.primaryButton}
+        style={[styles.primaryButton, loading && { opacity: 0.6 }]}
         onPress={handleStart}
         activeOpacity={0.8}
+        disabled={loading}
       >
-        <Text style={styles.primaryButtonText}>🎉 무료 체험 시작!</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.skipButton}
-        onPress={handleSkip}
-        activeOpacity={0.7}
-      >
-        <Text style={styles.skipText}>나중에 결정할게요</Text>
+        <Text style={styles.primaryButtonText}>
+          {loading ? '계정 생성 중...' : '카드 등록하고 시작'}
+        </Text>
       </TouchableOpacity>
 
       <View style={{ height: 40 }} />
@@ -344,10 +363,8 @@ const styles = StyleSheet.create({
   // Trial banner
   trialBanner: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(76,175,80,0.06)',
+    backgroundColor: '#F1F6FF',
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(76,175,80,0.2)',
     padding: 16,
     marginBottom: 20,
     alignItems: 'center',
@@ -362,12 +379,12 @@ const styles = StyleSheet.create({
   trialTitle: {
     fontSize: 16,
     fontWeight: '800',
-    color: C.success,
+    color: '#4263E8',
     marginBottom: 2,
   },
   trialSub: {
     fontSize: 12,
-    color: C.sub,
+    color: '#5B6D8F',
     lineHeight: 18,
   },
 
@@ -387,7 +404,13 @@ const styles = StyleSheet.create({
   },
   planCardSelected: {
     borderColor: C.primary,
-    backgroundColor: 'rgba(52,84,209,0.04)',
+    backgroundColor: '#EBF1FF',
+  },
+  planCardDisabled: {
+    opacity: 0.45,
+  },
+  planTextDisabled: {
+    color: '#9CA3AF',
   },
   planHeader: {
     flexDirection: 'row',
@@ -426,33 +449,12 @@ const styles = StyleSheet.create({
   planNameSelected: {
     color: C.primary,
   },
-  popularBadge: {
-    backgroundColor: '#FF6B2C',
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    marginLeft: 8,
-  },
-  popularText: {
-    color: C.white,
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  recommendBadge: {
-    backgroundColor: C.success,
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    marginLeft: 8,
-  },
-  recommendText: {
-    color: C.white,
-    fontSize: 11,
-    fontWeight: '700',
-  },
   planRange: {
     fontSize: 13,
     color: C.sub,
+  },
+  planRangeSelected: {
+    color: C.primary,
   },
   planPriceRow: {
     flexDirection: 'row',
@@ -465,16 +467,22 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: C.text,
   },
+  planPriceSelected: {
+    color: C.primary,
+  },
   planPriceNote: {
     fontSize: 12,
     color: C.sub,
     marginLeft: 4,
   },
+  planPriceNoteSelected: {
+    color: C.primary,
+  },
   planFeatures: {
     marginTop: 12,
     paddingLeft: 30,
     borderTopWidth: 1,
-    borderTopColor: C.cardBorder,
+    borderTopColor: 'rgba(66,99,232,0.2)',
     paddingTop: 12,
   },
   featureRow: {
@@ -488,9 +496,15 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginRight: 8,
   },
+  featureCheckSelected: {
+    color: C.primary,
+  },
   featureText: {
     fontSize: 13,
     color: C.text,
+  },
+  featureTextSelected: {
+    color: C.primary,
   },
 
   cardNoticeBox: {

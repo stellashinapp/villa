@@ -8,9 +8,11 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Modal,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { saveSignupData } from '@/lib/signup-store';
+import { BANK_NAMES } from '@villatolk/shared';
 
 const C = {
   bg: '#F5F6FA',
@@ -18,7 +20,7 @@ const C = {
   cardBorder: '#E8EBF0',
   inputBg: '#F0F2F6',
   inputBorder: '#E5E7EB',
-  primary: '#3454D1',
+  primary: '#4263E8',
   success: '#4CAF50',
   text: '#1A1D26',
   sub: '#6B7280',
@@ -45,11 +47,15 @@ function ProgressBar({ step }: { step: number }) {
 export default function SignupStep2Screen() {
   const router = useRouter();
 
-  const [villaName, setVillaName] = useState('');
-  const [address, setAddress] = useState('');
-  const [totalUnits, setTotalUnits] = useState('');
-  const [unitsPerFloor, setUnitsPerFloor] = useState('2');
-  const [bankAccount, setBankAccount] = useState('');
+  // __DEV__ 일 때만 더미 데이터로 자동 채움
+  const [villaName, setVillaName] = useState(__DEV__ ? '테스트빌라' : '');
+  const [address, setAddress] = useState(__DEV__ ? '서울특별시 강남구 역삼동 123-4' : '');
+  const [totalUnits, setTotalUnits] = useState(__DEV__ ? '8' : '');
+  const [unitsPerFloor, setUnitsPerFloor] = useState(__DEV__ ? '2' : '2');
+  const [accountBank, setAccountBank] = useState(__DEV__ ? '국민은행' : '');
+  const [accountNumber, setAccountNumber] = useState(__DEV__ ? '123-456-789012' : '');
+  const [accountHolder, setAccountHolder] = useState(__DEV__ ? '김테스트' : '');
+  const [bankPickerOpen, setBankPickerOpen] = useState(false);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -64,18 +70,18 @@ export default function SignupStep2Screen() {
     else if (isNaN(Number(totalUnits)) || Number(totalUnits) < 1)
       e.totalUnits = '유효한 세대수를 입력해주세요';
 
-    if (!unitsPerFloor.trim())
-      e.unitsPerFloor = '층당 세대수를 입력해주세요';
-    else if (isNaN(Number(unitsPerFloor)) || Number(unitsPerFloor) < 1)
-      e.unitsPerFloor = '유효한 세대수를 입력해주세요';
+    if (!accountBank.trim()) e.accountBank = '은행을 선택해주세요';
+    if (!accountNumber.trim()) e.accountNumber = '계좌번호를 입력해주세요';
+    if (!accountHolder.trim()) e.accountHolder = '예금주를 입력해주세요';
 
     setErrors(e);
     setTouched({
       villaName: true,
       address: true,
       totalUnits: true,
-      unitsPerFloor: true,
-      bankAccount: true,
+      accountBank: true,
+      accountNumber: true,
+      accountHolder: true,
     });
     return Object.keys(e).length === 0;
   };
@@ -87,7 +93,9 @@ export default function SignupStep2Screen() {
         villaAddress: address,
         totalUnits: Number(totalUnits),
         unitsPerFloor: Number(unitsPerFloor),
-        accountInfo: bankAccount,
+        accountBank,
+        accountNumber,
+        accountHolder,
       });
       router.push({
         pathname: '/(auth)/signup/step3-plan',
@@ -153,6 +161,7 @@ export default function SignupStep2Screen() {
         style={styles.container}
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         <ProgressBar step={2} />
 
@@ -170,51 +179,111 @@ export default function SignupStep2Screen() {
             placeholder: '서울시 강남구 역삼동 123-45',
           })}
 
-          <View style={styles.rowInputs}>
-            <View style={styles.halfInput}>
-              {renderInput(
-                '총 세대수',
-                totalUnits,
-                setTotalUnits,
-                'totalUnits',
-                {
-                  placeholder: '예: 12',
-                  keyboardType: 'number-pad',
-                }
-              )}
-            </View>
-            <View style={styles.halfInput}>
-              {renderInput(
-                '층당 세대수',
-                unitsPerFloor,
-                setUnitsPerFloor,
-                'unitsPerFloor',
-                {
-                  placeholder: '2',
-                  keyboardType: 'number-pad',
-                }
-              )}
-            </View>
+          {renderInput(
+            '총 세대수',
+            totalUnits,
+            setTotalUnits,
+            'totalUnits',
+            {
+              placeholder: '예: 12',
+              keyboardType: 'number-pad',
+            }
+          )}
+
+          {/* 은행 (드롭다운) */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>입금 은행</Text>
+            <TouchableOpacity
+              style={[
+                styles.input,
+                { justifyContent: 'center' },
+                touched.accountBank && errors.accountBank ? styles.inputError : null,
+              ]}
+              onPress={() => setBankPickerOpen(true)}
+              activeOpacity={0.7}
+            >
+              <Text style={{ fontSize: 15, color: accountBank ? C.text : '#9CA3AF' }}>
+                {accountBank || '은행 선택'}
+              </Text>
+            </TouchableOpacity>
+            {touched.accountBank && errors.accountBank && (
+              <Text style={styles.errorText}>{errors.accountBank}</Text>
+            )}
           </View>
 
           {renderInput(
-            '관리비 입금 계좌',
-            bankAccount,
-            setBankAccount,
-            'bankAccount',
+            '계좌번호',
+            accountNumber,
+            setAccountNumber,
+            'accountNumber',
             {
-              placeholder: '은행명 계좌번호 (예: 국민 123-456-789)',
-              hint: '입주민이 관리비를 입금할 계좌입니다',
+              placeholder: '예: 123-456-789012',
+              keyboardType: 'numeric',
+            }
+          )}
+
+          {renderInput(
+            '예금주',
+            accountHolder,
+            setAccountHolder,
+            'accountHolder',
+            {
+              placeholder: '예금주 이름',
+              hint: '입주민이 관리비를 입금할 계좌의 예금주입니다',
             }
           )}
         </View>
 
+        {/* 은행 선택 모달 */}
+        <Modal
+          visible={bankPickerOpen}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setBankPickerOpen(false)}
+        >
+          <TouchableOpacity
+            style={styles.bankModalBg}
+            activeOpacity={1}
+            onPress={() => setBankPickerOpen(false)}
+          >
+            <View style={styles.bankModalCard}>
+              <Text style={styles.bankModalTitle}>은행 선택</Text>
+              <ScrollView style={{ maxHeight: 380 }}>
+                {BANK_NAMES.map((b) => (
+                  <TouchableOpacity
+                    key={b}
+                    style={[
+                      styles.bankItem,
+                      accountBank === b && { backgroundColor: '#F1F6FF' },
+                    ]}
+                    onPress={() => {
+                      setAccountBank(b);
+                      setBankPickerOpen(false);
+                      if (errors.accountBank) {
+                        setErrors((prev) => {
+                          const next = { ...prev };
+                          delete next.accountBank;
+                          return next;
+                        });
+                      }
+                    }}
+                  >
+                    <Text style={[
+                      styles.bankItemText,
+                      accountBank === b && { color: C.primary, fontWeight: '700' },
+                    ]}>{b}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          </TouchableOpacity>
+        </Modal>
+
         {totalUnits && Number(totalUnits) > 0 && (() => {
           const units = Number(totalUnits);
           const plan = units <= 8 ? { name: '소형', price: 30000, range: '6~8세대' }
-            : units <= 15 ? { name: '인기', price: 50000, range: '9~15세대' }
+            : units <= 15 ? { name: '중형', price: 50000, range: '9~15세대' }
             : { name: '대형', price: 70000, range: '16~30세대' };
-          const floors = Number(unitsPerFloor) > 0 ? Math.ceil(units / Number(unitsPerFloor)) : 0;
           return (
             <View style={styles.previewCard}>
               <Text style={styles.previewTitle}>자동 플랜 배정</Text>
@@ -229,12 +298,6 @@ export default function SignupStep2Screen() {
                   <Text style={styles.previewLabel}>세대수</Text>
                   <Text style={styles.previewValue}>{totalUnits}세대</Text>
                 </View>
-                {floors > 0 && (
-                  <View style={styles.previewRow}>
-                    <Text style={styles.previewLabel}>예상 층수</Text>
-                    <Text style={styles.previewValue}>{floors}층</Text>
-                  </View>
-                )}
               </View>
               <View style={styles.trialBanner}>
                 <Text style={styles.trialText}>🎉 첫 1개월 완전 무료</Text>
@@ -249,7 +312,7 @@ export default function SignupStep2Screen() {
           onPress={handleNext}
           activeOpacity={0.8}
         >
-          <Text style={styles.primaryButtonText}>다음 → 카드 등록 (선택)</Text>
+          <Text style={styles.primaryButtonText}>다음</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -426,9 +489,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   trialBanner: {
-    backgroundColor: 'rgba(76,175,80,0.08)',
-    borderWidth: 1,
-    borderColor: 'rgba(76,175,80,0.2)',
+    backgroundColor: '#F1F6FF',
     borderRadius: 12,
     padding: 14,
     alignItems: 'center',
@@ -436,11 +497,11 @@ const styles = StyleSheet.create({
   trialText: {
     fontSize: 15,
     fontWeight: '800',
-    color: C.success,
+    color: '#4263E8',
   },
   trialSub: {
     fontSize: 12,
-    color: C.sub,
+    color: '#5B6D8F',
     marginTop: 4,
   },
 
@@ -464,5 +525,34 @@ const styles = StyleSheet.create({
   skipText: {
     color: C.sub,
     fontSize: 14,
+  },
+  bankModalBg: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'flex-end',
+  },
+  bankModalCard: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingTop: 24,
+    paddingBottom: 32,
+    paddingHorizontal: 20,
+  },
+  bankModalTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: C.text,
+    marginBottom: 12,
+    paddingHorizontal: 4,
+  },
+  bankItem: {
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+  },
+  bankItemText: {
+    fontSize: 15,
+    color: C.text,
   },
 });

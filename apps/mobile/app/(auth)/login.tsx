@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { router } from 'expo-router';
-import { signInAdmin } from '@/lib/auth';
+import { signInAdmin, getMyAdmin } from '@/lib/auth';
+import { store } from '@/lib/store';
 
 export default function AdminLoginScreen() {
   const [email, setEmail] = useState('');
@@ -16,7 +17,21 @@ export default function AdminLoginScreen() {
     setLoading(true);
     try {
       await signInAdmin(email.trim(), password);
-      router.replace('/(admin)/home');
+      // 가입 도중 카드 등록을 마치지 않은 상태면 결제 화면으로 복귀
+      const sub = store.subscription;
+      if (sub.status === 'trialing' && !sub.cardLast4) {
+        const me = await getMyAdmin();
+        router.replace({
+          pathname: '/payment/billing',
+          params: {
+            adminId: me?.id ?? '',
+            customerName: me?.name ?? '관리자',
+            fromSignup: '1',
+          },
+        });
+      } else {
+        router.replace('/(admin)/home');
+      }
     } catch (e) {
       Alert.alert('로그인 실패', e instanceof Error ? e.message : '알 수 없는 오류');
     } finally {
@@ -88,11 +103,11 @@ export default function AdminLoginScreen() {
           style={{ marginTop: 12, alignItems: 'center' }}
           disabled={loading}
         >
-          <Text style={{ fontSize: 13, color: '#3454D1', fontWeight: '600' }}>입주민 로그인</Text>
+          <Text style={{ fontSize: 13, color: '#4263E8', fontWeight: '600' }}>입주민 로그인</Text>
         </TouchableOpacity>
       </View>
 
-      <Text style={s.footer}>ANDNEW · TheZoomWorks · 2026</Text>
+      <Text style={s.footer}>ANDNEW 2026</Text>
     </View>
   );
 }
@@ -147,7 +162,7 @@ const s = StyleSheet.create({
     color: '#1A1D26',
   },
   loginBtn: {
-    backgroundColor: '#3454D1',
+    backgroundColor: '#4263E8',
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
@@ -167,7 +182,7 @@ const s = StyleSheet.create({
     marginTop: 10,
   },
   signupBtnText: {
-    color: '#3454D1',
+    color: '#4263E8',
     fontSize: 15,
     fontWeight: '700',
   },
@@ -181,7 +196,7 @@ const s = StyleSheet.create({
   demoTitle: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#3454D1',
+    color: '#4263E8',
     marginBottom: 4,
   },
   demoText: {

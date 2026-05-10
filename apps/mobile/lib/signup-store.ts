@@ -13,9 +13,9 @@ export interface SignupData {
   villaAddress?: string;
   totalUnits?: number;
   unitsPerFloor?: number;
-  accountInfo?: string;
-  // Step 3
-  plan?: 'small' | 'popular' | 'large';
+  accountBank?: string;
+  accountNumber?: string;
+  accountHolder?: string;
 }
 
 export async function saveSignupData(data: Partial<SignupData>) {

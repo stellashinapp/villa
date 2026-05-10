@@ -1,7 +1,7 @@
 export default function SettingsPage() {
   const PLANS = [
     { name: '소형', price: '30,000원', desc: '20세대 이하', color: 'text-ok' },
-    { name: '인기', price: '50,000원', desc: '21~50세대', color: 'text-pri' },
+    { name: '중형', price: '50,000원', desc: '21~50세대', color: 'text-pri' },
     { name: '대형', price: '70,000원', desc: '51세대 이상', color: 'text-warn' },
   ];
 

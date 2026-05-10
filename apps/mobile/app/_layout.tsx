@@ -1,35 +1,28 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Text as RNText, View, StyleSheet, TextProps } from 'react-native';
-import {
-  useFonts,
-  NotoSansKR_100Thin,
-  NotoSansKR_300Light,
-  NotoSansKR_400Regular,
-  NotoSansKR_500Medium,
-  NotoSansKR_700Bold,
-  NotoSansKR_900Black,
-} from '@expo-google-fonts/noto-sans-kr';
+import { useFonts } from 'expo-font';
 import React, { useEffect, useState } from 'react';
 import { initI18n } from '@/lib/i18n';
 
-// 전역 Text 컴포넌트 오버라이드 - 모든 Text에 Noto Sans KR 자동 적용
+// 전역 Text 컴포넌트 오버라이드 - 모든 Text에 Pretendard 자동 적용
 const originalRender = (RNText as any).render;
 if (originalRender && !(RNText as any).__patched) {
   (RNText as any).render = function(props: TextProps, ref: any) {
     const flatStyle = StyleSheet.flatten(props.style) || {};
     const fw = flatStyle.fontWeight;
 
-    // 전체적으로 한 단계 낮은 굵기 적용
-    let fontFamily = 'NotoSansKR_300Light';
-    if (fw === '100' || fw === 100) fontFamily = 'NotoSansKR_100Thin';
-    if (fw === '300' || fw === 300) fontFamily = 'NotoSansKR_100Thin';
-    if (fw === '400' || fw === 400 || !fw) fontFamily = 'NotoSansKR_300Light';
-    if (fw === '500' || fw === 500) fontFamily = 'NotoSansKR_400Regular';
-    if (fw === '600' || fw === 600 || fw === 'bold') fontFamily = 'NotoSansKR_500Medium';
-    if (fw === '700' || fw === 700) fontFamily = 'NotoSansKR_500Medium';
-    if (fw === '800' || fw === 800) fontFamily = 'NotoSansKR_700Bold';
-    if (fw === '900' || fw === 900) fontFamily = 'NotoSansKR_700Bold';
+    // fontWeight 1:1 매핑 (Pretendard 9 weights)
+    let fontFamily = 'Pretendard-Regular';
+    if (fw === '100' || fw === 100) fontFamily = 'Pretendard-Thin';
+    if (fw === '200' || fw === 200) fontFamily = 'Pretendard-ExtraLight';
+    if (fw === '300' || fw === 300) fontFamily = 'Pretendard-Light';
+    if (fw === '400' || fw === 400 || !fw) fontFamily = 'Pretendard-Regular';
+    if (fw === '500' || fw === 500) fontFamily = 'Pretendard-Medium';
+    if (fw === '600' || fw === 600) fontFamily = 'Pretendard-SemiBold';
+    if (fw === '700' || fw === 700 || fw === 'bold') fontFamily = 'Pretendard-Bold';
+    if (fw === '800' || fw === 800) fontFamily = 'Pretendard-ExtraBold';
+    if (fw === '900' || fw === 900) fontFamily = 'Pretendard-Black';
 
     return originalRender.call(this, { ...props, style: [{ fontFamily }, props.style] }, ref);
   };
@@ -38,12 +31,15 @@ if (originalRender && !(RNText as any).__patched) {
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    NotoSansKR_100Thin,
-    NotoSansKR_300Light,
-    NotoSansKR_400Regular,
-    NotoSansKR_500Medium,
-    NotoSansKR_700Bold,
-    NotoSansKR_900Black,
+    'Pretendard-Thin': require('pretendard/dist/public/static/Pretendard-Thin.otf'),
+    'Pretendard-ExtraLight': require('pretendard/dist/public/static/Pretendard-ExtraLight.otf'),
+    'Pretendard-Light': require('pretendard/dist/public/static/Pretendard-Light.otf'),
+    'Pretendard-Regular': require('pretendard/dist/public/static/Pretendard-Regular.otf'),
+    'Pretendard-Medium': require('pretendard/dist/public/static/Pretendard-Medium.otf'),
+    'Pretendard-SemiBold': require('pretendard/dist/public/static/Pretendard-SemiBold.otf'),
+    'Pretendard-Bold': require('pretendard/dist/public/static/Pretendard-Bold.otf'),
+    'Pretendard-ExtraBold': require('pretendard/dist/public/static/Pretendard-ExtraBold.otf'),
+    'Pretendard-Black': require('pretendard/dist/public/static/Pretendard-Black.otf'),
   });
 
   const [i18nReady, setI18nReady] = useState(false);

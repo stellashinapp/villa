@@ -20,7 +20,7 @@ const C = {
   border: '#E8EBF0',
   inputBg: '#F0F2F6',
   inputBorder: '#E5E7EB',
-  pri: '#3454D1',
+  pri: '#4263E8',
   priL: '#E8EEFB',
   ok: '#4CAF50',
   okL: 'rgba(76,175,80,0.08)',
@@ -386,7 +386,7 @@ export default function AdminSettingsScreen() {
         <Text style={s.logoutText}>로그아웃</Text>
       </TouchableOpacity>
 
-      <Text style={s.footer}>ANDNEW · TheZoomWorks · 2026</Text>
+      <Text style={s.footer}>ANDNEW 2026</Text>
     </ScrollView>
   );
 }

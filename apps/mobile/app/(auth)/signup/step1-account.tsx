@@ -20,7 +20,7 @@ const C = {
   cardBorder: '#E8EBF0',
   inputBg: '#F0F2F6',
   inputBorder: '#E5E7EB',
-  primary: '#4A6CF7',
+  primary: '#4263E8',
   success: '#4CAF50',
   text: '#1A1D26',
   sub: '#6B7280',
@@ -47,23 +47,25 @@ function ProgressBar({ step }: { step: number }) {
 export default function SignupStep1Screen() {
   const router = useRouter();
 
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [passwordConfirm, setPasswordConfirm] = useState('');
+  // __DEV__ 일 때만 더미 데이터로 자동 채움 (이메일/아이디는 timestamp 로 매번 새로 — 중복 방지)
+  const devSuffix = String(Date.now()).slice(-6);
+  const [name, setName] = useState(__DEV__ ? '김테스트' : '');
+  const [phone, setPhone] = useState(__DEV__ ? '01012345678' : '');
+  const [email, setEmail] = useState(__DEV__ ? `admin${devSuffix}@andnew.kr` : '');
+  const [username, setUsername] = useState(__DEV__ ? `admin${devSuffix}` : '');
+  const [password, setPassword] = useState(__DEV__ ? 'Villatolk1234!' : '');
+  const [passwordConfirm, setPasswordConfirm] = useState(__DEV__ ? 'Villatolk1234!' : '');
 
-  const [agreeAll, setAgreeAll] = useState(false);
-  const [agreeTerms, setAgreeTerms] = useState(false);
-  const [agreePrivacy, setAgreePrivacy] = useState(false);
-  const [agreeMarketing, setAgreeMarketing] = useState(false);
+  const [agreeAll, setAgreeAll] = useState(__DEV__);
+  const [agreeTerms, setAgreeTerms] = useState(__DEV__);
+  const [agreePrivacy, setAgreePrivacy] = useState(__DEV__);
+  const [agreeMarketing, setAgreeMarketing] = useState(__DEV__);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   // 본인인증 (NICE 체크플러스)
-  const [phoneVerified, setPhoneVerified] = useState(false);
+  const [phoneVerified, setPhoneVerified] = useState(__DEV__);
   const [niceModalVisible, setNiceModalVisible] = useState(false);
 
   const handlePassVerify = () => setNiceModalVisible(true);
@@ -245,7 +247,7 @@ export default function SignupStep1Screen() {
       </TouchableOpacity>
       {viewLink && (
         <TouchableOpacity onPress={() => router.push(viewLink as never)}>
-          <Text style={{ fontSize: 12, color: '#4A6CF7', textDecorationLine: 'underline' }}>보기</Text>
+          <Text style={{ fontSize: 12, color: '#4263E8', textDecorationLine: 'underline' }}>보기</Text>
         </TouchableOpacity>
       )}
     </View>
@@ -371,7 +373,7 @@ export default function SignupStep1Screen() {
           activeOpacity={0.8}
         >
           <Text style={styles.primaryButtonText}>
-            {phoneVerified ? '다음 → 빌라 등록' : '본인인증 후 진행 가능'}
+            {phoneVerified ? '다음' : '본인인증 후 진행 가능'}
           </Text>
         </TouchableOpacity>
 

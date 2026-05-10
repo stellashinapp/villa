@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 
 const C = {
   bg: '#FFFFFF', inputBg: '#F0F2F6', inputBorder: '#E5E7EB',
-  pri: '#4A6CF7', text: '#1A1D26', sub: '#6B7280', muted: '#9CA3AF',
+  pri: '#4263E8', text: '#1A1D26', sub: '#6B7280', muted: '#9CA3AF',
 };
 
 export default function FindAccountScreen() {

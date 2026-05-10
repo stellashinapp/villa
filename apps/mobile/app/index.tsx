@@ -1,79 +1,26 @@
 import { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { residentTheme as T, common } from '@/constants/theme';
+import { common } from '@/constants/theme';
 import { getSession, getMyAdmin } from '@/lib/auth';
 import { syncAdminFromSupabase } from '@/lib/sync';
+import { store } from '@/lib/store';
 
-const NAVY_DARK = '#0D1A33';
-const NAVY = '#1B2A4A';
-const NAVY_LIGHT = '#2A3D6B';
+const BG_TOP = '#F2F5FE';
+const BG_BOTTOM = '#DCE3F4';
+const NAVY = '#1B2942';
+const BRAND_BLUE = '#4263E8';
+const INK_SUB = '#7C8AAB';
 
-function BuildingLogo({ size = 88 }: { size?: number }) {
-  const boxSize = size;
-  const inner = boxSize * 0.6;
+function HeroIllustration({ size = 180 }: { size?: number }) {
+  // Figma aspect: 153 x 146
   return (
-    <View
-      style={{
-        width: boxSize,
-        height: boxSize,
-        borderRadius: boxSize * 0.24,
-        backgroundColor: '#FFFFFF',
-        alignItems: 'center',
-        justifyContent: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.25,
-        shadowRadius: 16,
-        elevation: 8,
-      }}
-    >
-      <View style={{ width: inner, height: inner * 0.95, position: 'relative' }}>
-        {/* 빌딩 본체 */}
-        <View
-          style={{
-            position: 'absolute',
-            left: inner * 0.06,
-            top: inner * 0.08,
-            width: inner * 0.88,
-            height: inner * 0.87,
-            borderRadius: inner * 0.06,
-            backgroundColor: NAVY,
-          }}
-        />
-        {/* 창문 격자 (3x4) */}
-        {[0, 1, 2].map((row) =>
-          [0, 1, 2].map((col) => (
-            <View
-              key={`${row}-${col}`}
-              style={{
-                position: 'absolute',
-                left: inner * (0.18 + col * 0.24),
-                top: inner * (0.18 + row * 0.18),
-                width: inner * 0.13,
-                height: inner * 0.1,
-                borderRadius: 2,
-                backgroundColor: '#FFFFFF',
-              }}
-            />
-          ))
-        )}
-        {/* 출입문 */}
-        <View
-          style={{
-            position: 'absolute',
-            left: inner * 0.4,
-            top: inner * 0.74,
-            width: inner * 0.2,
-            height: inner * 0.21,
-            borderTopLeftRadius: inner * 0.04,
-            borderTopRightRadius: inner * 0.04,
-            backgroundColor: '#FFFFFF',
-          }}
-        />
-      </View>
-    </View>
+    <Image
+      source={require('../assets/villa-talk-hero.png')}
+      style={{ width: size, height: size * (146 / 153) }}
+      resizeMode="contain"
+    />
   );
 }
 
@@ -89,7 +36,18 @@ export default function EntryScreen() {
           const me = await getMyAdmin();
           if (me) {
             await syncAdminFromSupabase().catch(() => {});
-            if (!cancelled) router.replace('/(admin)/home');
+            if (cancelled) return;
+            // 가입 도중 카드 등록을 마치지 않고 종료한 경우 → 카드 등록 화면으로 복귀
+            const sub = store.subscription;
+            const needsCard = sub.status === 'trialing' && !sub.cardLast4;
+            if (needsCard) {
+              router.replace({
+                pathname: '/payment/billing',
+                params: { adminId: me.id, customerName: me.name ?? '관리자', fromSignup: '1' },
+              });
+            } else {
+              router.replace('/(admin)/home');
+            }
             return;
           }
         }
@@ -102,24 +60,20 @@ export default function EntryScreen() {
   }, []);
 
   if (phase === 'checking') {
-    return (
-      <LinearGradient colors={[NAVY_DARK, NAVY, NAVY_LIGHT]} style={s.splashContainer}>
-        <BuildingLogo size={92} />
-        <Text style={s.splashBrand}>빌라톡</Text>
-        <ActivityIndicator color="#FFFFFF" style={{ marginTop: 28 }} />
-      </LinearGradient>
-    );
+    // 세션 체크 중에는 빈 화면 — 깜빡임 방지를 위해 메인 배경만 보여줌
+    return <View style={{ flex: 1, backgroundColor: BG_TOP }} />;
   }
 
   return (
-    <LinearGradient colors={[NAVY_DARK, NAVY, NAVY_LIGHT]} style={s.container}>
+    <LinearGradient colors={[BG_TOP, BG_BOTTOM]} style={s.container}>
       <View style={s.heroSection}>
-        <BuildingLogo size={104} />
-        <Text style={s.brandLabel}>VILLA TALK</Text>
-        <Text style={s.brandTitle}>빌라톡</Text>
-        <Text style={s.description}>
-          관리자와 입주민 모두를 위한{'\n'}스마트 공동 관리 서비스
+        <HeroIllustration size={144} />
+        <Text style={s.brandTitle}>
+          <Text style={{ color: NAVY }}>VILLA </Text>
+          <Text style={{ color: BRAND_BLUE }}>TALK</Text>
         </Text>
+        <Text style={s.tagline}>관리자와 입주민 모두를 위한</Text>
+        <Text style={s.taglineEmphasis}>스마트 공동 관리 서비스</Text>
       </View>
 
       <View style={s.buttonArea}>
@@ -154,9 +108,8 @@ const s = StyleSheet.create({
   },
   splashBrand: {
     fontSize: 28,
-    fontWeight: '900',
-    color: '#FFFFFF',
-    marginTop: 22,
+    fontWeight: '800',
+    marginTop: 16,
     letterSpacing: -0.5,
   },
   heroSection: {
@@ -165,42 +118,42 @@ const s = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 40,
   },
-  brandLabel: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: 'rgba(255,255,255,0.6)',
-    letterSpacing: 4,
-    marginTop: 30,
-    marginBottom: 8,
-  },
   brandTitle: {
-    fontSize: 38,
-    fontWeight: '900',
-    color: '#FFFFFF',
-    marginBottom: 18,
-    letterSpacing: -0.8,
+    fontSize: 34,
+    fontWeight: '800',
+    marginTop: 16,
+    marginBottom: 16,
+    letterSpacing: -0.6,
   },
-  description: {
-    fontSize: 15,
-    color: 'rgba(255,255,255,0.78)',
+  tagline: {
+    fontSize: 14,
+    color: INK_SUB,
     textAlign: 'center',
-    lineHeight: 24,
+    marginBottom: 4,
+    letterSpacing: -0.3,
+  },
+  taglineEmphasis: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: NAVY,
+    textAlign: 'center',
+    letterSpacing: -0.3,
   },
   buttonArea: {
-    paddingHorizontal: 24,
-    paddingBottom: 50,
-    gap: 12,
+    paddingHorizontal: 20,
+    paddingBottom: 40,
+    gap: 10,
   },
   btnPrimary: {
-    backgroundColor: T.primary,
-    borderRadius: common.radius.md,
-    paddingVertical: 17,
+    backgroundColor: BRAND_BLUE,
+    borderRadius: 14,
+    paddingVertical: 18,
     alignItems: 'center',
-    shadowColor: T.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
-    elevation: 4,
+    shadowColor: BRAND_BLUE,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 3,
   },
   btnPrimaryText: {
     color: '#FFFFFF',
@@ -209,17 +162,15 @@ const s = StyleSheet.create({
     letterSpacing: -0.3,
   },
   btnSecondary: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
-    borderRadius: common.radius.md,
-    paddingVertical: 17,
+    backgroundColor: NAVY,
+    borderRadius: 14,
+    paddingVertical: 18,
     alignItems: 'center',
   },
   btnSecondaryText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
     letterSpacing: -0.3,
   },
 });

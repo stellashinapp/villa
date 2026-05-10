@@ -1,9 +1,13 @@
 import { supabase } from './supabase';
 
 /**
- * 관리자 회원가입
- * 1. Supabase Auth에 계정 생성 (email/password)
- * 2. admins 테이블에 프로필 생성
+ * 관리자 회원가입 — Supabase 권장 패턴
+ *
+ * auth.users INSERT 시 트리거(handle_new_admin_user)가 admins row를
+ * 자동 생성한다. name/phone 은 user_metadata 로 전달 → 트리거가 읽어서 admins 에 저장.
+ *
+ * Email confirmation 이 ON 인 환경에서도 동작하도록 signUp 직후 세션이
+ * 발급되지 않으면 signInWithPassword 로 즉시 세션을 강제 발급한다.
  */
 export async function signUpAdmin(params: {
   email: string;
@@ -11,31 +15,30 @@ export async function signUpAdmin(params: {
   name: string;
   phone: string;
 }) {
-  // 1) Auth 계정 생성
-  const { data: authData, error: authError } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email: params.email,
     password: params.password,
+    options: {
+      data: {
+        name: params.name,
+        phone: params.phone.replace(/\D/g, ''),
+      },
+    },
   });
 
-  if (authError) throw new Error(authError.message);
-  if (!authData.user) throw new Error('계정 생성에 실패했습니다');
+  if (error) throw new Error(error.message);
+  if (!data.user) throw new Error('계정 생성에 실패했습니다');
 
-  // 2) admins 테이블에 프로필 생성
-  const { error: profileError } = await supabase.from('admins').insert({
-    auth_id: authData.user.id,
-    name: params.name,
-    phone: params.phone.replace(/\D/g, ''),
-    email: params.email,
-    role: 'admin',
-  });
-
-  if (profileError) {
-    // 프로필 생성 실패 시 Auth 계정도 정리 시도
-    await supabase.auth.signOut();
-    throw new Error('프로필 생성에 실패했습니다: ' + profileError.message);
+  // Email confirmation ON 시 session 미발급 → 즉시 비밀번호 로그인으로 강제
+  if (!data.session) {
+    const { error: signInErr } = await supabase.auth.signInWithPassword({
+      email: params.email,
+      password: params.password,
+    });
+    if (signInErr) throw new Error('자동 로그인 실패: ' + signInErr.message);
   }
 
-  return authData;
+  return data;
 }
 
 /**

@@ -13,7 +13,7 @@ const C = {
   bg: '#F5F6FA',
   card: '#FFFFFF',
   border: '#E8EBF0',
-  pri: '#3454D1',
+  pri: '#4263E8',
   priL: '#E8EEFB',
   text: '#1A1D26',
   sub: '#6B7280',
@@ -28,13 +28,13 @@ const fmt = (n: number) => n.toLocaleString('ko-KR') + '원';
 
 const PLAN_TABLE = [
   { label: '소형', maxUnits: 8, price: 30000 },
-  { label: '인기', maxUnits: 15, price: 50000 },
+  { label: '중형', maxUnits: 15, price: 50000 },
   { label: '대형', maxUnits: 999, price: 70000 },
 ];
 
 function getPlan(units: number) {
   if (units <= 8) return { plan: '소형', price: 30000 };
-  if (units <= 15) return { plan: '인기', price: 50000 };
+  if (units <= 15) return { plan: '중형', price: 50000 };
   return { plan: '대형', price: 70000 };
 }
 
@@ -46,15 +46,10 @@ export default function AddVillaStep1Screen() {
   const currentTotal = villas.reduce((s, v) => s + v.price, 0);
   const villaCount = villas.length;
 
-  // Estimate for new villa (assume medium ~10 units as preview)
-  const estimatedNewPrice = 50000;
-  const newTotal = currentTotal + estimatedNewPrice;
-
-  // Volume discount
+  // 볼륨 할인 — 빌라 추가 후 기준
   const newCount = villaCount + 1;
   const discRate =
     newCount >= 20 ? 0.4 : newCount >= 10 ? 0.3 : newCount >= 5 ? 0.2 : 0;
-  const discountedTotal = Math.round(newTotal * (1 - discRate));
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 60 }}>
@@ -118,32 +113,35 @@ export default function AddVillaStep1Screen() {
         </View>
       </View>
 
-      {/* Estimated total */}
+      {/* 안내문구 — 세대수에 따라 비용이 달라짐 */}
       <View style={styles.section}>
-        <View style={[styles.card, { borderColor: 'rgba(52,84,209,0.2)' }]}>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>기존 빌라</Text>
-            <Text style={styles.infoValue}>{fmt(currentTotal)}</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>새 빌라 (예상)</Text>
-            <Text style={styles.infoValue}>+{fmt(estimatedNewPrice)}</Text>
-          </View>
-          {discRate > 0 && (
-            <View style={[styles.discBanner, { marginTop: 8, marginBottom: 4 }]}>
-              <Text style={styles.discText}>
-                볼륨 할인 {Math.round(discRate * 100)}% 적용 가능
-              </Text>
+        <View style={{
+          backgroundColor: 'rgba(52,84,209,0.13)',
+          borderRadius: 12,
+          paddingVertical: 14,
+          paddingHorizontal: 16,
+        }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6, gap: 8 }}>
+            <View style={{
+              width: 18, height: 18, borderRadius: 9,
+              backgroundColor: C.pri,
+              alignItems: 'center', justifyContent: 'center',
+            }}>
+              <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '900', lineHeight: 14 }}>!</Text>
             </View>
-          )}
-          <View style={[styles.infoRow, { borderTopWidth: 1, borderTopColor: C.border, paddingTop: 10, marginTop: 8 }]}>
-            <Text style={[styles.infoLabel, { fontWeight: '700', color: C.text }]}>
-              예상 월 합계
-            </Text>
-            <Text style={{ fontSize: 18, fontWeight: '900', color: C.pri }}>
-              {discRate > 0 ? fmt(discountedTotal) : fmt(newTotal)}
+            <Text style={{ fontSize: 13, fontWeight: '700', color: C.pri }}>
+              비용 안내
             </Text>
           </View>
+          <Text style={{ fontSize: 13, color: C.text, lineHeight: 20 }}>
+            등록하실 빌라의 <Text style={{ fontWeight: '800' }}>세대수에 따라 플랜이 자동 결정</Text>되며{'\n'}
+            그에 따라 월 이용료가 달라집니다.
+          </Text>
+          {discRate > 0 && (
+            <Text style={{ fontSize: 12, color: C.pri, fontWeight: '700', marginTop: 8 }}>
+              현재 빌라 보유 수 기준 볼륨 할인 {Math.round(discRate * 100)}% 적용 가능
+            </Text>
+          )}
         </View>
       </View>
 

@@ -79,7 +79,7 @@ export default async function VillasPage() {
     payRateByVilla.set(k, v.total > 0 ? Math.round((v.paid / v.total) * 100) : 0);
   });
 
-  const PLAN_KO: Record<string, string> = { small: '소형', popular: '인기', large: '대형' };
+  const PLAN_KO: Record<string, string> = { small: '소형', popular: '중형', large: '대형' };
 
   const overdueByVilla = new Map<string, { amount: number; units: number; bills: number }>();
   (overdueRows ?? []).forEach((r) => {

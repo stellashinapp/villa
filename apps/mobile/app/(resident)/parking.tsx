@@ -243,14 +243,14 @@ const styles = StyleSheet.create({
   carRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
   plateNumber: { fontSize: 18, fontWeight: '900', color: '#1A1D26', letterSpacing: 1 },
   carMeta: { flexDirection: 'row', gap: 8 },
-  carHo: { fontSize: 13, fontWeight: '600', color: '#3454D1' },
+  carHo: { fontSize: 13, fontWeight: '600', color: '#4263E8' },
   carMemo: { fontSize: 13, color: '#6B7280' },
 
   typeBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
   residentBadge: { backgroundColor: '#E8EEFB' },
   visitorBadge: { backgroundColor: '#F39C1222' },
   typeBadgeText: { fontSize: 11, fontWeight: '700' },
-  residentBadgeText: { color: '#3454D1' },
+  residentBadgeText: { color: '#4263E8' },
   visitorBadgeText: { color: '#F39C12' },
 
   emptyCard: {
@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0F2F6', borderWidth: 1, borderColor: '#E5E7EB',
     borderRadius: 10, padding: 13, fontSize: 15, color: '#1A1D26',
   },
-  registerBtn: { backgroundColor: '#4A6CF7', borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 14 },
+  registerBtn: { backgroundColor: '#4263E8', borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 14 },
   registerBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
 
   durationRow: { flexDirection: 'row', gap: 6, marginBottom: 4 },
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: '#E5E7EB', backgroundColor: '#F0F2F6',
     alignItems: 'center',
   },
-  durationBtnActive: { backgroundColor: '#3454D1', borderColor: '#3454D1' },
+  durationBtnActive: { backgroundColor: '#4263E8', borderColor: '#4263E8' },
   durationBtnText: { fontSize: 12, fontWeight: '700', color: '#6B7280' },
   durationBtnTextActive: { color: '#FFFFFF' },
   expiresText: { fontSize: 11, color: '#F39C12', fontWeight: '700', marginTop: 6 },

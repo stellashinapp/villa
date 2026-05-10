@@ -423,7 +423,7 @@ export default function HomePage() {
             <div className="bg-[#3d54ff] content-stretch drop-shadow-[0px_0px_11px_rgba(168,196,255,0.22)] flex flex-[1_0_0] flex-col gap-[38px] h-[707px] items-start min-w-px pb-[27px] pl-[40px] pr-[29px] pt-[40px] relative rounded-[25px]">
               <div className="content-stretch flex flex-col gap-[17px] items-start relative shrink-0 w-[391px]">
                 <div className="content-stretch flex flex-col gap-[3px] items-start not-italic relative shrink-0 w-full">
-                  <p className="font-bold leading-[50px] min-w-full relative shrink-0 text-[35px] text-white tracking-[-0.525px] w-[min-content]">인기</p>
+                  <p className="font-bold leading-[50px] min-w-full relative shrink-0 text-[35px] text-white tracking-[-0.525px] w-[min-content]">중형</p>
                   <p className="font-normal leading-[32px] relative shrink-0 text-[#b9cbf4] text-[20px] tracking-[-0.4px] w-[372px]">9~15세대</p>
                 </div>
                 <div className="h-0 relative shrink-0 w-[391px]">
@@ -477,7 +477,7 @@ export default function HomePage() {
                 <p className="flex-[1_0_0] font-semibold leading-[50px] min-w-px not-italic relative text-[20px] text-center text-white tracking-[-0.3px]">무료체험 시작</p>
               </div>
               <div className="content-stretch flex flex-col gap-[7px] items-start relative shrink-0">
-                {['인기 플랜 모든 기능', '다중 빌라 통합관리', '월별 정산 리포트', 'CSV 데이터 내보내기', '전담 매니저 (예정)', 'API 액세스 (예정)'].map((feat) => (
+                {['중형 플랜 모든 기능', '다중 빌라 통합관리', '월별 정산 리포트', 'CSV 데이터 내보내기', '전담 매니저 (예정)', 'API 액세스 (예정)'].map((feat) => (
                   <div key={feat} className="content-stretch flex gap-[10px] h-[35px] items-center relative rounded-[15px] shrink-0 w-[391px]">
                     <div className="relative shrink-0 size-[24px]">
                       <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgCheck4} />

@@ -61,6 +61,25 @@ export default function AdminHomeScreen() {
     newMessages,
   };
 
+  // ─────────────────────────────────────────────────────────────────────
+  // 홈 화면 노출 정의
+  // ─────────────────────────────────────────────────────────────────────
+  // [상태 A] 빌라 미등록 (villas.length === 0)
+  //   1. 헤더
+  //   2. 빈 상태 CTA — "등록된 빌라가 없어요. 새 빌라를 등록해주세요"
+  //   3. 서비스 구독 카드 (가입 직후 플랜/카드 정보 안내용)
+  //   ※ 요약 3카드와 운영 통계는 숨김 — 모두 0이라 표시할 의미 없음
+  //
+  // [상태 B] 빌라 등록 1개 이상
+  //   1. 헤더
+  //   2. 요약 3카드 — 관리 빌라 / 총 세대 / 새 메시지
+  //   3. 📊 운영 통계 — 최근 6개월 납부율, 입주율, 답변 대기, 빌라별 미납,
+  //      누적 미납, 상습 미납 (각 항목은 데이터 있을 때만 노출)
+  //   4. 내 빌라 — 빌라 카드 리스트 + "새 빌라 등록" 버튼
+  //   5. 서비스 구독 카드
+  // ─────────────────────────────────────────────────────────────────────
+  const hasVillas = villas.length > 0;
+
   return (
     <ScrollView
       style={styles.container}
@@ -76,18 +95,48 @@ export default function AdminHomeScreen() {
         <Text style={styles.greetingSub}>관리자님 로그인됨</Text>
       </View>
 
-      {/* ── Summary Cards (3 in row) ─────────────────────────────── */}
-      <View style={styles.summaryRow}>
-        <SummaryCard icon="🏘️" label="관리 빌라" value={SUMMARY.villaCount} />
-        <SummaryCard icon="👥" label="총 세대" value={SUMMARY.totalUnits} />
-        <SummaryCard icon="✉️" label="새 메시지" value={SUMMARY.newMessages} />
-      </View>
-
-      <StatsDashboard villas={villas} />
+      {hasVillas ? (
+        <>
+          {/* ── Summary Cards (3 in row) ─────────────────────────── */}
+          <View style={styles.summaryRow}>
+            <SummaryCard icon="🏘️" label="관리 빌라" value={SUMMARY.villaCount} />
+            <SummaryCard icon="👥" label="총 세대" value={SUMMARY.totalUnits} />
+            <SummaryCard icon="✉️" label="새 메시지" value={SUMMARY.newMessages} />
+          </View>
+          <StatsDashboard villas={villas} />
+        </>
+      ) : (
+        /* ── 빌라 미등록: CTA를 헤더 직후로 배치 ──────────────── */
+        <View style={styles.emptyHero}>
+          <Text style={styles.emptyHeroEmoji}>🏘️</Text>
+          <Text style={styles.emptyHeroTitle}>등록된 빌라가 없어요</Text>
+          <Text style={styles.emptyHeroSub}>
+            첫 빌라를 등록하시면 관리비·공지·민원을{'\n'}한 곳에서 관리할 수 있어요
+          </Text>
+          <TouchableOpacity
+            style={styles.emptyHeroBtn}
+            onPress={handleAddVilla}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.emptyHeroBtnText}>+ 새 빌라 등록하기</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
 
       {/* ── 구독 필요 팝업 ────────────────────────────────────── */}
-      <Modal visible={showSubPopup} transparent animationType="slide">
+      <Modal
+        visible={showSubPopup}
+        transparent
+        animationType="slide"
+        onRequestClose={() =>
+          Alert.alert(
+            '결제수단 등록이 필요해요',
+            '결제수단을 등록해야 이용하실 수 있습니다.',
+            [{ text: '확인' }],
+          )
+        }
+      >
         <View style={styles.modalBg}>
           <View style={styles.modalCard}>
             <Text style={styles.modalTitle}>구독 등록이 필요합니다</Text>
@@ -142,22 +191,27 @@ export default function AdminHomeScreen() {
               </View>
             </View>
 
-            <TouchableOpacity style={styles.modalCancelBtn} onPress={() => setShowSubPopup(false)}>
-              <Text style={styles.modalCancelBtnText}>나중에 할게요</Text>
+            <TouchableOpacity
+              style={styles.modalCancelBtn}
+              onPress={() =>
+                Alert.alert(
+                  '결제수단 등록이 필요해요',
+                  '결제수단을 등록해야 빌라 관리 기능을 이용하실 수 있습니다.\n첫 1개월은 무료이며 30일 내 해지하시면 요금이 청구되지 않습니다.',
+                  [{ text: '확인', style: 'default' }],
+                )
+              }
+            >
+              <Text style={styles.modalCancelBtnText}>결제수단 등록 후 이용 가능합니다</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
 
       {/* ── 내 빌라 Section ─────────────────────────────────────── */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>내 빌라</Text>
-        {villas.length > 0 ? (
-          villas.map((villa) => {
-            const pub = villa.billMonths.find(b => b.status === 'published');
-            const unpaid = pub
-              ? villa.units.filter(u => u.name && !pub.paid[u.ho]).length
-              : 0;
+      {hasVillas && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>내 빌라</Text>
+          {villas.map((villa) => {
             return (
               <TouchableOpacity
                 key={villa.id}
@@ -195,19 +249,14 @@ export default function AdminHomeScreen() {
                 })()}
               </TouchableOpacity>
             );
-          })
-        ) : (
-          <View style={{ padding: 24, alignItems: 'center' }}>
-            <Text style={{ color: C.textSub, fontSize: 14 }}>등록된 빌라가 없어요</Text>
-            <Text style={{ color: C.textSub, fontSize: 12, marginTop: 4 }}>새 빌라를 등록해주세요</Text>
-          </View>
-        )}
+          })}
 
-        {/* 새 빌라 등록 */}
-        <TouchableOpacity style={styles.quickAction} activeOpacity={0.8} onPress={handleAddVilla}>
-          <Text style={styles.quickActionText}>+ 새 빌라 등록</Text>
-        </TouchableOpacity>
-      </View>
+          {/* 새 빌라 등록 (추가 등록용) */}
+          <TouchableOpacity style={styles.quickAction} activeOpacity={0.8} onPress={handleAddVilla}>
+            <Text style={styles.quickActionText}>+ 새 빌라 등록</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* ── 서비스 구독 ────────────────────────────────────────── */}
       <View style={{ paddingHorizontal: 20, marginTop: 20, marginBottom: 20 }}>
@@ -329,7 +378,7 @@ function StatsDashboard({ villas }: { villas: typeof store.villas }) {
       <View style={{ flexDirection: 'row', gap: 8, marginBottom: 10 }}>
         <View style={{ flex: 1, backgroundColor: '#fff', borderWidth: 1, borderColor: '#E8EBF0', borderRadius: 12, padding: 14 }}>
           <Text style={{ fontSize: 11, color: '#6B7280', marginBottom: 4 }}>입주율</Text>
-          <Text style={{ fontSize: 22, fontWeight: '900', color: '#3454D1' }}>{occupancyRate}%</Text>
+          <Text style={{ fontSize: 22, fontWeight: '900', color: '#4263E8' }}>{occupancyRate}%</Text>
           <Text style={{ fontSize: 10, color: '#9CA3AF', marginTop: 2 }}>{totalRegisteredResidents}/{totalResidents}세대</Text>
         </View>
         <View style={{ flex: 1, backgroundColor: '#fff', borderWidth: 1, borderColor: '#E8EBF0', borderRadius: 12, padding: 14 }}>
@@ -417,7 +466,7 @@ const C = {
   bgLight: '#F5F6FA',
   cardBg: '#FFFFFF',
   cardBorder: '#E8EBF0',
-  primaryBlue: '#3454D1',
+  primaryBlue: '#4263E8',
   primaryLight: '#E8EEFB',
   textPrimary: '#1A1D26',
   textSub: '#6B7280',
@@ -518,11 +567,59 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 
+  /* ── Empty Hero (빌라 미등록) ───────────────────────────── */
+  emptyHero: {
+    marginHorizontal: 20,
+    marginTop: 20,
+    backgroundColor: C.cardBg,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: C.cardBorder,
+    paddingVertical: 36,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  emptyHeroEmoji: {
+    fontSize: 48,
+    marginBottom: 14,
+  },
+  emptyHeroTitle: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: C.textPrimary,
+    marginBottom: 8,
+  },
+  emptyHeroSub: {
+    fontSize: 13,
+    color: C.textSub,
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 22,
+  },
+  emptyHeroBtn: {
+    backgroundColor: C.primaryBlue,
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    alignSelf: 'stretch',
+    alignItems: 'center',
+  },
+  emptyHeroBtnText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '800',
+  },
+
   /* ── Quick Action ───────────────────────────────────────── */
   quickAction: {
     marginHorizontal: 20,
     marginTop: 20,
-    backgroundColor: '#4A6CF7',
+    backgroundColor: '#4263E8',
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: 'center',
@@ -693,9 +790,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: 'rgba(30,176,106,0.1)',
+    backgroundColor: 'rgba(66,99,232,0.18)',
     borderWidth: 1,
-    borderColor: 'rgba(30,176,106,0.2)',
+    borderColor: 'rgba(108,140,255,0.45)',
     borderRadius: 12,
     padding: 14,
     marginBottom: 16,
@@ -703,7 +800,7 @@ const styles = StyleSheet.create({
   modalBannerText: {
     fontSize: 15,
     fontWeight: '800',
-    color: '#2ECC71',
+    color: '#8BA8FF',
   },
   tossSection: {
     marginTop: 4,
@@ -730,7 +827,7 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: '#3454D1',
+    backgroundColor: '#4263E8',
     color: '#fff',
     fontSize: 11,
     fontWeight: '800',

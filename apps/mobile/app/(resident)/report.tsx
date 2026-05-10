@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
   },
   reportActions: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   sendButton: {
-    backgroundColor: '#3454D1',
+    backgroundColor: '#4263E8',
     paddingHorizontal: 24,
     paddingVertical: 10,
     borderRadius: 10,
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   messageFrom: { fontSize: 12, fontWeight: '700' },
-  residentFrom: { color: '#3454D1' },
+  residentFrom: { color: '#4263E8' },
   adminFrom: { color: '#2ECC71' },
   messageDate: { fontSize: 11, color: '#9CA3AF' },
   messageBody: { fontSize: 13, color: '#1A1D26', lineHeight: 19 },
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
     color: '#1A1D26',
   },
   replySendBtn: {
-    backgroundColor: '#3454D1',
+    backgroundColor: '#4263E8',
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 8,

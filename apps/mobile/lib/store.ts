@@ -157,7 +157,7 @@ export function activateSubscription() {
 
 // 빌라 추가
 export function addVilla(params: { name: string; address: string; totalUnits: number; unitsPerFloor: number; account: string }) {
-  const plan = params.totalUnits <= 8 ? '소형' : params.totalUnits <= 15 ? '인기' : '대형';
+  const plan = params.totalUnits <= 8 ? '소형' : params.totalUnits <= 15 ? '중형' : '대형';
   const price = params.totalUnits <= 8 ? 30000 : params.totalUnits <= 15 ? 50000 : 70000;
   const units: Unit[] = [];
   for (let i = 0; i < params.totalUnits; i++) {

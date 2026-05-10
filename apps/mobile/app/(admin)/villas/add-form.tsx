@@ -8,17 +8,20 @@ import {
   TextInput,
   Alert,
   Modal,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { router } from 'expo-router';
 import { addVilla, store } from '@/lib/store';
 import { getMyAdmin } from '@/lib/auth';
 import { createVilla } from '@/lib/villas';
 import { syncAdminFromSupabase } from '@/lib/sync';
+import { BANK_NAMES } from '@villatolk/shared';
 
 const C = {
   bg: '#F5F6FA', card: '#FFFFFF', border: '#E8EBF0',
   inputBg: '#F0F2F6', inputBorder: '#E5E7EB',
-  pri: '#4A6CF7', priL: '#E8EEFB',
+  pri: '#4263E8', priL: '#E8EEFB',
   text: '#1A1D26', sub: '#6B7280', muted: '#9CA3AF',
   ok: '#4CAF50', err: '#E74C3C',
 };
@@ -50,7 +53,7 @@ export default function AddVillaFormScreen() {
   const totalUnits = floors.reduce((sum, f) => sum + f.units.length, 0);
 
   const plan = totalUnits <= 8 ? { name: '소형', price: 30000, range: '6~8세대' }
-    : totalUnits <= 15 ? { name: '인기', price: 50000, range: '9~15세대' }
+    : totalUnits <= 15 ? { name: '중형', price: 50000, range: '9~15세대' }
     : { name: '대형', price: 70000, range: '16~30세대' };
 
   // 층 추가
@@ -113,14 +116,11 @@ export default function AddVillaFormScreen() {
 
   const [errors, setErrors] = useState<string[]>([]);
   const [showCostPopup, setShowCostPopup] = useState(false);
+  const [bankPickerOpen, setBankPickerOpen] = useState(false);
 
-  // 기존 빌라 비용
-  const currentVillas = store.villas;
-  const currentTotal = currentVillas.reduce((s, v) => s + v.price, 0);
-  const newTotal = currentTotal + plan.price;
-  const villaCount = currentVillas.length + 1;
+  // 볼륨 할인율 — 현재 보유 빌라 수 + 새 빌라 1개 기준
+  const villaCount = store.villas.length + 1;
   const discRate = villaCount >= 20 ? 0.4 : villaCount >= 10 ? 0.3 : villaCount >= 5 ? 0.2 : 0;
-  const finalTotal = Math.round(newTotal * (1 - discRate));
 
   async function doRegister() {
     setShowCostPopup(false);
@@ -198,7 +198,15 @@ export default function AddVillaFormScreen() {
   const maxFloor = Math.max(0, ...floors.filter(f => !f.label.startsWith('B') && !isNaN(parseInt(f.label))).map(f => parseInt(f.label)));
 
   return (
-    <ScrollView style={s.container} contentContainerStyle={{ paddingBottom: 60 }}>
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: C.bg }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+    <ScrollView
+      style={s.container}
+      contentContainerStyle={{ paddingBottom: 60 }}
+      keyboardShouldPersistTaps="handled"
+    >
       <View style={s.header}>
         <TouchableOpacity onPress={() => router.back()}>
           <Text style={s.backText}>← 돌아가기</Text>
@@ -217,7 +225,15 @@ export default function AddVillaFormScreen() {
         {errors.includes('address') && <Text style={s.errorText}>주소를 입력해주세요</Text>}
 
         <Text style={s.label}>관리비 입금 은행</Text>
-        <TextInput style={s.input} placeholder="예: 국민, 신한, 우리, 하나" placeholderTextColor={C.muted} value={bank} onChangeText={setBank} />
+        <TouchableOpacity
+          style={[s.input, { justifyContent: 'center' }]}
+          onPress={() => setBankPickerOpen(true)}
+          activeOpacity={0.7}
+        >
+          <Text style={{ fontSize: 15, color: bank ? C.text : C.muted }}>
+            {bank || '은행 선택'}
+          </Text>
+        </TouchableOpacity>
 
         <Text style={s.label}>계좌번호</Text>
         <TextInput style={s.input} placeholder="예: 123-456-789012" placeholderTextColor={C.muted} value={accountNumber} onChangeText={setAccountNumber} keyboardType="number-pad" />
@@ -359,45 +375,74 @@ export default function AddVillaFormScreen() {
         </View>
       )}
 
-      {/* 비용 안내 팝업 */}
+      {/* 은행 선택 모달 */}
+      <Modal
+        visible={bankPickerOpen}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setBankPickerOpen(false)}
+      >
+        <TouchableOpacity
+          style={s.bankModalBg}
+          activeOpacity={1}
+          onPress={() => setBankPickerOpen(false)}
+        >
+          <View style={s.bankModalCard}>
+            <Text style={s.bankModalTitle}>은행 선택</Text>
+            <ScrollView style={{ maxHeight: 380 }}>
+              {BANK_NAMES.map((b) => (
+                <TouchableOpacity
+                  key={b}
+                  style={[
+                    s.bankItem,
+                    bank === b && { backgroundColor: '#F1F6FF' },
+                  ]}
+                  onPress={() => {
+                    setBank(b);
+                    setBankPickerOpen(false);
+                  }}
+                >
+                  <Text style={[
+                    s.bankItemText,
+                    bank === b && { color: C.pri, fontWeight: '700' },
+                  ]}>{b}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* 등록 확인 팝업 */}
       <Modal visible={showCostPopup} transparent animationType="slide">
         <View style={s.modalBg}>
           <View style={s.modalCard}>
-            <Text style={s.modalTitle}>비용 안내</Text>
+            <Text style={s.modalTitle}>등록 정보 확인</Text>
 
             <View style={s.costSection}>
-              <Text style={s.costLabel}>현재 구독</Text>
-              {currentVillas.map(v => (
-                <View key={v.id} style={s.costRow}>
-                  <Text style={s.costName}>{v.name} ({v.plan})</Text>
-                  <Text style={s.costPrice}>{v.price.toLocaleString()}원</Text>
+              <View style={s.costRow}>
+                <Text style={s.costName}>{name.trim() || '새 빌라'}</Text>
+                <Text style={s.costPrice}>{totalUnits}세대 · {plan.name} 플랜</Text>
+              </View>
+            </View>
+
+            <View style={s.costDivider} />
+
+            <View style={{ backgroundColor: 'rgba(52,84,209,0.13)', borderRadius: 10, padding: 12, marginTop: 4 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4, gap: 8 }}>
+                <View style={{
+                  width: 18, height: 18, borderRadius: 9,
+                  backgroundColor: C.pri,
+                  alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '900', lineHeight: 14 }}>!</Text>
                 </View>
-              ))}
-              {currentVillas.length === 0 && <Text style={s.costEmpty}>등록된 빌라 없음</Text>}
-            </View>
-
-            <View style={s.costDivider} />
-
-            <View style={s.costSection}>
-              <Text style={s.costLabel}>새 빌라 추가</Text>
-              <View style={s.costRow}>
-                <Text style={s.costName}>{name.trim() || '새 빌라'} ({plan.name}·{totalUnits}세대)</Text>
-                <Text style={[s.costPrice, { color: C.pri }]}>+{plan.price.toLocaleString()}원</Text>
+                <Text style={{ fontSize: 13, fontWeight: '700', color: C.pri }}>비용 안내</Text>
               </View>
-            </View>
-
-            <View style={s.costDivider} />
-
-            {discRate > 0 && (
-              <View style={s.costRow}>
-                <Text style={[s.costName, { color: C.ok }]}>볼륨 할인 ({Math.round(discRate * 100)}%)</Text>
-                <Text style={[s.costPrice, { color: C.ok }]}>-{(newTotal - finalTotal).toLocaleString()}원</Text>
-              </View>
-            )}
-
-            <View style={[s.costRow, { marginTop: 8 }]}>
-              <Text style={s.costTotalLabel}>예상 월 합계</Text>
-              <Text style={s.costTotalPrice}>{finalTotal.toLocaleString()}원</Text>
+              <Text style={{ fontSize: 12, color: C.text, lineHeight: 18 }}>
+                등록하시는 빌라의 세대수에 따라 플랜이 자동 결정되며 그에 따라 월 이용료가 달라집니다.
+                {discRate > 0 && `\n현재 빌라 보유 수 기준 볼륨 할인 ${Math.round(discRate * 100)}%가 적용됩니다.`}
+              </Text>
             </View>
 
             <View style={{ gap: 8, marginTop: 20 }}>
@@ -422,6 +467,7 @@ export default function AddVillaFormScreen() {
         </TouchableOpacity>
       </View>
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -446,6 +492,20 @@ const s = StyleSheet.create({
   errorText: {
     fontSize: 12, color: C.err, fontWeight: '600', marginBottom: 8, marginLeft: 4,
   },
+
+  // 은행 선택 모달
+  bankModalBg: {
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end',
+  },
+  bankModalCard: {
+    backgroundColor: '#FFFFFF', borderTopLeftRadius: 20, borderTopRightRadius: 20,
+    paddingTop: 24, paddingBottom: 32, paddingHorizontal: 20,
+  },
+  bankModalTitle: {
+    fontSize: 16, fontWeight: '700', color: C.text, marginBottom: 12, paddingHorizontal: 4,
+  },
+  bankItem: { paddingVertical: 14, paddingHorizontal: 14, borderRadius: 10 },
+  bankItemText: { fontSize: 15, color: C.text },
 
   // 층 카드
   floorCard: {

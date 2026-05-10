@@ -24,7 +24,7 @@ export default function AdminLayout() {
           paddingBottom: 8,
           paddingTop: 6,
         },
-        tabBarActiveTintColor: '#3454D1',
+        tabBarActiveTintColor: '#4263E8',
         tabBarInactiveTintColor: '#9CA3AF',
         tabBarLabelStyle: { fontSize: 10, fontWeight: '700' },
       }}
@@ -65,5 +65,5 @@ const s = StyleSheet.create({
   iconWrap: { alignItems: 'center', gap: 2 },
   icon: { fontSize: 20, opacity: 0.4 },
   iconActive: { opacity: 1 },
-  dot: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#3454D1' },
+  dot: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#4263E8' },
 });

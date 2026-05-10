@@ -8,7 +8,7 @@ function fmt(n: number) {
   return n.toLocaleString('ko-KR');
 }
 
-const ITEM_COLORS = ['#3454D1', '#2ECC71', '#F39C12', '#EC4899', '#E74C3C', '#6B7280', '#6366F1', '#06B6D4'];
+const ITEM_COLORS = ['#4263E8', '#2ECC71', '#F39C12', '#EC4899', '#E74C3C', '#6B7280', '#6366F1', '#06B6D4'];
 
 export default function BillsScreen() {
   const [_, setTick] = useState(0);
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
 
   payButton: {
     marginHorizontal: 16,
-    backgroundColor: '#3454D1',
+    backgroundColor: '#4263E8',
     borderRadius: 12,
     paddingVertical: 15,
     alignItems: 'center',
@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
   },
-  accountLabel: { color: '#3454D1', fontSize: 13, fontWeight: '700' },
+  accountLabel: { color: '#4263E8', fontSize: 13, fontWeight: '700' },
   accountNumber: { color: '#1A1D26', fontSize: 15, fontWeight: '800' },
 
   section: { marginHorizontal: 16, marginBottom: 20 },

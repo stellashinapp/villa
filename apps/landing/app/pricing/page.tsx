@@ -16,7 +16,7 @@ const PLANS = [
     ],
   },
   {
-    name: '인기',
+    name: '중형',
     units: '9~15세대',
     price: 50000,
     highlight: true,
@@ -36,7 +36,7 @@ const PLANS = [
     price: 70000,
     highlight: false,
     features: [
-      '인기 플랜 모든 기능',
+      '중형 플랜 모든 기능',
       '다중 빌라 통합관리',
       '월별 정산 리포트',
       'CSV 데이터 내보내기',

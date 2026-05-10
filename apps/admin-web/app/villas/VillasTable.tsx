@@ -17,7 +17,7 @@ type Villa = {
   overdueUnits: number;
 };
 
-const PLANS = ['전체', '소형', '인기', '대형'];
+const PLANS = ['전체', '소형', '중형', '대형'];
 
 export default function VillasTable({ villas }: { villas: Villa[] }) {
   const [planFilter, setPlanFilter] = useState('전체');

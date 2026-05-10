@@ -87,7 +87,7 @@ export default function CheckoutScreen() {
       />
       {loading && (
         <View style={styles.loader}>
-          <ActivityIndicator size="large" color="#3454D1" />
+          <ActivityIndicator size="large" color="#4263E8" />
           <Text style={styles.loaderText}>결제 승인 중...</Text>
         </View>
       )}
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   backBtn: { marginRight: 12 },
-  backText: { fontSize: 15, color: '#3454D1', fontWeight: '600' },
+  backText: { fontSize: 15, color: '#4263E8', fontWeight: '600' },
   title: { fontSize: 17, fontWeight: '800', color: '#1A1D26' },
   loader: {
     position: 'absolute',

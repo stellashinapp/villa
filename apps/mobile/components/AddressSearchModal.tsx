@@ -87,7 +87,7 @@ export default function AddressSearchModal({ visible, onClose, onSelected }: Pro
           />
           {loading && (
             <View style={styles.loading}>
-              <ActivityIndicator size="large" color="#3454D1" />
+              <ActivityIndicator size="large" color="#4263E8" />
             </View>
           )}
         </View>
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#E8EBF0',
   },
   title: { fontSize: 16, fontWeight: '800', color: '#1A1D26' },
-  closeText: { fontSize: 14, color: '#3454D1', fontWeight: '600' },
+  closeText: { fontSize: 14, color: '#4263E8', fontWeight: '600' },
   loading: {
     ...StyleSheet.absoluteFillObject,
     alignItems: 'center',

@@ -16,7 +16,7 @@ const FMT_DATE = (iso: string) => {
 
 const IS_NEW = (iso: string) => Date.now() - new Date(iso).getTime() < 3 * 24 * 60 * 60 * 1000;
 
-const PLAN_KO: Record<string, string> = { small: '소형', popular: '인기', large: '대형' };
+const PLAN_KO: Record<string, string> = { small: '소형', popular: '중형', large: '대형' };
 
 type VillaRaw = {
   id: string; name: string; address: string;

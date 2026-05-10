@@ -32,7 +32,7 @@ const s = StyleSheet.create({
     gap: 12,
   },
   back: { paddingVertical: 4 },
-  backText: { fontSize: 15, color: '#3454D1', fontWeight: '600' },
+  backText: { fontSize: 15, color: '#4263E8', fontWeight: '600' },
   title: { fontSize: 17, fontWeight: '800', color: '#1A1D26' },
   ver: { fontSize: 11, color: '#9CA3AF', marginLeft: 'auto' },
   body: { flex: 1 },

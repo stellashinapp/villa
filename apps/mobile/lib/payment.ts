@@ -23,8 +23,8 @@ export function buildCheckoutHtml(params: {
   body { font-family: -apple-system, 'Noto Sans KR', sans-serif; padding: 40px 20px; background: #F5F6FA; }
   .wrap { text-align: center; }
   h2 { font-size: 18px; margin-bottom: 4px; color: #1A1D26; }
-  .amount { font-size: 28px; font-weight: 900; color: #3454D1; margin: 10px 0 20px; }
-  button { width: 100%; padding: 14px; font-size: 16px; font-weight: 700; background: #3454D1; color: #fff; border: 0; border-radius: 10px; margin-bottom: 10px; }
+  .amount { font-size: 28px; font-weight: 900; color: #4263E8; margin: 10px 0 20px; }
+  button { width: 100%; padding: 14px; font-size: 16px; font-weight: 700; background: #4263E8; color: #fff; border: 0; border-radius: 10px; margin-bottom: 10px; }
   button.sub { background: #F3F4F6; color: #1A1D26; }
 </style>
 </head>
@@ -68,7 +68,7 @@ export function buildBillingHtml(params: { customerKey: string; customerName?: s
   body { font-family: -apple-system, 'Noto Sans KR', sans-serif; padding: 40px 20px; background: #F5F6FA; text-align: center; }
   h2 { font-size: 18px; color: #1A1D26; margin-bottom: 8px; }
   p { color: #6B7280; margin-bottom: 20px; font-size: 13px; }
-  button { width: 100%; padding: 14px; font-size: 16px; font-weight: 700; background: #3454D1; color: #fff; border: 0; border-radius: 10px; }
+  button { width: 100%; padding: 14px; font-size: 16px; font-weight: 700; background: #4263E8; color: #fff; border: 0; border-radius: 10px; }
 </style>
 </head>
 <body>

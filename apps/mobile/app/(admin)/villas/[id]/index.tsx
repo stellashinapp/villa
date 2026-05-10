@@ -5,7 +5,7 @@ import { store, subscribe } from '@/lib/store';
 
 const C = {
   bg: '#F5F6FA', card: '#FFFFFF', border: '#E8EBF0',
-  pri: '#3454D1', priL: '#E8EEFB',
+  pri: '#4263E8', priL: '#E8EEFB',
   text: '#1A1D26', sub: '#6B7280', muted: '#9CA3AF',
   ok: '#4CAF50', err: '#E74C3C', accent: '#FF6B35',
 };

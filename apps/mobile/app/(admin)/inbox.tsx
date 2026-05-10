@@ -15,7 +15,7 @@ const C = {
   bg: '#F5F6FA',
   card: '#FFFFFF',
   border: '#E8EBF0',
-  pri: '#3454D1',
+  pri: '#4263E8',
   priL: '#E8EEFB',
   text: '#1A1D26',
   sub: '#6B7280',

@@ -17,7 +17,7 @@ export const adminTheme = {
   textMuted: '#7889A5',
 
   // Primary
-  primary: '#3454D1',
+  primary: '#4263E8',
   primaryLight: '#4A6AE5',
   primaryBg: 'rgba(52,84,209,0.12)',
 
@@ -54,7 +54,7 @@ export const residentTheme = {
   textMuted: '#9CA3AF',
 
   // Primary
-  primary: '#3454D1',
+  primary: '#4263E8',
   primaryLight: '#E8EEFB',
   primaryDark: '#2A43A8',
 
@@ -74,7 +74,7 @@ export const residentTheme = {
 
   // 히어로
   heroStart: '#1B2A4A',
-  heroEnd: '#3454D1',
+  heroEnd: '#4263E8',
 
   // 기타
   divider: '#E8EBF0',

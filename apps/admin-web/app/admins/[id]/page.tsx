@@ -13,13 +13,13 @@ const ADMINS: Record<string, {
     name: '김철수', email: 'kim@example.com', phone: '010-1234-5678', status: '활성',
     joinedAt: '2025-08-12', totalVillas: 3, totalUnits: 87,
     villas: [
-      { name: '선릉 파크빌', address: '서울 강남구 선릉로 123', units: 32, plan: '인기', price: 50000, payRate: 94 },
+      { name: '선릉 파크빌', address: '서울 강남구 선릉로 123', units: 32, plan: '중형', price: 50000, payRate: 94 },
       { name: '역삼 그린빌', address: '서울 강남구 역삼동 456', units: 28, plan: '소형', price: 30000, payRate: 88 },
       { name: '삼성 리버뷰', address: '서울 강남구 삼성동 789', units: 27, plan: '대형', price: 70000, payRate: 96 },
     ],
     subscription: {
       items: [
-        { label: '인기 플랜 x1', qty: 1, unitPrice: 50000 },
+        { label: '중형 플랜 x1', qty: 1, unitPrice: 50000 },
         { label: '소형 플랜 x1', qty: 1, unitPrice: 30000 },
         { label: '대형 플랜 x1', qty: 1, unitPrice: 70000 },
       ],
@@ -33,16 +33,16 @@ const ADMINS: Record<string, {
     villas: [
       { name: '강남 힐스테이트', address: '서울 강남구 논현동 11', units: 40, plan: '대형', price: 70000, payRate: 92 },
       { name: '서초 브라운빌', address: '서울 서초구 방배동 22', units: 25, plan: '소형', price: 30000, payRate: 85 },
-      { name: '잠실 레이크빌', address: '서울 송파구 잠실동 33', units: 35, plan: '인기', price: 50000, payRate: 97 },
-      { name: '송파 파크뷰', address: '서울 송파구 가락동 44', units: 30, plan: '인기', price: 50000, payRate: 91 },
+      { name: '잠실 레이크빌', address: '서울 송파구 잠실동 33', units: 35, plan: '중형', price: 50000, payRate: 97 },
+      { name: '송파 파크뷰', address: '서울 송파구 가락동 44', units: 30, plan: '중형', price: 50000, payRate: 91 },
       { name: '강동 리버사이드', address: '서울 강동구 천호동 55', units: 20, plan: '소형', price: 30000, payRate: 78 },
-      { name: '마포 하늘빌', address: '서울 마포구 상수동 66', units: 32, plan: '인기', price: 50000, payRate: 93 },
+      { name: '마포 하늘빌', address: '서울 마포구 상수동 66', units: 32, plan: '중형', price: 50000, payRate: 93 },
       { name: '용산 센트럴', address: '서울 용산구 한남동 77', units: 28, plan: '대형', price: 70000, payRate: 89 },
     ],
     subscription: {
       items: [
         { label: '대형 플랜 x2', qty: 2, unitPrice: 70000 },
-        { label: '인기 플랜 x3', qty: 3, unitPrice: 50000 },
+        { label: '중형 플랜 x3', qty: 3, unitPrice: 50000 },
         { label: '소형 플랜 x2', qty: 2, unitPrice: 30000 },
       ],
       volumeDiscount: 20,

@@ -10,7 +10,7 @@ const C = {
   border: '#E8EBF0',
   inputBg: '#F0F2F6',
   inputBorder: '#E5E7EB',
-  pri: '#3454D1',
+  pri: '#4263E8',
   text: '#1A1D26',
   sub: '#6B7280',
   muted: '#9CA3AF',
