@@ -59,3 +59,7 @@ supabase/.temp/
 
 # Playwright MCP test artifacts
 .playwright-mcp/
+
+# Local-only diagnostic scripts (use service_role key — never commit)
+check-db-state.mjs
+*.local.mjs
