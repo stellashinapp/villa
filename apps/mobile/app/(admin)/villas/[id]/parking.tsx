@@ -1,9 +1,10 @@
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { useState, useEffect } from 'react';
 import { useLocalSearchParams } from 'expo-router';
-import { router } from 'expo-router';
 import { store, subscribe, addParking, removeParking } from '@/lib/store';
 import VillaSectionHeader from '@/components/VillaSectionHeader';
+import { confirmAction } from '@/lib/confirm';
+import { showToast } from '@/lib/toast';
 
 const C = {
   bg: '#F5F6FA',
@@ -12,12 +13,14 @@ const C = {
   inputBg: '#F0F2F6',
   inputBorder: '#E5E7EB',
   pri: '#4263E8',
+  priL: '#E8EEFB',
   text: '#1A1D26',
   sub: '#6B7280',
   muted: '#9CA3AF',
   ok: '#4CAF50',
-  warn: '#F39C12',
+  okL: 'rgba(76,175,80,0.10)',
   err: '#E74C3C',
+  errL: 'rgba(231,76,60,0.08)',
 };
 
 export default function VillaParkingScreen() {
@@ -27,10 +30,9 @@ export default function VillaParkingScreen() {
 
   const villa = store.villas.find(v => v.id === id);
 
-  const [ho, setHo] = useState('');
-  const [plate, setPlate] = useState('');
-  const [type, setType] = useState<'resident' | 'visitor'>('resident');
-  const [memo, setMemo] = useState('');
+  // 호실별 입력 중인 차량번호 (편집 모드)
+  const [editing, setEditing] = useState<Record<string, string>>({});
+  const [pendingHo, setPendingHo] = useState<string | null>(null); // 새로 등록 중인 호실
 
   if (!villa) {
     return (
@@ -40,106 +42,155 @@ export default function VillaParkingScreen() {
     );
   }
 
-  const residents = villa.parking.filter(p => p.type === 'resident');
-  const visitors = villa.parking.filter(p => p.type === 'visitor');
+  // 호실별 입주민 차량 목록 (방문차량 제외)
+  const carsByHo: Record<string, Array<{ id: string; plate: string }>> = {};
+  villa.parking
+    .filter(p => p.type === 'resident')
+    .forEach(p => {
+      (carsByHo[p.ho] = carsByHo[p.ho] ?? []).push({ id: p.id, plate: p.plate });
+    });
 
-  const handleRegister = () => {
-    const trimHo = ho.trim();
-    const trimPlate = plate.trim();
-    if (!trimHo) { Alert.alert('오류', '호수를 입력하세요'); return; }
-    if (!trimPlate) { Alert.alert('오류', '차량번호를 입력하세요'); return; }
-    addParking(id!, trimHo, trimPlate, type, memo.trim() || undefined);
-    setHo('');
-    setPlate('');
-    setMemo('');
-    Alert.alert('완료', '차량이 등록되었습니다.');
-  };
+  const totalUnits = villa.units.length;
+  const withCar = villa.units.filter(u => (carsByHo[u.ho] ?? []).length > 0).length;
+  const withoutCar = totalUnits - withCar;
 
-  const handleRemove = (parkingId: string, plateNum: string) => {
-    Alert.alert('차량 삭제', `"${plateNum}" 차량을 삭제하시겠습니까?`, [
-      { text: '취소', style: 'cancel' },
-      { text: '삭제', style: 'destructive', onPress: () => { removeParking(id!, parkingId); Alert.alert('삭제 완료', `"${plateNum}" 차량이 삭제되었습니다`); } },
-    ]);
-  };
+  function startAdd(ho: string) {
+    setPendingHo(ho);
+    setEditing(prev => ({ ...prev, [ho]: '' }));
+  }
+
+  function cancelAdd(ho: string) {
+    setPendingHo(null);
+    setEditing(prev => {
+      const next = { ...prev };
+      delete next[ho];
+      return next;
+    });
+  }
+
+  function saveCar(ho: string) {
+    const plate = (editing[ho] ?? '').trim();
+    if (!plate) {
+      showToast('차량번호를 입력해주세요', 'warn');
+      return;
+    }
+    addParking(id!, ho, plate, 'resident');
+    showToast(`${ho} 차량 등록 완료`, 'success');
+    setPendingHo(null);
+    setEditing(prev => {
+      const next = { ...prev };
+      delete next[ho];
+      return next;
+    });
+  }
+
+  async function handleRemoveCar(carId: string, plate: string, ho: string) {
+    const ok = await confirmAction({
+      title: '차량 삭제',
+      message: `${ho} ${plate} 차량을 삭제하시겠습니까?`,
+      confirmText: '삭제',
+      destructive: true,
+    });
+    if (!ok) return;
+    removeParking(id!, carId);
+    showToast(`${plate} 삭제 완료`, 'success');
+  }
 
   return (
     <View style={{ flex: 1, backgroundColor: C.bg }}>
       <VillaSectionHeader villaName={villa.name} section="주차" />
       <ScrollView style={s.container} contentContainerStyle={{ paddingTop: 16, paddingBottom: 40 }}>
-      {/* 요약 카드 */}
-      <View style={s.summaryRow}>
-        {[
-          { label: '전체 등록', value: villa.parking.length, color: C.text },
-          { label: '입주민', value: residents.length, color: C.ok },
-          { label: '방문차량', value: visitors.length, color: C.warn },
-        ].map((item, i) => (
-          <View key={i} style={s.summaryCard}>
-            <Text style={[s.summaryValue, { color: item.color }]}>{item.value}</Text>
-            <Text style={s.summaryLabel}>{item.label}</Text>
+        {/* 요약 */}
+        <View style={s.summaryRow}>
+          <View style={s.summaryCard}>
+            <Text style={[s.summaryValue, { color: C.text }]}>{totalUnits}</Text>
+            <Text style={s.summaryLabel}>총 세대</Text>
           </View>
-        ))}
-      </View>
-
-      {/* 등록 폼 */}
-      <View style={[s.card, { borderWidth: 2, borderStyle: 'dashed' }]}>
-        <Text style={s.formTitle}>차량 등록</Text>
-
-        {/* 유형 선택 */}
-        <View style={{ flexDirection: 'row', gap: 8, marginBottom: 10 }}>
-          <TouchableOpacity
-            style={[s.typeBtn, type === 'resident' && s.typeBtnActive]}
-            onPress={() => setType('resident')}
-          >
-            <Text style={[s.typeBtnText, type === 'resident' && s.typeBtnTextActive]}>입주민</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[s.typeBtn, type === 'visitor' && s.typeBtnActive]}
-            onPress={() => setType('visitor')}
-          >
-            <Text style={[s.typeBtnText, type === 'visitor' && s.typeBtnTextActive]}>방문차량</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={s.formRow}>
-          <TextInput style={[s.input, { flex: 1 }]} placeholder="호수 (예: 101호)" placeholderTextColor={C.muted} value={ho} onChangeText={setHo} />
-          <TextInput style={[s.input, { flex: 1 }]} placeholder="차량번호 (예: 12가 3456)" placeholderTextColor={C.muted} value={plate} onChangeText={setPlate} />
-        </View>
-        <View style={s.formRow}>
-          <TextInput style={[s.input, { flex: 1 }]} placeholder="메모 (선택)" placeholderTextColor={C.muted} value={memo} onChangeText={setMemo} />
-        </View>
-        <TouchableOpacity style={s.registerBtn} onPress={handleRegister}>
-          <Text style={s.registerBtnText}>등록</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* 차량 목록 */}
-      <Text style={s.sectionTitle}>등록된 차량</Text>
-      {villa.parking.length === 0 && (
-        <View style={s.empty}>
-          <Text style={s.emptyText}>등록된 차량이 없습니다</Text>
-        </View>
-      )}
-      {villa.parking.map(p => (
-        <View key={p.id} style={s.card}>
-          <View style={s.parkingRow}>
-            <View style={[s.parkingIcon, { backgroundColor: p.type === 'visitor' ? 'rgba(243,156,18,0.08)' : 'rgba(52,84,209,0.08)' }]}>
-              <Text style={{ fontSize: 18 }}>🚗</Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={s.plateText}>{p.plate}</Text>
-              <Text style={s.parkingMeta}>{p.ho}{p.memo ? ` · ${p.memo}` : ''}</Text>
-            </View>
-            <View style={[s.typeBadge, { backgroundColor: p.type === 'visitor' ? 'rgba(243,156,18,0.08)' : 'rgba(52,84,209,0.08)' }]}>
-              <Text style={[s.typeBadgeText, { color: p.type === 'visitor' ? C.warn : C.pri }]}>
-                {p.type === 'visitor' ? '방문차량' : '입주민'}
-              </Text>
-            </View>
-            <TouchableOpacity style={s.removeBtn} onPress={() => handleRemove(p.id, p.plate)}>
-              <Text style={s.removeBtnText}>✕</Text>
-            </TouchableOpacity>
+          <View style={s.summaryCard}>
+            <Text style={[s.summaryValue, { color: C.ok }]}>{withCar}</Text>
+            <Text style={s.summaryLabel}>차량 등록</Text>
+          </View>
+          <View style={s.summaryCard}>
+            <Text style={[s.summaryValue, { color: C.muted }]}>{withoutCar}</Text>
+            <Text style={s.summaryLabel}>미등록</Text>
           </View>
         </View>
-      ))}
+
+        {/* 호실별 차량 */}
+        <Text style={s.sectionTitle}>호실별 차량</Text>
+        {villa.units.map(unit => {
+          const cars = carsByHo[unit.ho] ?? [];
+          const isEditing = pendingHo === unit.ho;
+          const hasCar = cars.length > 0;
+          return (
+            <View key={unit.ho} style={s.unitCard}>
+              <View style={s.unitHeader}>
+                <View style={[s.hoCircle, { backgroundColor: hasCar ? C.okL : C.inputBg }]}>
+                  <Text style={[s.hoCircleText, { color: hasCar ? C.ok : C.muted }]}>
+                    {unit.ho.replace('호', '')}
+                  </Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={s.hoLabel}>{unit.ho}</Text>
+                  <Text style={s.resName}>{unit.name || '미등록'}</Text>
+                </View>
+                {!isEditing && (
+                  hasCar ? (
+                    <View style={[s.statusBadge, { backgroundColor: C.okL }]}>
+                      <Text style={[s.statusBadgeText, { color: C.ok }]}>차량 {cars.length}대</Text>
+                    </View>
+                  ) : (
+                    <View style={[s.statusBadge, { backgroundColor: C.inputBg }]}>
+                      <Text style={[s.statusBadgeText, { color: C.muted }]}>차량 없음</Text>
+                    </View>
+                  )
+                )}
+              </View>
+
+              {/* 등록된 차량 목록 */}
+              {hasCar && (
+                <View style={s.carsList}>
+                  {cars.map(c => (
+                    <View key={c.id} style={s.carRow}>
+                      <Text style={s.carIcon}>🚗</Text>
+                      <Text style={s.carPlate}>{c.plate}</Text>
+                      <TouchableOpacity
+                        style={s.removeBtn}
+                        onPress={() => handleRemoveCar(c.id, c.plate, unit.ho)}
+                      >
+                        <Text style={s.removeBtnText}>삭제</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </View>
+              )}
+
+              {/* 차량 추가 입력란 */}
+              {isEditing ? (
+                <View style={s.editRow}>
+                  <TextInput
+                    style={s.input}
+                    placeholder="차량번호 (예: 12가 3456)"
+                    placeholderTextColor={C.muted}
+                    value={editing[unit.ho] ?? ''}
+                    onChangeText={t => setEditing(prev => ({ ...prev, [unit.ho]: t }))}
+                    autoFocus
+                  />
+                  <TouchableOpacity style={s.saveBtn} onPress={() => saveCar(unit.ho)}>
+                    <Text style={s.saveBtnText}>저장</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={s.cancelBtn} onPress={() => cancelAdd(unit.ho)}>
+                    <Text style={s.cancelBtnText}>취소</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity style={s.addBtn} onPress={() => startAdd(unit.ho)}>
+                  <Text style={s.addBtnText}>+ 차량 추가</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          );
+        })}
       </ScrollView>
     </View>
   );
@@ -154,28 +205,79 @@ const s = StyleSheet.create({
   },
   summaryValue: { fontSize: 22, fontWeight: '900' },
   summaryLabel: { fontSize: 11, color: C.sub, marginTop: 2 },
-  card: {
-    backgroundColor: C.card, borderWidth: 1, borderColor: C.border, borderRadius: 14, padding: 16, marginBottom: 8,
+  sectionTitle: { fontSize: 13, fontWeight: '700', color: C.sub, marginBottom: 10 },
+
+  unitCard: {
+    backgroundColor: C.card, borderWidth: 1, borderColor: C.border, borderRadius: 14, padding: 14, marginBottom: 10,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2,
   },
-  formTitle: { fontSize: 14, fontWeight: '700', color: C.text, marginBottom: 10 },
-  formRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
-  input: { backgroundColor: C.inputBg, borderWidth: 1, borderColor: C.inputBorder, borderRadius: 10, padding: 10, fontSize: 13, color: C.text },
-  typeBtn: { flex: 1, backgroundColor: C.inputBg, borderWidth: 1, borderColor: C.inputBorder, borderRadius: 10, paddingVertical: 8, alignItems: 'center' },
-  typeBtnActive: { backgroundColor: C.pri, borderColor: C.pri },
-  typeBtnText: { color: C.muted, fontSize: 13, fontWeight: '600' },
-  typeBtnTextActive: { color: '#FFFFFF' },
-  registerBtn: { backgroundColor: C.pri, borderRadius: 12, paddingVertical: 12, alignItems: 'center' },
-  registerBtnText: { color: '#FFFFFF', fontSize: 14, fontWeight: '700' },
-  sectionTitle: { fontSize: 13, fontWeight: '700', color: C.sub, marginTop: 8, marginBottom: 10 },
-  parkingRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  parkingIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  plateText: { fontSize: 15, fontWeight: '800', color: C.text },
-  parkingMeta: { fontSize: 12, color: C.sub, marginTop: 2 },
-  typeBadge: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 20 },
-  typeBadgeText: { fontSize: 11, fontWeight: '600' },
-  removeBtn: { width: 28, height: 28, borderRadius: 8, borderWidth: 1, borderColor: C.border, alignItems: 'center', justifyContent: 'center', marginLeft: 4 },
-  removeBtnText: { color: C.err, fontSize: 14 },
-  empty: { alignItems: 'center', padding: 30 },
-  emptyText: { color: C.muted, fontSize: 14 },
+  unitHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  hoCircle: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  hoCircleText: { fontSize: 13, fontWeight: '800' },
+  hoLabel: { fontSize: 15, fontWeight: '800', color: C.text },
+  resName: { fontSize: 12, color: C.sub, marginTop: 2 },
+  statusBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
+  statusBadgeText: { fontSize: 11, fontWeight: '700' },
+
+  carsList: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: C.border,
+    gap: 8,
+  },
+  carRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: C.priL,
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  carIcon: { fontSize: 16 },
+  carPlate: { flex: 1, fontSize: 14, fontWeight: '700', color: C.text },
+  removeBtn: {
+    backgroundColor: C.errL,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+  },
+  removeBtnText: { fontSize: 11, color: C.err, fontWeight: '700' },
+
+  editRow: {
+    flexDirection: 'row',
+    gap: 6,
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: C.border,
+  },
+  input: {
+    flex: 1,
+    backgroundColor: C.inputBg,
+    borderWidth: 1,
+    borderColor: C.inputBorder,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 13,
+    color: C.text,
+  },
+  saveBtn: { backgroundColor: C.pri, borderRadius: 10, paddingHorizontal: 14, justifyContent: 'center' },
+  saveBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
+  cancelBtn: {
+    borderWidth: 1, borderColor: C.border, borderRadius: 10, paddingHorizontal: 12, justifyContent: 'center',
+  },
+  cancelBtnText: { color: C.sub, fontSize: 13, fontWeight: '600' },
+
+  addBtn: {
+    marginTop: 12,
+    paddingTop: 12,
+    paddingBottom: 4,
+    borderTopWidth: 1,
+    borderTopColor: C.border,
+    alignItems: 'center',
+  },
+  addBtnText: { color: C.pri, fontSize: 13, fontWeight: '700' },
 });
