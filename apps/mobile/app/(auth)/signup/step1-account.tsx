@@ -357,7 +357,7 @@ export default function SignupStep1Screen() {
             disabled={phoneVerified}
             activeOpacity={0.8}
           >
-            <Text style={[styles.passButtonText, phoneVerified && { color: C.success }]}>
+            <Text style={[styles.passButtonText, phoneVerified && { color: C.primary }]}>
               {phoneVerified ? '✓ 본인인증 완료' : '본인인증 (PASS)'}
             </Text>
           </TouchableOpacity>
@@ -580,8 +580,8 @@ const styles = StyleSheet.create({
     borderColor: C.inputBorder,
   },
   passButtonDone: {
-    backgroundColor: '#E8F5E9',
-    borderColor: C.success,
+    backgroundColor: '#EBF1FF',
+    borderColor: C.primary,
   },
   passButtonText: {
     fontSize: 14,

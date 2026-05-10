@@ -107,7 +107,7 @@ export default function ResidentLoginScreen() {
           disabled={phoneVerified}
           activeOpacity={0.8}
         >
-          <Text style={[styles.passBtnText, phoneVerified && { color: '#4CAF50' }]}>
+          <Text style={[styles.passBtnText, phoneVerified && { color: '#4263E8' }]}>
             {phoneVerified ? '✓ 본인인증 완료' : '본인인증 (PASS)'}
           </Text>
         </TouchableOpacity>
@@ -205,8 +205,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   passBtnDone: {
-    backgroundColor: '#E8F5E9',
-    borderColor: '#4CAF50',
+    backgroundColor: '#EBF1FF',
+    borderColor: '#4263E8',
   },
   passBtnText: { fontSize: 14, fontWeight: '600', color: '#1A1D26' },
   devBypassBtn: {
