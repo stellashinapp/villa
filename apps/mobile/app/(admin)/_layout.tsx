@@ -1,5 +1,6 @@
 import { Tabs, router } from 'expo-router';
 import { View, Text, StyleSheet } from 'react-native';
+import { store } from '@/lib/store';
 
 function TabIcon({ label, focused }: { label: string; focused: boolean }) {
   const icons: Record<string, string> = { '홈': '🏠', '메시지': '✉️', '빌라': '🏘️', '설정': '⚙️' };
@@ -50,10 +51,18 @@ export default function AdminLayout() {
           tabBarIcon: ({ focused }) => <TabIcon label="빌라" focused={focused} />,
         }}
         listeners={{
-          // 탭 클릭 시 항상 빌라 목록(index) 으로 — 이전에 /add 깊이 들어가 있어도 리셋
+          // 빌라 탭 클릭 시:
+          // - 빌라 1개 → 그 빌라의 상세 페이지로 직행 (목록 스킵)
+          // - 빌라 0개 / 2개+ → 빌라 목록(index) 으로
+          // 어느 경우든 /add 등에 갇히지 않도록 강제 리셋.
           tabPress: (e) => {
             e.preventDefault();
-            router.replace('/(admin)/villas');
+            const villas = store.villas;
+            if (villas.length === 1) {
+              router.replace(`/(admin)/villas/${villas[0].id}`);
+            } else {
+              router.replace('/(admin)/villas');
+            }
           },
         }}
       />
