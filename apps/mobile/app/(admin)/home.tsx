@@ -126,9 +126,7 @@ export default function AdminHomeScreen() {
                   : null
               }
             >
-              <View style={styles.alertIconWrap}>
-                <Text style={styles.alertIcon}>💰</Text>
-              </View>
+              <View style={[styles.alertDot, { backgroundColor: '#E74C3C' }]} />
               <View style={{ flex: 1 }}>
                 <Text style={styles.alertTitle}>미납 세대</Text>
                 <Text style={styles.alertSub}>
@@ -148,9 +146,7 @@ export default function AdminHomeScreen() {
                   : router.push('/(admin)/inbox')
               }
             >
-              <View style={styles.alertIconWrap}>
-                <Text style={styles.alertIcon}>✉️</Text>
-              </View>
+              <View style={[styles.alertDot, { backgroundColor: '#F39C12' }]} />
               <View style={{ flex: 1 }}>
                 <Text style={styles.alertTitle}>답변 대기 민원</Text>
                 <Text style={styles.alertSub}>
@@ -165,18 +161,21 @@ export default function AdminHomeScreen() {
 
       {hasVillas ? (
         <>
-          {/* ── Summary Cards (3 in row) ─────────────────────────── */}
+          {/* ── Summary Cards (3 in row) — 미니멀 ─────────────── */}
           <View style={styles.summaryRow}>
-            <SummaryCard icon="🏘️" label="관리 빌라" value={SUMMARY.villaCount} />
-            <SummaryCard icon="👥" label="총 세대" value={SUMMARY.totalUnits} />
-            <SummaryCard icon="✉️" label="새 메시지" value={SUMMARY.newMessages} />
+            <SummaryCard accent="#4263E8" label="관리 빌라" value={SUMMARY.villaCount} unit="개" />
+            <SummaryCard accent="#7C3AED" label="총 세대" value={SUMMARY.totalUnits} unit="세대" />
+            <SummaryCard accent="#F59E0B" label="새 메시지" value={SUMMARY.newMessages} unit={SUMMARY.newMessages > 0 ? '건' : ''} />
           </View>
           <StatsDashboard villas={villas} />
         </>
       ) : (
         /* ── 빌라 미등록: CTA를 헤더 직후로 배치 ──────────────── */
         <View style={styles.emptyHero}>
-          <Text style={styles.emptyHeroEmoji}>🏘️</Text>
+          <View style={styles.emptyHeroIcon}>
+            <View style={styles.emptyHeroIconDot} />
+            <View style={[styles.emptyHeroIconDot, { marginTop: -8 }]} />
+          </View>
           <Text style={styles.emptyHeroTitle}>등록된 빌라가 없어요</Text>
           <Text style={styles.emptyHeroSub}>
             첫 빌라를 등록하시면 관리비·공지·민원을{'\n'}한 곳에서 관리할 수 있어요
@@ -439,7 +438,10 @@ function StatsDashboard({ villas }: { villas: typeof store.villas }) {
 
   return (
     <View style={{ marginHorizontal: 20, marginBottom: 20 }}>
-      <Text style={{ fontSize: 15, fontWeight: '800', color: '#1A1D26', marginBottom: 12 }}>📊 운영 통계</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14, marginTop: 4 }}>
+        <View style={{ width: 3, height: 14, borderRadius: 2, backgroundColor: '#4263E8' }} />
+        <Text style={{ fontSize: 15, fontWeight: '900', color: '#1A1D26', letterSpacing: -0.3 }}>운영 통계</Text>
+      </View>
 
       <View style={{ backgroundColor: '#fff', borderWidth: 1, borderColor: '#E8EBF0', borderRadius: 14, padding: 16, marginBottom: 10 }}>
         <Text style={{ fontSize: 12, color: '#6B7280', marginBottom: 10 }}>최근 6개월 납부율</Text>
@@ -486,7 +488,7 @@ function StatsDashboard({ villas }: { villas: typeof store.villas }) {
 
       {villaStats.some((v) => v.totalOverdueAmount > 0) && (
         <View style={{ backgroundColor: '#FFF7ED', borderWidth: 1, borderColor: '#FED7AA', borderRadius: 12, padding: 14, marginBottom: 10 }}>
-          <Text style={{ fontSize: 12, color: '#C2410C', fontWeight: '700', marginBottom: 8 }}>💰 누적 미납 금액 (전체 기간)</Text>
+          <Text style={{ fontSize: 12, color: '#C2410C', fontWeight: '700', marginBottom: 8, letterSpacing: 0.2 }}>누적 미납 금액 · 전체 기간</Text>
           {villaStats.filter((v) => v.totalOverdueAmount > 0).map((v) => (
             <View key={v.id} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
               <Text style={{ fontSize: 13, color: '#1A1D26', fontWeight: '600' }}>{v.name}</Text>
@@ -508,7 +510,8 @@ function StatsDashboard({ villas }: { villas: typeof store.villas }) {
       {villaStats.some((v) => v.chronicUnpaid.length > 0) && (
         <View style={{ backgroundColor: '#fff', borderWidth: 1, borderColor: '#FECACA', borderRadius: 12, padding: 14 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-            <Text style={{ fontSize: 12, color: '#E74C3C', fontWeight: '700' }}>⚠️ 상습 미납 (2회 이상)</Text>
+            <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: '#E74C3C' }} />
+            <Text style={{ fontSize: 12, color: '#E74C3C', fontWeight: '700', letterSpacing: 0.2 }}>상습 미납 · 2회 이상</Text>
           </View>
           {villaStats.filter((v) => v.chronicUnpaid.length > 0).map((v) => (
             <View key={v.id} style={{ paddingVertical: 4 }}>
@@ -533,12 +536,17 @@ function StatsDashboard({ villas }: { villas: typeof store.villas }) {
 // ---------------------------------------------------------------------------
 // Summary Card sub-component
 // ---------------------------------------------------------------------------
-function SummaryCard({ icon, label, value }: { icon: string; label: string; value: number }) {
+function SummaryCard({ accent, label, value, unit }: { accent: string; label: string; value: number; unit?: string }) {
   return (
     <View style={styles.summaryCard}>
-      <Text style={{ fontSize: 22, marginBottom: 6 }}>{icon}</Text>
-      <Text style={styles.summaryValue}>{value}</Text>
-      <Text style={styles.summaryLabel}>{label}</Text>
+      <View style={[styles.summaryAccent, { backgroundColor: accent }]} />
+      <View style={styles.summaryCardBody}>
+        <Text style={styles.summaryLabel}>{label}</Text>
+        <View style={styles.summaryValueRow}>
+          <Text style={[styles.summaryValue, { color: accent }]}>{value}</Text>
+          {unit ? <Text style={styles.summaryUnit}>{unit}</Text> : null}
+        </View>
+      </View>
     </View>
   );
 }
@@ -648,6 +656,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   alertIcon: { fontSize: 18 },
+  alertDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 8,
+    alignSelf: 'center',
+  },
   alertTitle: { fontSize: 14, fontWeight: '800', color: '#0F2242' },
   alertSub: { fontSize: 12, color: '#6B7280', marginTop: 2 },
   alertCount: {
@@ -666,29 +681,48 @@ const styles = StyleSheet.create({
   },
   summaryCard: {
     flex: 1,
+    flexDirection: 'row',
     backgroundColor: C.cardBg,
     borderRadius: 14,
     borderWidth: 1,
     borderColor: C.cardBorder,
-    paddingVertical: 14,
-    paddingHorizontal: 12,
-    alignItems: 'center',
+    overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
     elevation: 2,
   },
+  summaryAccent: {
+    width: 4,
+  },
+  summaryCardBody: {
+    flex: 1,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+  },
+  summaryValueRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 3,
+    marginTop: 4,
+  },
   summaryValue: {
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: '900',
-    color: C.textPrimary,
+    letterSpacing: -0.5,
+    lineHeight: 30,
+  },
+  summaryUnit: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: C.textMuted,
   },
   summaryLabel: {
     fontSize: 11,
     color: C.textSub,
-    fontWeight: '600',
-    marginTop: 2,
+    fontWeight: '700',
+    letterSpacing: 0.3,
   },
 
   /* ── Empty Hero (빌라 미등록) ───────────────────────────── */
@@ -711,6 +745,21 @@ const styles = StyleSheet.create({
   emptyHeroEmoji: {
     fontSize: 48,
     marginBottom: 14,
+  },
+  emptyHeroIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: C.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 18,
+  },
+  emptyHeroIconDot: {
+    width: 18,
+    height: 18,
+    borderRadius: 4,
+    backgroundColor: C.primaryBlue,
   },
   emptyHeroTitle: {
     fontSize: 18,
