@@ -6,6 +6,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { buildBillingHtml, issueBillingKeyOnServer } from '@/lib/payment';
 import { syncAdminFromSupabase } from '@/lib/sync';
 import { supabase } from '@/lib/supabase';
+import { store, notify } from '@/lib/store';
 import { showToast } from '@/lib/toast';
 
 const IS_WEB = Platform.OS === 'web';
@@ -14,6 +15,8 @@ const IS_WEB = Platform.OS === 'web';
 // service_role 로 INSERT/UPDATE. RLS 와 무관하게 안정 동작.
 // 함수 내부에서 JWT 의 auth.user 를 검증해 admin_id 를 직접 도출하므로
 // 클라가 임의의 adminId 를 보낼 수 없음(권한 안전).
+// 응답에 새 subscription 을 포함시켜 client 가 store 를 즉시 갱신 — 게이트
+// 가 redirect 직후 SELECT 가 못 따라잡아 다시 billing 으로 튕기는 문제 방지.
 async function registerDummyCard() {
   const { data, error } = await supabase.functions.invoke('register-dummy-card', {
     body: {},
@@ -29,6 +32,21 @@ async function registerDummyCard() {
   }
   if (data && data.error) {
     throw new Error(data.error);
+  }
+
+  // 함수 응답 기반으로 store 직접 갱신 — sync 의 SELECT 가 RLS/타이밍 이슈로
+  // 못 잡아도 게이트가 통과하도록 안전망.
+  const sub = (data as any)?.subscription;
+  if (sub) {
+    store.subscription = {
+      status: sub.status,
+      cardBrand: sub.card_brand ?? '',
+      cardLast4: sub.card_last4 ?? '',
+      billingDay: sub.billing_day ?? 1,
+      nextBilling: sub.current_period_end ? new Date(sub.current_period_end).toLocaleDateString('ko-KR') : '',
+      startDate: sub.current_period_start ? new Date(sub.current_period_start).toLocaleDateString('ko-KR') : '',
+    };
+    notify();
   }
 }
 

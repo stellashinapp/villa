@@ -108,7 +108,20 @@ serve(async (req) => {
       }
     }
 
-    return new Response(JSON.stringify({ success: true, adminId }), {
+    // 클라가 store 를 즉시 갱신할 수 있도록 신규 구독 상태 반환 — 웹에서
+    // 직후 SELECT 가 RLS/캐시 이슈로 못 잡는 케이스 대비.
+    return new Response(JSON.stringify({
+      success: true,
+      adminId,
+      subscription: {
+        status: 'active',
+        card_brand: '더미카드',
+        card_last4: '0000',
+        billing_day: 1,
+        current_period_start: periodStart,
+        current_period_end: periodEnd,
+      },
+    }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
