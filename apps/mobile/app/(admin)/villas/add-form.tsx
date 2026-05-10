@@ -602,8 +602,8 @@ const s = StyleSheet.create({
   planName: { fontSize: 16, fontWeight: '800', color: C.text },
   planRange: { fontSize: 12, color: C.sub, marginTop: 2 },
   planPrice: { fontSize: 18, fontWeight: '900', color: C.pri },
-  trialBanner: { backgroundColor: 'rgba(76,175,80,0.08)', borderRadius: 8, padding: 10, marginTop: 12, alignItems: 'center' },
-  trialText: { fontSize: 13, fontWeight: '700', color: C.ok },
+  trialBanner: { backgroundColor: 'rgba(66,99,232,0.10)', borderRadius: 8, padding: 10, marginTop: 12, alignItems: 'center' },
+  trialText: { fontSize: 13, fontWeight: '700', color: C.pri },
 
   // 호실 미리보기
   previewGrid: { marginTop: 10, gap: 8 },
