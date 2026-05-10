@@ -11,6 +11,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { store, subscribe, activateSubscription } from '@/lib/store';
+import { syncAdminFromSupabase } from '@/lib/sync';
 
 const C = {
   bg: '#F5F6FA',
@@ -32,13 +33,34 @@ const C = {
 
 const fmt = (n: number) => n.toLocaleString('ko-KR') + '원';
 
+function QuickMenuBtn({ icon, label, badge, onPress }: { icon: string; label: string; badge?: number; onPress: () => void }) {
+  return (
+    <TouchableOpacity style={styles.qmBtn} activeOpacity={0.7} onPress={onPress}>
+      <View style={styles.qmIconWrap}>
+        <Text style={styles.qmIcon}>{icon}</Text>
+        {badge ? (
+          <View style={styles.qmBadge}>
+            <Text style={styles.qmBadgeText}>{badge}</Text>
+          </View>
+        ) : null}
+      </View>
+      <Text style={styles.qmLabel}>{label}</Text>
+    </TouchableOpacity>
+  );
+}
+
 export default function VillasListScreen() {
   const [_, setTick] = useState(0);
   useEffect(() => subscribe(() => setTick(t => t + 1)), []);
   const insets = useSafeAreaInsets();
 
+  // 마운트 시 한번 sync — 홈 거치지 않고 직접 들어왔을 때도 빌라 보이게
+  useEffect(() => {
+    syncAdminFromSupabase().catch(() => {});
+  }, []);
+
   const [showSubPopup, setShowSubPopup] = useState(false);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
 
   const villas = store.villas;
   const subscription = store.subscription;
@@ -85,6 +107,28 @@ export default function VillasListScreen() {
           <Text style={[styles.placeholderText, { fontSize: 12, marginTop: 4 }]}>
             새 빌라를 등록해주세요
           </Text>
+          <TouchableOpacity
+            style={styles.resyncBtn}
+            disabled={syncing}
+            onPress={async () => {
+              setSyncing(true);
+              const ok = await syncAdminFromSupabase().catch(() => false);
+              setSyncing(false);
+              const cnt = store.villas.length;
+              const adminId = store.admin?.id ?? '(없음)';
+              Alert.alert(
+                '동기화 결과',
+                `결과: ${ok ? '성공' : '실패'}\n조회된 빌라: ${cnt}개\n관리자 ID: ${adminId}\n\n` +
+                  (cnt === 0
+                    ? '실제로 DB 에 빌라가 없는 상태입니다. 새 빌라를 등록해주세요.'
+                    : '동기화 후 빌라가 보입니다. 화면 새로고침해주세요.'),
+              );
+            }}
+          >
+            <Text style={styles.resyncBtnText}>
+              {syncing ? '동기화 중…' : '이미 등록했는데 안 보여요? 다시 동기화'}
+            </Text>
+          </TouchableOpacity>
         </View>
       ) : (
         villas.map(villa => {
@@ -93,14 +137,16 @@ export default function VillasListScreen() {
           const unpaid = pub
             ? villa.units.filter(u => u.name && !pub.paid[u.ho]).length
             : 0;
-          const isExpanded = expandedId === villa.id;
+          const unreadMsg = villa.messages.filter(m => !m.read).length;
 
+          // 카드 클릭 시 바로 상세 페이지로 — expand 단계 제거.
+          // 상세 페이지에 5개 탭 (관리비/입주민/주차/공지/메시지) 모두 접근 가능.
           return (
             <TouchableOpacity
               key={villa.id}
               style={styles.villaCard}
-              activeOpacity={0.8}
-              onPress={() => setExpandedId(isExpanded ? null : villa.id)}
+              activeOpacity={0.7}
+              onPress={() => router.push(`/(admin)/villas/${villa.id}`)}
             >
               {/* Header */}
               <View style={styles.villaHeader}>
@@ -132,51 +178,27 @@ export default function VillasListScreen() {
                 <View style={styles.statDivider} />
                 <View style={styles.statItem}>
                   <Text style={styles.statLabel}>미납</Text>
-                  <Text
-                    style={[
-                      styles.statValue,
-                      unpaid > 0 && { color: C.orange },
-                    ]}
-                  >
+                  <Text style={[styles.statValue, unpaid > 0 && { color: C.orange }]}>
                     {unpaid}
+                  </Text>
+                </View>
+                <View style={styles.statDivider} />
+                <View style={styles.statItem}>
+                  <Text style={styles.statLabel}>새 메시지</Text>
+                  <Text style={[styles.statValue, unreadMsg > 0 && { color: C.orange }]}>
+                    {unreadMsg}
                   </Text>
                 </View>
               </View>
 
-              {/* Expanded detail */}
-              {isExpanded && (
-                <View style={styles.expandedSection}>
-                  <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>계좌</Text>
-                    <Text style={styles.detailValue}>{villa.account}</Text>
-                  </View>
-                  <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>층당 세대</Text>
-                    <Text style={styles.detailValue}>{villa.unitsPerFloor}세대</Text>
-                  </View>
-                  <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>공지사항</Text>
-                    <Text style={styles.detailValue}>{villa.notices.length}건</Text>
-                  </View>
-                  <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>메시지</Text>
-                    <Text style={styles.detailValue}>
-                      {villa.messages.length}건 (읽지않음 {villa.messages.filter(m => !m.read).length})
-                    </Text>
-                  </View>
-                  <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>주차 등록</Text>
-                    <Text style={styles.detailValue}>{villa.parking.length}대</Text>
-                  </View>
-
-                  <TouchableOpacity
-                    style={styles.detailBtn}
-                    onPress={() => router.push(`/(admin)/villas/${villa.id}`)}
-                  >
-                    <Text style={styles.detailBtnText}>상세 관리</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
+              {/* 빠른 진입 — 5개 메뉴 */}
+              <View style={styles.quickMenu}>
+                <QuickMenuBtn icon="💰" label="관리비" onPress={() => router.push(`/(admin)/villas/${villa.id}/bills`)} />
+                <QuickMenuBtn icon="👥" label="입주민" onPress={() => router.push(`/(admin)/villas/${villa.id}/residents`)} />
+                <QuickMenuBtn icon="🚗" label="주차" onPress={() => router.push(`/(admin)/villas/${villa.id}/parking`)} />
+                <QuickMenuBtn icon="📢" label="공지" onPress={() => router.push(`/(admin)/villas/${villa.id}/notices`)} />
+                <QuickMenuBtn icon="✉️" label="메시지" onPress={() => router.push(`/(admin)/villas/${villa.id}/messages`)} badge={unreadMsg > 0 ? unreadMsg : undefined} />
+              </View>
             </TouchableOpacity>
           );
         })
@@ -234,6 +256,59 @@ const styles = StyleSheet.create({
 
   placeholder: { padding: 40, alignItems: 'center' },
   placeholderText: { color: C.sub, fontSize: 14 },
+  resyncBtn: {
+    marginTop: 18,
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
+  },
+  resyncBtnText: { color: C.sub, fontSize: 13, fontWeight: '600' },
+
+  // 빠른 진입 메뉴 (5개) — 빌라 카드 안 하단
+  quickMenu: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 14,
+    paddingTop: 14,
+    borderTopWidth: 1,
+    borderTopColor: C.border,
+    gap: 4,
+  },
+  qmBtn: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    borderRadius: 10,
+  },
+  qmIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: C.priL,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 6,
+    position: 'relative',
+  },
+  qmIcon: { fontSize: 18 },
+  qmBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    paddingHorizontal: 4,
+    backgroundColor: C.err,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  qmBadgeText: { color: '#FFFFFF', fontSize: 10, fontWeight: '800' },
+  qmLabel: { fontSize: 11, color: C.text, fontWeight: '700' },
 
   villaCard: {
     backgroundColor: C.card,
