@@ -132,37 +132,28 @@ export default function AddVillaFormScreen() {
   const [showCostPopup, setShowCostPopup] = useState(false);
   const [bankPickerOpen, setBankPickerOpen] = useState(false);
   const [addressModalOpen, setAddressModalOpen] = useState(false);
+  const [registerError, setRegisterError] = useState<string | null>(null);
 
   // 볼륨 할인율 — 현재 보유 빌라 수 + 새 빌라 1개 기준
   const villaCount = store.villas.length + 1;
   const discRate = villaCount >= 20 ? 0.4 : villaCount >= 10 ? 0.3 : villaCount >= 5 ? 0.2 : 0;
 
-  function doRegister() {
+  async function doRegister() {
     setShowCostPopup(false);
     setSubmitted(true);
+    setRegisterError(null);
 
-    const accountStr = bank.trim() && accountNumber.trim() ? `${bank.trim()} ${accountNumber.trim()}` : '';
     const trimmedName = name.trim();
     const trimmedAddress = address.trim();
     const upf = Math.max(1, Math.round(totalUnits / Math.max(1, floors.length)));
 
-    // 1) 로컬 store 즉시 반영 — 홈 화면에서 바로 보임
-    addVilla({
-      name: trimmedName,
-      address: trimmedAddress,
-      totalUnits,
-      unitsPerFloor: upf,
-      account: accountStr,
-    });
-
-    // 2) 사용자에게 즉시 피드백 + 홈 이동 (DB 쓰기 결과 기다리지 않음)
-    showToast(`${trimmedName} 등록 중…`, 'info', 2500);
-    router.replace('/(admin)/home');
-
-    // 3) Supabase 쓰기는 백그라운드 — outbox 가 재시도/실패 토스트 담당
-    reliableWrite('createVilla', async () => {
+    try {
+      // DB 쓰기 — 결과 끝까지 대기 (옵티미스틱 X, 실패 시 화면에 명확히 노출)
+      console.log('[doRegister] start');
       const me = await getMyAdmin();
-      if (!me) throw new Error('로그인이 필요합니다');
+      if (!me) throw new Error('로그인 세션이 없습니다. 다시 로그인 후 시도해주세요.');
+      console.log('[doRegister] admin:', me.id);
+
       await createVilla({
         name: trimmedName,
         address: trimmedAddress,
@@ -172,13 +163,28 @@ export default function AddVillaFormScreen() {
         accountNumber: accountNumber.trim() || undefined,
         accountHolder: me.name ?? undefined,
       });
+      console.log('[doRegister] createVilla done');
+
+      // 2) 로컬 store + 서버 sync — 홈 도착 시 빌라가 무조건 보이도록
+      const accountStr = bank.trim() && accountNumber.trim() ? `${bank.trim()} ${accountNumber.trim()}` : '';
+      addVilla({
+        name: trimmedName,
+        address: trimmedAddress,
+        totalUnits,
+        unitsPerFloor: upf,
+        account: accountStr,
+      });
       await syncAdminFromSupabase();
-    }).then((result) => {
-      if (result !== null) {
-        showToast(`${trimmedName} (${totalUnits}세대) 등록 완료`, 'success', 3000);
-      }
-      // result === null 이면 reliableWrite 가 이미 실패 토스트 띄움
-    });
+      console.log('[doRegister] sync done — store.villas:', store.villas.length);
+
+      showToast(`${trimmedName} (${totalUnits}세대) 등록 완료`, 'success', 3000);
+      router.replace('/(admin)/home');
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error('[doRegister] FAILED:', msg, e);
+      setRegisterError(msg);
+      setSubmitted(false);
+    }
   }
 
   function handleSubmit() {
@@ -493,12 +499,24 @@ export default function AddVillaFormScreen() {
         }}
       />
 
+      {/* 등록 실패 시 에러를 화면에 명확히 노출 */}
+      {registerError && (
+        <View style={s.errorBox}>
+          <Text style={s.errorBoxTitle}>⚠ 등록 실패</Text>
+          <Text style={s.errorBoxMsg}>{registerError}</Text>
+          <Text style={s.errorBoxHint}>
+            브라우저 콘솔(F12 → Console)에서 [createVilla] / [sync] 로그를 확인하면
+            정확한 원인을 알 수 있어요.
+          </Text>
+        </View>
+      )}
+
       {/* 등록 버튼 */}
       <View style={{ paddingHorizontal: 20, marginTop: 16 }}>
         <TouchableOpacity style={[s.submitBtn, submitted && { opacity: 0.5 }]} onPress={handleSubmit} disabled={submitted}>
-          <Text style={s.submitBtnText}>등록하기</Text>
+          <Text style={s.submitBtnText}>{submitted ? '등록 중…' : '등록하기'}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={s.cancelBtn} onPress={() => router.back()}>
+        <TouchableOpacity style={s.cancelBtn} onPress={() => router.back()} disabled={submitted}>
           <Text style={s.cancelBtnText}>취소</Text>
         </TouchableOpacity>
       </View>
@@ -638,4 +656,16 @@ const s = StyleSheet.create({
   submitBtnText: { color: '#fff', fontSize: 16, fontWeight: '800' },
   cancelBtn: { paddingVertical: 14, alignItems: 'center', marginTop: 8 },
   cancelBtnText: { color: C.sub, fontSize: 14, fontWeight: '600' },
+  errorBox: {
+    marginHorizontal: 20,
+    marginTop: 16,
+    padding: 14,
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    borderRadius: 12,
+  },
+  errorBoxTitle: { fontSize: 13, fontWeight: '800', color: '#991B1B', marginBottom: 6 },
+  errorBoxMsg: { fontSize: 13, color: '#991B1B', lineHeight: 19, marginBottom: 8 },
+  errorBoxHint: { fontSize: 11, color: '#92400E', lineHeight: 16 },
 });
