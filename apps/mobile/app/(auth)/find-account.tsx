@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 
 const C = {
@@ -8,6 +9,7 @@ const C = {
 };
 
 export default function FindAccountScreen() {
+  const insets = useSafeAreaInsets();
   const [tab, setTab] = useState<'id' | 'pw'>('id');
 
   // 아이디 찾기
@@ -40,7 +42,7 @@ export default function FindAccountScreen() {
 
   return (
     <View style={s.container}>
-      <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
+      <TouchableOpacity onPress={() => router.back()} style={[s.backBtn, { paddingTop: insets.top + 8 }]}>
         <Text style={s.backText}>← 돌아가기</Text>
       </TouchableOpacity>
 
@@ -108,7 +110,7 @@ export default function FindAccountScreen() {
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg, paddingHorizontal: 24 },
-  backBtn: { paddingTop: 56, paddingBottom: 8 },
+  backBtn: { paddingBottom: 8 },
   backText: { fontSize: 14, color: C.sub, fontWeight: '500' },
   title: { fontSize: 22, fontWeight: '900', color: C.text, marginTop: 12 },
   subtitle: { fontSize: 14, color: C.sub, marginTop: 4, marginBottom: 24 },

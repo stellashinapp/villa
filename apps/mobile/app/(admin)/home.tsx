@@ -8,8 +8,10 @@ import {
   Modal,
   Alert,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { store, subscribe, activateSubscription } from '@/lib/store';
+import { syncAdminFromSupabase } from '@/lib/sync';
 
 function formatCurrency(value: number): string {
   return value.toLocaleString('ko-KR') + '원';
@@ -18,6 +20,13 @@ function formatCurrency(value: number): string {
 export default function AdminHomeScreen() {
   const [_, setTick] = useState(0);
   useEffect(() => subscribe(() => setTick(t => t + 1)), []);
+  const insets = useSafeAreaInsets();
+
+  // 마운트 시 한 번 더 sync — 로그인 직후 race / 네트워크 지연으로 빌라 누락되는
+  // 케이스 방어. signInAdmin 의 sync 가 이미 완료됐으면 사실상 idempotent.
+  useEffect(() => {
+    syncAdminFromSupabase().catch(() => {});
+  }, []);
 
   const [showSubPopup, setShowSubPopup] = useState(false);
 
@@ -35,6 +44,18 @@ export default function AdminHomeScreen() {
     const unpaid = v.units.filter(u => u.name && !pub.paid[u.ho]).length;
     return s + unpaid;
   }, 0);
+
+  // 답변 대기 민원 — 입주민이 보낸 메시지 중 관리자 답변이 없는 건
+  const pendingInquiries = villas.reduce(
+    (s, v) => s + v.messages.filter(m => m.replies.length === 0).length,
+    0,
+  );
+
+  // 첫번째 빌라(또는 미납이 있는 빌라) — 알림 탭 시 이동 대상
+  const alertVilla = villas.find(v => {
+    const pub = v.billMonths.find(b => b.status === 'published');
+    return pub && v.units.some(u => u.name && !pub.paid[u.ho]);
+  }) ?? villas.find(v => v.messages.some(m => m.replies.length === 0)) ?? villas[0];
 
   function handleAddVilla() {
     if (subscription.status === 'none') {
@@ -87,13 +108,63 @@ export default function AdminHomeScreen() {
       showsVerticalScrollIndicator={false}
     >
       {/* ── Header ──────────────────────────────────────────────── */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <View style={styles.headerTop}>
           <Text style={styles.adminLabel}>ADMIN</Text>
         </View>
         <Text style={styles.greeting}>홈</Text>
         <Text style={styles.greetingSub}>관리자님 로그인됨</Text>
       </View>
+
+      {/* ── 우선노출 알림 — 미납·민원 ───────────────────────────── */}
+      {hasVillas && (unpaidUnits > 0 || pendingInquiries > 0) && (
+        <View style={styles.alertSection}>
+          {unpaidUnits > 0 && (
+            <TouchableOpacity
+              style={[styles.alertCard, styles.alertCardDanger]}
+              activeOpacity={0.85}
+              onPress={() =>
+                alertVilla
+                  ? router.push(`/(admin)/villas/${alertVilla.id}/bills`)
+                  : null
+              }
+            >
+              <View style={styles.alertIconWrap}>
+                <Text style={styles.alertIcon}>💰</Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.alertTitle}>미납 세대</Text>
+                <Text style={styles.alertSub}>
+                  이번달 {unpaidUnits}세대가 아직 납부하지 않았어요
+                </Text>
+              </View>
+              <Text style={styles.alertCount}>{unpaidUnits}</Text>
+            </TouchableOpacity>
+          )}
+          {pendingInquiries > 0 && (
+            <TouchableOpacity
+              style={[styles.alertCard, styles.alertCardWarn]}
+              activeOpacity={0.85}
+              onPress={() =>
+                alertVilla
+                  ? router.push(`/(admin)/villas/${alertVilla.id}/messages`)
+                  : router.push('/(admin)/inbox')
+              }
+            >
+              <View style={styles.alertIconWrap}>
+                <Text style={styles.alertIcon}>✉️</Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.alertTitle}>답변 대기 민원</Text>
+                <Text style={styles.alertSub}>
+                  답변하지 않은 민원이 {pendingInquiries}건 있어요
+                </Text>
+              </View>
+              <Text style={[styles.alertCount, { color: '#F39C12' }]}>{pendingInquiries}</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
 
       {hasVillas ? (
         <>
@@ -495,7 +566,6 @@ const styles = StyleSheet.create({
   /* ── Header ─────────────────────────────────────────────── */
   header: {
     paddingHorizontal: 20,
-    paddingTop: 60,
     paddingBottom: 8,
   },
   headerTop: {
@@ -531,6 +601,46 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: C.textSub,
     marginTop: 2,
+  },
+
+  /* ── 알림 우선노출 (미납/민원) ───────────────────────────── */
+  alertSection: {
+    paddingHorizontal: 20,
+    marginTop: 8,
+    gap: 8,
+  },
+  alertCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderRadius: 14,
+    padding: 14,
+    borderWidth: 1,
+  },
+  alertCardDanger: {
+    backgroundColor: '#FEF2F2',
+    borderColor: '#FECACA',
+  },
+  alertCardWarn: {
+    backgroundColor: '#FFF7ED',
+    borderColor: '#FED7AA',
+  },
+  alertIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  alertIcon: { fontSize: 18 },
+  alertTitle: { fontSize: 14, fontWeight: '800', color: '#0F2242' },
+  alertSub: { fontSize: 12, color: '#6B7280', marginTop: 2 },
+  alertCount: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#E74C3C',
+    marginLeft: 4,
   },
 
   /* ── Summary Row (3 cards) ───────────────────────────────── */

@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   TextInput,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { store, subscribe, replyMessage } from '@/lib/store';
 import { supabase } from '@/lib/supabase';
 import { syncAdminFromSupabase } from '@/lib/sync';
@@ -42,6 +43,7 @@ interface FlatMsg {
 export default function AdminInboxScreen() {
   const [_, setTick] = useState(0);
   useEffect(() => subscribe(() => setTick(t => t + 1)), []);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     const villaIds = store.villas.map((v) => v.id);
@@ -118,7 +120,7 @@ export default function AdminInboxScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 100 }}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <Text style={styles.headerLabel}>ADMIN</Text>
         <Text style={styles.title}>메시지 수신함</Text>
       </View>
@@ -221,7 +223,7 @@ export default function AdminInboxScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg },
-  header: { paddingHorizontal: 20, paddingTop: 60, paddingBottom: 12 },
+  header: { paddingHorizontal: 20, paddingBottom: 12 },
   headerLabel: {
     fontSize: 11,
     color: C.pri,

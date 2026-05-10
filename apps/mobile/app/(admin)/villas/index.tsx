@@ -8,6 +8,7 @@ import {
   Modal,
   Alert,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { store, subscribe, activateSubscription } from '@/lib/store';
 
@@ -34,6 +35,7 @@ const fmt = (n: number) => n.toLocaleString('ko-KR') + '원';
 export default function VillasListScreen() {
   const [_, setTick] = useState(0);
   useEffect(() => subscribe(() => setTick(t => t + 1)), []);
+  const insets = useSafeAreaInsets();
 
   const [showSubPopup, setShowSubPopup] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -61,7 +63,7 @@ export default function VillasListScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 100 }}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <Text style={styles.headerLabel}>ADMIN</Text>
         <Text style={styles.title}>내 빌라</Text>
         <Text style={styles.subtitle}>
@@ -210,7 +212,7 @@ export default function VillasListScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg },
-  header: { paddingHorizontal: 20, paddingTop: 60, paddingBottom: 12 },
+  header: { paddingHorizontal: 20, paddingBottom: 12 },
   headerLabel: {
     fontSize: 11,
     color: C.pri,

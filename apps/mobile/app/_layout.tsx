@@ -1,9 +1,11 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Text as RNText, View, StyleSheet, TextProps } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
 import React, { useEffect, useState } from 'react';
 import { initI18n } from '@/lib/i18n';
+import ToastHost from '@/components/ToastHost';
 
 // 전역 Text 컴포넌트 오버라이드 - 모든 Text에 Pretendard 자동 적용
 const originalRender = (RNText as any).render;
@@ -54,7 +56,7 @@ export default function RootLayout() {
   }
 
   return (
-    <>
+    <SafeAreaProvider>
       <StatusBar style="dark" />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
@@ -62,7 +64,8 @@ export default function RootLayout() {
         <Stack.Screen name="(admin)" />
         <Stack.Screen name="(resident)" />
       </Stack>
-    </>
+      <ToastHost />
+    </SafeAreaProvider>
   );
 }
 

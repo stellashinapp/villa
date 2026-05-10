@@ -11,7 +11,9 @@ import {
   Modal,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { saveSignupData } from '@/lib/signup-store';
+import { completeSignup } from '@/lib/signup-complete';
 import { BANK_NAMES } from '@villatolk/shared';
 
 const C = {
@@ -46,6 +48,8 @@ function ProgressBar({ step }: { step: number }) {
 
 export default function SignupStep2Screen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const [skipping, setSkipping] = useState(false);
 
   // __DEV__ 일 때만 더미 데이터로 자동 채움
   const [villaName, setVillaName] = useState(__DEV__ ? '테스트빌라' : '');
@@ -104,8 +108,32 @@ export default function SignupStep2Screen() {
     }
   };
 
-  const handleSkip = () => {
-    router.push('/(auth)/signup/step3-plan');
+  const handleSkip = async () => {
+    if (skipping) return;
+    setSkipping(true);
+    try {
+      // 빌라 미등록으로 가입 완료 → 바로 카드 등록 화면으로.
+      // 어떤 단계에서 실패해도 사용자는 무조건 다음으로 진행하도록 강제.
+      const result = await completeSignup({ createVillaIfPresent: false });
+      if (result.adminId) {
+        router.replace({
+          pathname: '/payment/billing',
+          params: {
+            adminId: result.adminId,
+            customerName: result.customerName,
+            fromSignup: '1',
+          },
+        });
+      } else if (result.ok) {
+        // ok 인데 adminId 가 없는 희귀 케이스 → 홈
+        router.replace('/(admin)/home');
+      } else {
+        // 가입 자체가 실패 (이메일 중복 + 비번 불일치 등) → 로그인 화면으로 보내 갇히지 않게
+        router.replace('/(auth)/login');
+      }
+    } finally {
+      setSkipping(false);
+    }
   };
 
   const renderInput = (
@@ -159,7 +187,7 @@ export default function SignupStep2Screen() {
     >
       <ScrollView
         style={styles.container}
-        contentContainerStyle={styles.contentContainer}
+        contentContainerStyle={[styles.contentContainer, { paddingTop: insets.top + 16 }]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
@@ -279,34 +307,6 @@ export default function SignupStep2Screen() {
           </TouchableOpacity>
         </Modal>
 
-        {totalUnits && Number(totalUnits) > 0 && (() => {
-          const units = Number(totalUnits);
-          const plan = units <= 8 ? { name: '소형', price: 30000, range: '6~8세대' }
-            : units <= 15 ? { name: '중형', price: 50000, range: '9~15세대' }
-            : { name: '대형', price: 70000, range: '16~30세대' };
-          return (
-            <View style={styles.previewCard}>
-              <Text style={styles.previewTitle}>자동 플랜 배정</Text>
-              <View style={styles.planAutoCard}>
-                <View style={styles.planAutoHeader}>
-                  <Text style={styles.planAutoName}>{plan.name} 플랜</Text>
-                  <Text style={styles.planAutoRange}>{plan.range}</Text>
-                </View>
-                <Text style={styles.planAutoPrice}>월 {plan.price.toLocaleString()}원</Text>
-                <View style={styles.planAutoDivider} />
-                <View style={styles.previewRow}>
-                  <Text style={styles.previewLabel}>세대수</Text>
-                  <Text style={styles.previewValue}>{totalUnits}세대</Text>
-                </View>
-              </View>
-              <View style={styles.trialBanner}>
-                <Text style={styles.trialText}>🎉 첫 1개월 완전 무료</Text>
-                <Text style={styles.trialSub}>카드 등록 없이 바로 시작 · 언제든 해지 가능</Text>
-              </View>
-            </View>
-          );
-        })()}
-
         <TouchableOpacity
           style={styles.primaryButton}
           onPress={handleNext}
@@ -316,11 +316,12 @@ export default function SignupStep2Screen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.skipButton}
+          style={[styles.skipButton, skipping && { opacity: 0.5 }]}
           onPress={handleSkip}
+          disabled={skipping}
           activeOpacity={0.7}
         >
-          <Text style={styles.skipText}>나중에 할게요</Text>
+          <Text style={styles.skipText}>{skipping ? '계정 생성 중...' : '나중에 할게요'}</Text>
         </TouchableOpacity>
 
         <View style={{ height: 40 }} />
@@ -332,7 +333,7 @@ export default function SignupStep2Screen() {
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: C.bg },
   container: { flex: 1, backgroundColor: C.bg },
-  contentContainer: { padding: 24, paddingTop: 56 },
+  contentContainer: { padding: 24 },
 
   progressRow: {
     flexDirection: 'row',

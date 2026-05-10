@@ -2,7 +2,7 @@ import { Tabs } from 'expo-router';
 import { View, Text, StyleSheet } from 'react-native';
 
 function TabIcon({ label, focused }: { label: string; focused: boolean }) {
-  const icons: Record<string, string> = { '관리비': '💰', '주차': '🚗', '공지': '📢', '커뮤니티': '👥', '신고': '✉️' };
+  const icons: Record<string, string> = { '관리비': '💰', '주차': '🚗', '공지': '📢', '커뮤니티': '👥', '신고': '✉️', '설정': '⚙️' };
   return (
     <View style={s.iconWrap}>
       <Text style={[s.icon, focused && s.iconActive]}>{icons[label] || '📋'}</Text>
@@ -48,6 +48,10 @@ export default function ResidentLayout() {
       <Tabs.Screen
         name="report"
         options={{ title: '신고', tabBarIcon: ({ focused }) => <TabIcon label="신고" focused={focused} /> }}
+      />
+      <Tabs.Screen
+        name="settings"
+        options={{ title: '설정', tabBarIcon: ({ focused }) => <TabIcon label="설정" focused={focused} /> }}
       />
     </Tabs>
   );

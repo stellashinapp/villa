@@ -1,8 +1,24 @@
 // Supabase ↔ store.ts 동기화 레이어
 // store.ts의 객체 구조를 유지하면서 Supabase 데이터로 덮어쓴다.
 // 각 screen은 store 접근 패턴을 유지하고, 실제 저장/조회는 여기서 처리.
+//
+// 페이지네이션 정책 (10만 사용자 대비):
+// - bill_months: 최근 6개월만 (이전 데이터는 누적 통계 view 로 별도 조회)
+// - notices/messages/posts: 최근 50건만 (오래된 글은 Realtime 푸시로만 추가)
 import { supabase } from './supabase';
 import { store, notify, type Villa, type Resident, type SubStatus } from './store';
+
+// 최근 N개월 cutoff (year_month 'YYYY-MM' 형식) — bill_months 페이지네이션용
+const RECENT_MONTHS_WINDOW = 6;
+function recentMonthsCutoffYM(): string {
+  const now = new Date();
+  const cutoff = new Date(now.getFullYear(), now.getMonth() - (RECENT_MONTHS_WINDOW - 1), 1);
+  return `${cutoff.getFullYear()}-${String(cutoff.getMonth() + 1).padStart(2, '0')}`;
+}
+
+// 빌라당 최근 N건만 (notices/messages/posts) — supabase-js 의 nested limit
+// PostgREST 11+ 는 per-parent 적용, 그 이하면 글로벌이지만 어쨌든 상한이 걸림
+const RECENT_LIST_LIMIT = 50;
 
 const MONTH_LABEL = (ym: string) => {
   const [y, m] = ym.split('-');
@@ -44,7 +60,10 @@ function toVilla(v: VillaRaw, paymentMap: Map<string, Set<string>>): Villa {
     };
   });
 
-  const billMonths = (v.bill_months ?? []).map((b) => {
+  // 최근 6개월만 — 서버 nested 필터는 supabase-js v2 에서 LEFT JOIN 시
+  // 의도와 다르게 동작할 수 있어 클라이언트에서 처리.
+  const cutoffYM = recentMonthsCutoffYM();
+  const billMonths = (v.bill_months ?? []).filter((b) => b.year_month >= cutoffYM).map((b) => {
     const paidHos = paymentMap.get(b.id) ?? new Set<string>();
     const paid: Record<string, boolean> = {};
     paidHos.forEach((ho) => { paid[ho] = true; });
@@ -156,25 +175,44 @@ export async function syncAdminFromSupabase() {
     };
   }
 
-  const { data: villas } = await supabase
-    .from('villas')
-    .select(`
-      id, name, address, total_units, units_per_floor, account_bank, account_number,
-      units ( id, ho_number, floor, residents ( name, phone, status ) ),
-      bill_months ( id, year_month, label, status, bill_items ( name, amount ) ),
-      notices ( id, title, body, created_at, is_pinned ),
-      messages ( id, text, is_read, created_at, unit_id, resident_id, message_replies ( text, author_type, author_name, created_at ) ),
-      parking ( id, plate_number, vehicle_type, memo, unit_id ),
-      posts ( id, title, body, likes, created_at, resident_id, comments ( text, created_at, resident_id ) ),
-      subscription_items!inner ( plan, price )
-    `)
-    .eq('admin_id', admin.id)
-    .eq('status', 'active')
-    .eq('subscription_items.subscription_id', sub?.id ?? '00000000-0000-0000-0000-000000000000');
+  // 1차: 빌라 + (있으면) 구독 아이템 join — left join 으로 빌라 누락 방지
+  // bill_months 는 최근 6개월만 (toVilla 에서 클라이언트 필터),
+  // notices/messages/posts 는 최근 50건만 로드 (서버 limit)
+  let villaList: VillaRaw[] = [];
+  if (sub) {
+    const { data: villas } = await supabase
+      .from('villas')
+      .select(`
+        id, name, address, total_units, units_per_floor, account_bank, account_number,
+        units ( id, ho_number, floor, residents ( name, phone, status ) ),
+        bill_months ( id, year_month, label, status, bill_items ( name, amount ) ),
+        notices ( id, title, body, created_at, is_pinned ),
+        messages ( id, text, is_read, created_at, unit_id, resident_id, message_replies ( text, author_type, author_name, created_at ) ),
+        parking ( id, plate_number, vehicle_type, memo, unit_id ),
+        posts ( id, title, body, likes, created_at, resident_id, comments ( text, created_at, resident_id ) ),
+        subscription_items ( subscription_id, plan, price )
+      `)
+      .eq('admin_id', admin.id)
+      .eq('status', 'active')
+      .order('created_at', { ascending: false, referencedTable: 'notices' })
+      .limit(RECENT_LIST_LIMIT, { referencedTable: 'notices' })
+      .order('created_at', { ascending: false, referencedTable: 'messages' })
+      .limit(RECENT_LIST_LIMIT, { referencedTable: 'messages' })
+      .order('created_at', { ascending: false, referencedTable: 'posts' })
+      .limit(RECENT_LIST_LIMIT, { referencedTable: 'posts' });
 
-  let villaList: VillaRaw[] = (villas as unknown as VillaRaw[]) ?? [];
+    type RawWithSubItems = Omit<VillaRaw, 'subscription_items'> & {
+      subscription_items: Array<{ subscription_id: string; plan: string; price: number }>;
+    };
+    villaList = ((villas as unknown as RawWithSubItems[]) ?? []).map((v) => ({
+      ...v,
+      // 현재 활성 구독에 매핑된 항목만 사용 — 없으면 빈 배열로 두어도 villaList 에는 포함됨
+      subscription_items: v.subscription_items.filter((it) => it.subscription_id === sub.id),
+    }));
+  }
 
-  if (!sub) {
+  // 2차 (fallback): sub 가 없거나, 1차에서 빌라가 0개로 나오면 구독 필터 없이 재조회
+  if (villaList.length === 0) {
     const { data: v2 } = await supabase
       .from('villas')
       .select(`
@@ -187,7 +225,13 @@ export async function syncAdminFromSupabase() {
         posts ( id, title, body, likes, created_at, resident_id, comments ( text, created_at, resident_id ) )
       `)
       .eq('admin_id', admin.id)
-      .eq('status', 'active');
+      .eq('status', 'active')
+      .order('created_at', { ascending: false, referencedTable: 'notices' })
+      .limit(RECENT_LIST_LIMIT, { referencedTable: 'notices' })
+      .order('created_at', { ascending: false, referencedTable: 'messages' })
+      .limit(RECENT_LIST_LIMIT, { referencedTable: 'messages' })
+      .order('created_at', { ascending: false, referencedTable: 'posts' })
+      .limit(RECENT_LIST_LIMIT, { referencedTable: 'posts' });
     villaList = ((v2 as unknown as Omit<VillaRaw, 'subscription_items'>[]) ?? []).map((v) => ({ ...v, subscription_items: [] }));
   }
 
@@ -199,7 +243,8 @@ export async function syncAdminFromSupabase() {
       .select('bill_month_id, is_paid, units!inner(ho_number)')
       .in('bill_month_id', billMonthIds)
       .eq('is_paid', true);
-    (payments ?? []).forEach((p: { bill_month_id: string; units: { ho_number: string } }) => {
+    // supabase-js 가 N:1 관계를 배열로 잘못 추론 — 런타임은 객체 1개. as any 로 우회.
+    (payments ?? []).forEach((p: any) => {
       const set = paymentMap.get(p.bill_month_id) ?? new Set<string>();
       set.add(p.units.ho_number);
       paymentMap.set(p.bill_month_id, set);
@@ -253,6 +298,12 @@ export async function syncResidentFromSupabase(phone: string, name: string): Pro
       posts ( id, title, body, likes, created_at, resident_id, comments ( text, created_at, resident_id ) )
     `)
     .eq('id', villaId)
+    .order('created_at', { ascending: false, referencedTable: 'notices' })
+    .limit(RECENT_LIST_LIMIT, { referencedTable: 'notices' })
+    .order('created_at', { ascending: false, referencedTable: 'messages' })
+    .limit(RECENT_LIST_LIMIT, { referencedTable: 'messages' })
+    .order('created_at', { ascending: false, referencedTable: 'posts' })
+    .limit(RECENT_LIST_LIMIT, { referencedTable: 'posts' })
     .single();
 
   if (villaRaw) {
@@ -264,7 +315,8 @@ export async function syncResidentFromSupabase(phone: string, name: string): Pro
         .select('bill_month_id, is_paid, units!inner(ho_number)')
         .in('bill_month_id', billMonthIds)
         .eq('is_paid', true);
-      (payments ?? []).forEach((p: { bill_month_id: string; units: { ho_number: string } }) => {
+      // supabase-js 가 N:1 관계를 배열로 잘못 추론 — 런타임은 객체 1개. as any 로 우회.
+    (payments ?? []).forEach((p: any) => {
         const set = paymentMap.get(p.bill_month_id) ?? new Set<string>();
         set.add(p.units.ho_number);
         paymentMap.set(p.bill_month_id, set);
@@ -281,6 +333,12 @@ export async function clearStore() {
   store.villas = [];
   store.loggedResident = null;
   store.loggedVillaId = null;
+  store.admin = {
+    id: '',
+    name: '',
+    phone: '',
+    email: '',
+  };
   store.subscription = {
     status: 'none',
     cardBrand: '',

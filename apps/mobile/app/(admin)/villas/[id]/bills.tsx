@@ -1,9 +1,9 @@
 // TODO: Add UI to approve pending bank-transfer payments (payments.method='bank_transfer_pending')
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert, Modal } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState, useEffect } from 'react';
 import { useLocalSearchParams } from 'expo-router';
-import { router } from 'expo-router';
-// LinearGradient replaced with View for web compatibility
+import { BILL_ITEM_PRESETS } from '@villatolk/shared';
 import {
   store, subscribe,
   createBillMonth, addBillItem, removeBillItem,
@@ -32,13 +32,42 @@ export default function VillaBillsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [_, setTick] = useState(0);
   useEffect(() => subscribe(() => setTick(t => t + 1)), []);
+  const insets = useSafeAreaInsets();
 
   const villa = store.villas.find(v => v.id === id);
 
   const [newItemName, setNewItemName] = useState('');
   const [newItemAmount, setNewItemAmount] = useState('');
-  const [newMonthYM, setNewMonthYM] = useState('');
-  const [newMonthLabel, setNewMonthLabel] = useState('');
+  const [itemPickerOpen, setItemPickerOpen] = useState(false);
+  const [customItemMode, setCustomItemMode] = useState(false);
+
+  // 진입 시 현재 월(또는 가장 최근 월의 다음 월) 자동 생성 — [새월추가] 단계 스킵
+  useEffect(() => {
+    if (!villa) return;
+    const sorted = [...villa.billMonths].sort((a, b) => b.yearMonth.localeCompare(a.yearMonth));
+    const latest = sorted[0];
+    const hasDraft = sorted.some(m => m.status === 'draft');
+    if (hasDraft) return;
+
+    const now = new Date();
+    let targetY = now.getFullYear();
+    let targetM = now.getMonth() + 1;
+    // 마감/고지된 가장 최근 월이 이번 달과 같거나 미래면 다음 달로
+    if (latest) {
+      const [ly, lm] = latest.yearMonth.split('-').map(n => parseInt(n, 10));
+      const latestIdx = ly * 12 + lm;
+      const targetIdx = targetY * 12 + targetM;
+      if (latestIdx >= targetIdx) {
+        const nextIdx = latestIdx + 1;
+        targetY = Math.floor((nextIdx - 1) / 12);
+        targetM = ((nextIdx - 1) % 12) + 1;
+      }
+    }
+    const ym = `${targetY}-${String(targetM).padStart(2, '0')}`;
+    if (villa.billMonths.find(b => b.yearMonth === ym)) return;
+    const label = `${targetY}년 ${targetM}월`;
+    createBillMonth(id!, ym, label);
+  }, [id, villa]);
 
   if (!villa) {
     return (
@@ -48,9 +77,9 @@ export default function VillaBillsScreen() {
     );
   }
 
-  // Latest month by yearMonth
+  // 우선순위: draft > 가장 최근 월
   const sortedMonths = [...villa.billMonths].sort((a, b) => b.yearMonth.localeCompare(a.yearMonth));
-  const currentMonth = sortedMonths.length > 0 ? sortedMonths[0] : null;
+  const currentMonth = sortedMonths.find(m => m.status === 'draft') ?? sortedMonths[0] ?? null;
 
   const items = currentMonth?.items ?? [];
   const total = items.reduce((s, i) => s + i.amount, 0);
@@ -137,70 +166,39 @@ export default function VillaBillsScreen() {
     ]);
   };
 
-  const handleCreateMonth = () => {
-    const ym = newMonthYM.trim();
-    const label = newMonthLabel.trim();
-    if (!ym || !/^\d{4}-\d{2}$/.test(ym)) {
-      Alert.alert('오류', 'YYYY-MM 형식으로 입력하세요 (예: 2026-04)');
-      return;
-    }
-    if (!label) { Alert.alert('오류', '표시 이름을 입력하세요 (예: 2026년 4월)'); return; }
-    createBillMonth(id!, ym, label);
-    setNewMonthYM('');
-    setNewMonthLabel('');
-  };
-
-  // No months at all: show create form
+  // currentMonth 가 비어있는 경우는 useEffect 가 즉시 생성하므로 거의 발생하지 않음.
+  // 안전망: 한 프레임 동안 빈 상태가 보이지 않도록 로딩 처리.
   if (!currentMonth) {
     return (
-      <ScrollView style={s.container} contentContainerStyle={{ paddingBottom: 40 }}>
-        <View style={[s.card, { borderWidth: 2, borderStyle: 'dashed', marginTop: 16, marginHorizontal: 20 }]}>
-          <Text style={s.formTitle}>새 월 추가</Text>
-          <TextInput style={[s.input, { marginBottom: 8 }]} placeholder="연월 (예: 2026-04)" placeholderTextColor={C.muted} value={newMonthYM} onChangeText={setNewMonthYM} />
-          <TextInput style={[s.input, { marginBottom: 8 }]} placeholder="표시 이름 (예: 2026년 4월)" placeholderTextColor={C.muted} value={newMonthLabel} onChangeText={setNewMonthLabel} />
-          <TouchableOpacity style={s.addBtn} onPress={handleCreateMonth}>
-            <Text style={s.addBtnText}>새 월 추가</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+      <View style={[s.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text style={{ color: C.sub, fontSize: 14 }}>관리비 월을 준비 중입니다…</Text>
+      </View>
     );
   }
 
   return (
-    <ScrollView style={s.container} contentContainerStyle={{ paddingBottom: 40 }}>
-      {/* 요약 카드 - NAVY GRADIENT */}
+    <ScrollView style={s.container} contentContainerStyle={{ paddingTop: insets.top + 12, paddingBottom: 40 }}>
+      {/* 요약 카드 — 화이트 카드 + 다크 텍스트 */}
       <View style={s.summaryCardWrap}>
         <View style={s.summaryCard}>
           <Text style={s.summaryLabel}>{currentMonth.label} 총 관리비</Text>
           <Text style={s.summaryAmount}>{fmt(total)}<Text style={s.summaryWon}>원</Text></Text>
           <Text style={s.summaryMeta}>세대별 {fmt(perUnit)}원 · {unitCount}세대</Text>
           <View style={s.badgeRow}>
-            <View style={[s.badge, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
-              <Text style={[s.badgeText, { color: '#FFFFFF' }]}>납부 {paidCount}</Text>
+            <View style={[s.badge, { backgroundColor: 'rgba(76,175,80,0.10)' }]}>
+              <Text style={[s.badgeText, { color: C.ok }]}>납부 {paidCount}</Text>
             </View>
             {unpaidCount > 0 && (
-              <View style={[s.badge, { backgroundColor: 'rgba(231,76,60,0.25)' }]}>
-                <Text style={[s.badgeText, { color: '#FFFFFF' }]}>미납 {unpaidCount}</Text>
+              <View style={[s.badge, { backgroundColor: 'rgba(231,76,60,0.10)' }]}>
+                <Text style={[s.badgeText, { color: C.err }]}>미납 {unpaidCount}</Text>
               </View>
             )}
-            <View style={[s.badge, { backgroundColor: currentMonth.status === 'published' ? 'rgba(255,255,255,0.15)' : 'rgba(243,156,18,0.25)' }]}>
-              <Text style={[s.badgeText, { color: '#FFFFFF' }]}>
+            <View style={[s.badge, { backgroundColor: currentMonth.status === 'published' ? 'rgba(66,99,232,0.10)' : 'rgba(243,156,18,0.15)' }]}>
+              <Text style={[s.badgeText, { color: currentMonth.status === 'published' ? C.pri : C.warn }]}>
                 {currentMonth.status === 'draft' ? '작성중' : currentMonth.status === 'published' ? '고지완료' : '마감'}
               </Text>
             </View>
           </View>
-        </View>
-      </View>
-
-      {/* 새 월 추가 */}
-      <View style={[s.card, { borderWidth: 2, borderStyle: 'dashed', marginBottom: 16, marginHorizontal: 20 }]}>
-        <Text style={s.formTitle}>새 월 추가</Text>
-        <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-          <TextInput style={[s.input, { flex: 1 }]} placeholder="연월 (2026-04)" placeholderTextColor={C.muted} value={newMonthYM} onChangeText={setNewMonthYM} />
-          <TextInput style={[s.input, { flex: 1 }]} placeholder="이름 (2026년 4월)" placeholderTextColor={C.muted} value={newMonthLabel} onChangeText={setNewMonthLabel} />
-          <TouchableOpacity style={s.addBtn} onPress={handleCreateMonth}>
-            <Text style={s.addBtnText}>추가</Text>
-          </TouchableOpacity>
         </View>
       </View>
 
@@ -239,16 +237,96 @@ export default function VillaBillsScreen() {
         </View>
       ))}
 
-      {/* 항목 추가 */}
+      {/* 항목 추가 — 드롭다운 + 금액 */}
       <View style={[s.card, { borderWidth: 2, borderStyle: 'dashed' }]}>
         <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-          <TextInput style={[s.input, { flex: 1 }]} placeholder="항목명" placeholderTextColor={C.muted} value={newItemName} onChangeText={setNewItemName} />
-          <TextInput style={[s.input, { flex: 1 }]} placeholder="금액" placeholderTextColor={C.muted} keyboardType="number-pad" value={newItemAmount} onChangeText={setNewItemAmount} />
+          {customItemMode ? (
+            <TextInput
+              style={[s.input, { flex: 1 }]}
+              placeholder="항목명 직접입력"
+              placeholderTextColor={C.muted}
+              value={newItemName}
+              onChangeText={setNewItemName}
+              autoFocus
+            />
+          ) : (
+            <TouchableOpacity
+              style={[s.input, { flex: 1, justifyContent: 'center' }]}
+              onPress={() => setItemPickerOpen(true)}
+              activeOpacity={0.7}
+            >
+              <Text style={{ fontSize: 13, color: newItemName ? C.text : C.muted }}>
+                {newItemName || '항목 선택'}
+              </Text>
+            </TouchableOpacity>
+          )}
+          <TextInput
+            style={[s.input, { flex: 1 }]}
+            placeholder="금액"
+            placeholderTextColor={C.muted}
+            keyboardType="number-pad"
+            value={newItemAmount}
+            onChangeText={setNewItemAmount}
+          />
           <TouchableOpacity style={s.addBtn} onPress={handleAddItem}>
             <Text style={s.addBtnText}>추가</Text>
           </TouchableOpacity>
         </View>
+        {customItemMode && (
+          <TouchableOpacity
+            onPress={() => { setCustomItemMode(false); setNewItemName(''); }}
+            style={{ marginTop: 8, alignSelf: 'flex-start' }}
+          >
+            <Text style={{ fontSize: 11, color: C.pri, fontWeight: '700' }}>← 목록에서 선택</Text>
+          </TouchableOpacity>
+        )}
       </View>
+
+      {/* 항목 선택 모달 */}
+      <Modal
+        visible={itemPickerOpen}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setItemPickerOpen(false)}
+      >
+        <TouchableOpacity
+          style={s.pickerBg}
+          activeOpacity={1}
+          onPress={() => setItemPickerOpen(false)}
+        >
+          <View style={s.pickerCard}>
+            <Text style={s.pickerTitle}>관리비 항목 선택</Text>
+            <ScrollView style={{ maxHeight: 420 }}>
+              {BILL_ITEM_PRESETS.map((preset) => (
+                <TouchableOpacity
+                  key={preset}
+                  style={[
+                    s.pickerItem,
+                    newItemName === preset && { backgroundColor: '#F1F6FF' },
+                  ]}
+                  onPress={() => {
+                    setNewItemName(preset);
+                    setItemPickerOpen(false);
+                    setCustomItemMode(false);
+                  }}
+                >
+                  <Text style={s.pickerItemText}>{preset}</Text>
+                </TouchableOpacity>
+              ))}
+              <TouchableOpacity
+                style={[s.pickerItem, { borderTopWidth: 1, borderTopColor: C.border, marginTop: 4 }]}
+                onPress={() => {
+                  setItemPickerOpen(false);
+                  setCustomItemMode(true);
+                  setNewItemName('');
+                }}
+              >
+                <Text style={[s.pickerItemText, { color: C.pri, fontWeight: '700' }]}>+ 직접 입력</Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
       {/* 납부 현황 */}
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 20, marginBottom: 8, paddingHorizontal: 20 }}>
@@ -306,13 +384,25 @@ export default function VillaBillsScreen() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg, paddingTop: 10 },
+  container: { flex: 1, backgroundColor: C.bg },
   summaryCardWrap: { paddingHorizontal: 20, marginBottom: 16 },
-  summaryCard: { borderRadius: 16, padding: 24, alignItems: 'center' },
-  summaryLabel: { fontSize: 12, color: 'rgba(255,255,255,0.7)', fontWeight: '600' },
-  summaryAmount: { fontSize: 32, fontWeight: '900', color: '#FFFFFF', marginVertical: 8 },
+  summaryCard: {
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'center',
+    backgroundColor: C.card,
+    borderWidth: 1,
+    borderColor: C.border,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  summaryLabel: { fontSize: 12, color: '#0F2242', fontWeight: '700', opacity: 0.6 },
+  summaryAmount: { fontSize: 32, fontWeight: '900', color: '#0F2242', marginVertical: 8 },
   summaryWon: { fontSize: 15 },
-  summaryMeta: { fontSize: 13, color: 'rgba(255,255,255,0.7)' },
+  summaryMeta: { fontSize: 13, color: '#0F2242', opacity: 0.7 },
   badgeRow: { flexDirection: 'row', gap: 8, marginTop: 14 },
   badge: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 20 },
   badgeText: { fontSize: 11, fontWeight: '700' },
@@ -337,4 +427,33 @@ const s = StyleSheet.create({
   confirmBtnText: { color: '#FFFFFF', fontSize: 11, fontWeight: '700' },
   publishBtn: { backgroundColor: C.accent, borderRadius: 14, paddingVertical: 15, alignItems: 'center', marginTop: 16, marginHorizontal: 20 },
   publishBtnText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
+  pickerBg: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'flex-end',
+  },
+  pickerCard: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingTop: 24,
+    paddingBottom: 32,
+    paddingHorizontal: 20,
+  },
+  pickerTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: C.text,
+    marginBottom: 12,
+    paddingHorizontal: 4,
+  },
+  pickerItem: {
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+  },
+  pickerItemText: {
+    fontSize: 15,
+    color: C.text,
+  },
 });

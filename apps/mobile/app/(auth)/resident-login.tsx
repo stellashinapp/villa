@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { residentLogin } from '@/lib/store';
 import { syncResidentFromSupabase } from '@/lib/sync';
 import NiceAuthModal, { type NiceAuthSuccess } from '@/components/NiceAuthModal';
 
 export default function ResidentLoginScreen() {
+  const insets = useSafeAreaInsets();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
@@ -70,7 +72,7 @@ export default function ResidentLoginScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.hero}>
+      <View style={[styles.hero, { paddingTop: insets.top + 16 }]}>
         <Text style={styles.label}>입주민 로그인</Text>
         <Text style={styles.title}>{'이름과 전화번호로\n로그인하세요'}</Text>
         <Text style={styles.subtitle}>
@@ -144,7 +146,6 @@ const styles = StyleSheet.create({
   hero: {
     backgroundColor: '#1B2A4A',
     paddingHorizontal: 24,
-    paddingTop: 60,
     paddingBottom: 32,
   },
   label: {

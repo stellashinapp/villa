@@ -1,11 +1,15 @@
 import { useState, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 import { router, useLocalSearchParams } from 'expo-router';
 import { buildBillingHtml, issueBillingKeyOnServer } from '@/lib/payment';
 import { syncAdminFromSupabase } from '@/lib/sync';
 
+const IS_WEB = Platform.OS === 'web';
+
 export default function BillingScreen() {
+  const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ adminId?: string; customerName?: string; fromSignup?: string }>();
   const [loading, setLoading] = useState(false);
   const webviewRef = useRef<WebView>(null);
@@ -106,7 +110,7 @@ export default function BillingScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         {fromSignup ? (
           <View style={styles.signupBadge}>
             <Text style={styles.signupBadgeText}>가입 마지막 단계</Text>
@@ -118,25 +122,66 @@ export default function BillingScreen() {
         )}
         <Text style={styles.title}>{fromSignup ? '카드 등록 (무료체험 시작)' : '정기결제 카드 등록'}</Text>
       </View>
-      <WebView
-        ref={webviewRef}
-        source={{ html, baseUrl: 'https://villatolk.app' }}
-        originWhitelist={['*']}
-        javaScriptEnabled
-        domStorageEnabled
-        onMessage={handleMessage}
-        onNavigationStateChange={handleNavChange}
-        // 결제 완료/실패 redirect URL 은 WebView 가 실제 로드하지 못하도록 가로챈다
-        // (villatolk.app 미등록 도메인이라 WebView 가 직접 로드하면 에러 페이지가 뜸).
-        onShouldStartLoadWithRequest={(req) => {
-          if (req.url.includes('/billing-success') || req.url.includes('/billing-fail')) {
-            handleNavChange({ url: req.url });
-            return false;
-          }
-          return true;
-        }}
-        style={{ flex: 1 }}
-      />
+      {IS_WEB ? (
+        // 웹 미리보기: react-native-webview 의 web 쉼이 안정적이지 않아 iframe 직접 사용.
+        // postMessage 통신은 native 환경 전용이라 웹에서는 토스 카드등록 UI 만 보여줌.
+        // 디자인 검증/플로우 확인용. 실제 결제는 모바일 앱에서만 동작.
+        <View style={{ flex: 1 }}>
+          <iframe
+            srcDoc={html}
+            style={{ flex: 1, border: 'none', width: '100%', height: '100%' } as object}
+            title="TossPayments billing"
+          />
+          {__DEV__ && (
+            <View style={styles.devBypass}>
+              <Text style={styles.devBypassNote}>
+                ⚠️ 웹 미리보기 — 실제 카드 등록은 모바일 앱에서만 가능합니다
+              </Text>
+              <TouchableOpacity
+                style={styles.devBypassBtn}
+                onPress={() => {
+                  Alert.alert(
+                    '테스트 모드',
+                    '카드 등록을 건너뛰고 홈으로 이동합니다. (실제 결제 미완료)',
+                    [
+                      { text: '취소', style: 'cancel' },
+                      {
+                        text: '건너뛰기',
+                        onPress: () => {
+                          if (fromSignup) router.replace('/(admin)/home');
+                          else router.back();
+                        },
+                      },
+                    ],
+                  );
+                }}
+              >
+                <Text style={styles.devBypassBtnText}>테스트: 건너뛰고 홈으로</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      ) : (
+        <WebView
+          ref={webviewRef}
+          source={{ html, baseUrl: 'https://villatolk.app' }}
+          originWhitelist={['*']}
+          javaScriptEnabled
+          domStorageEnabled
+          onMessage={handleMessage}
+          onNavigationStateChange={handleNavChange}
+          // 결제 완료/실패 redirect URL 은 WebView 가 실제 로드하지 못하도록 가로챈다
+          // (villatolk.app 미등록 도메인이라 WebView 가 직접 로드하면 에러 페이지가 뜸).
+          onShouldStartLoadWithRequest={(req) => {
+            if (req.url.includes('/billing-success') || req.url.includes('/billing-fail')) {
+              handleNavChange({ url: req.url });
+              return false;
+            }
+            return true;
+          }}
+          style={{ flex: 1 }}
+        />
+      )}
       {loading && (
         <View style={styles.loader}>
           <ActivityIndicator size="large" color="#4263E8" />
@@ -150,7 +195,6 @@ export default function BillingScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
   header: {
-    paddingTop: 50,
     paddingHorizontal: 16,
     paddingBottom: 12,
     borderBottomWidth: 1,
@@ -177,4 +221,28 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   loaderText: { marginTop: 12, fontSize: 14, fontWeight: '600', color: '#1A1D26' },
+  devBypass: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    padding: 12,
+    backgroundColor: 'rgba(255,247,237,0.95)',
+    borderTopWidth: 1,
+    borderTopColor: '#FED7AA',
+    gap: 8,
+  },
+  devBypassNote: {
+    fontSize: 12,
+    color: '#92400E',
+    textAlign: 'center',
+    fontWeight: '600',
+  },
+  devBypassBtn: {
+    backgroundColor: '#F59E0B',
+    borderRadius: 10,
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  devBypassBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
 });

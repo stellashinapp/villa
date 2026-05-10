@@ -1,11 +1,13 @@
 import { ScrollView, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { TERMS_OF_SERVICE, TERMS_VERSION } from '@villatolk/shared';
 
 export default function TermsScreen() {
+  const insets = useSafeAreaInsets();
   return (
     <View style={s.container}>
-      <View style={s.header}>
+      <View style={[s.header, { paddingTop: insets.top + 8 }]}>
         <TouchableOpacity onPress={() => router.back()} style={s.back}>
           <Text style={s.backText}>← 뒤로</Text>
         </TouchableOpacity>
@@ -22,7 +24,6 @@ export default function TermsScreen() {
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
   header: {
-    paddingTop: 50,
     paddingHorizontal: 16,
     paddingBottom: 12,
     borderBottomWidth: 1,

@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState, useEffect } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import { router } from 'expo-router';
@@ -23,6 +24,7 @@ export default function VillaParkingScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [_, setTick] = useState(0);
   useEffect(() => subscribe(() => setTick(t => t + 1)), []);
+  const insets = useSafeAreaInsets();
 
   const villa = store.villas.find(v => v.id === id);
 
@@ -62,7 +64,7 @@ export default function VillaParkingScreen() {
   };
 
   return (
-    <ScrollView style={s.container} contentContainerStyle={{ paddingBottom: 40 }}>
+    <ScrollView style={s.container} contentContainerStyle={{ paddingTop: insets.top + 12, paddingBottom: 40 }}>
       {/* 요약 카드 */}
       <View style={s.summaryRow}>
         {[
@@ -142,7 +144,7 @@ export default function VillaParkingScreen() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg, padding: 20, paddingTop: 10 },
+  container: { flex: 1, backgroundColor: C.bg, paddingHorizontal: 20 },
   summaryRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
   summaryCard: {
     flex: 1, backgroundColor: C.card, borderWidth: 1, borderColor: C.border, borderRadius: 14, padding: 14, alignItems: 'center',

@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { signInAdmin, getMyAdmin } from '@/lib/auth';
 import { store } from '@/lib/store';
 
 export default function AdminLoginScreen() {
+  const insets = useSafeAreaInsets();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -42,7 +44,7 @@ export default function AdminLoginScreen() {
   return (
     <View style={s.container}>
       {/* 뒤로가기 */}
-      <TouchableOpacity style={s.backBtn} onPress={() => router.back()}>
+      <TouchableOpacity style={[s.backBtn, { paddingTop: insets.top + 8 }]} onPress={() => router.back()}>
         <Text style={s.backBtnText}>← 돌아가기</Text>
       </TouchableOpacity>
 
@@ -119,7 +121,6 @@ const s = StyleSheet.create({
     paddingHorizontal: 24,
   },
   backBtn: {
-    paddingTop: 56,
     paddingBottom: 8,
   },
   backBtnText: {

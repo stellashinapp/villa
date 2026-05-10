@@ -101,6 +101,28 @@ export function getBankCode(name: string): BankCode | null {
   return found?.code ?? null;
 }
 
+// ==============================
+// 관리비 항목 프리셋 (드롭다운 선택용)
+// 자유텍스트 입력 → 표준화된 항목명으로 일관성 확보
+// ==============================
+
+export const BILL_ITEM_PRESETS: readonly string[] = [
+  '일반관리비',
+  '청소비',
+  '경비비',
+  '공동전기료',
+  '공동수도료',
+  '공동가스료',
+  '승강기 유지비',
+  '소독·방역비',
+  '화재보험료',
+  '인터넷·CCTV',
+  '수선유지비',
+  '장기수선충당금',
+  '예비비',
+  '기타',
+] as const;
+
 // 푸시 알림 시나리오
 export const PUSH_SCENARIOS = {
   BILL_PUBLISHED: 'bill_published',

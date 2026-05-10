@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState, useEffect } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import { router } from 'expo-router';
@@ -22,6 +23,7 @@ export default function VillaResidentsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [_, setTick] = useState(0);
   useEffect(() => subscribe(() => setTick(t => t + 1)), []);
+  const insets = useSafeAreaInsets();
 
   const villa = store.villas.find(v => v.id === id);
 
@@ -62,7 +64,7 @@ export default function VillaResidentsScreen() {
   };
 
   return (
-    <ScrollView style={s.container} contentContainerStyle={{ paddingBottom: 40 }}>
+    <ScrollView style={s.container} contentContainerStyle={{ paddingTop: insets.top + 12, paddingBottom: 40 }}>
       <Text style={s.summary}>{villa.units.length}세대 · 등록 {registered} / 미등록 {villa.units.length - registered}</Text>
 
       {villa.units.map((u) => (
@@ -149,7 +151,7 @@ export default function VillaResidentsScreen() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg, padding: 20, paddingTop: 10 },
+  container: { flex: 1, backgroundColor: C.bg, paddingHorizontal: 20 },
   summary: { fontSize: 13, color: C.sub, marginBottom: 14 },
   card: {
     backgroundColor: C.card, borderWidth: 1, borderColor: C.border, borderRadius: 14, padding: 14, marginBottom: 8,

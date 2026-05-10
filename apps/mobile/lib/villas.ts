@@ -86,21 +86,32 @@ export async function createVilla(params: {
   if (unitsError) throw new Error(unitsError.message);
 
   // 3) 구독 아이템 추가 (기존 구독이 있으면)
+  // .maybeSingle() 사용 — 다중 row / 0 row 모두 throw 없이 처리.
+  // 구독이 없거나 RLS race 로 못 찾아도 빌라 생성 자체는 성공시킨다.
   const { data: subscription } = await supabase
     .from('subscriptions')
     .select('id')
     .eq('admin_id', admin.id)
     .in('status', ['trialing', 'active', 'past_due', 'pending_cancel'])
-    .single();
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
   if (subscription) {
     const plan = planFor(params.totalUnits);
-    await supabase.from('subscription_items').insert({
+    const { error: itemError } = await supabase.from('subscription_items').insert({
       subscription_id: subscription.id,
       villa_id: villa.id,
       plan: plan.plan,
       price: plan.price,
     });
+    if (itemError) {
+      // subscription_items 누락은 빌라 표시에 직접적 영향 없음 (sync 가 left join).
+      // 단 결제 갱신 시 가격 계산이 빠질 수 있으므로 경고 로그.
+      console.warn('[createVilla] subscription_items insert failed:', itemError.message);
+    }
+  } else {
+    console.warn('[createVilla] no active subscription found — subscription_items 미생성');
   }
 
   return villa;

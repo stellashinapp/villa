@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { store, subscribe } from '@/lib/store';
 
@@ -41,6 +42,7 @@ function getPlan(units: number) {
 export default function AddVillaStep1Screen() {
   const [_, setTick] = useState(0);
   useEffect(() => subscribe(() => setTick(t => t + 1)), []);
+  const insets = useSafeAreaInsets();
 
   const villas = store.villas;
   const currentTotal = villas.reduce((s, v) => s + v.price, 0);
@@ -53,7 +55,7 @@ export default function AddVillaStep1Screen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 60 }}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Text style={styles.backBtnText}>{'<  돌아가기'}</Text>
         </TouchableOpacity>
@@ -163,7 +165,7 @@ export default function AddVillaStep1Screen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg },
-  header: { paddingHorizontal: 20, paddingTop: 60, paddingBottom: 12 },
+  header: { paddingHorizontal: 20, paddingBottom: 12 },
   backBtn: { marginBottom: 16 },
   backBtnText: { fontSize: 14, color: C.pri, fontWeight: '600' },
   title: { fontSize: 22, fontWeight: '900', color: C.text },

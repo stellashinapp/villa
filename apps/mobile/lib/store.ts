@@ -4,17 +4,16 @@
  * 관리자가 수정하면 → 입주민 화면에 반영
  */
 import { supabase as _supabase } from './supabase';
+import { reliableWrite } from './outbox';
 
 let listeners: (() => void)[] = [];
 export function subscribe(fn: () => void) { listeners.push(fn); return () => { listeners = listeners.filter(l => l !== fn); }; }
 export function notify() { listeners.forEach(fn => fn()); }
 
-// 개발 편의: Supabase 연결 실패 시에도 UI가 동작하도록 백그라운드 write 유지
-function bgWrite<T>(label: string, p: Promise<T>): Promise<T | null> {
-  return p.catch((err) => {
-    console.warn(`[store:${label}]`, err?.message ?? err);
-    return null;
-  });
+// Supabase 쓰기 전담 — outbox 가 재시도(지수 백오프 1s/3s/9s)와 최종 실패 토스트를 담당.
+// 호출부는 항상 함수를 넘겨야 한다 (재시도를 위해 클로저가 호출 가능해야 함).
+function bgWrite<T>(label: string, fn: () => Promise<T>): Promise<T | null> {
+  return reliableWrite(label, fn);
 }
 
 // ============================================================
@@ -194,7 +193,7 @@ export function registerResident(villaId: string, ho: string, name: string, phon
   unit.name = name;
   unit.phone = phone;
   notify();
-  bgWrite('registerResident', (async () => {
+  bgWrite('registerResident', async () => {
     const { supabase } = await import('./supabase');
     const normalizedPhone = phone.replace(/\D/g, '');
     const { data: unitRow } = await supabase
@@ -221,7 +220,7 @@ export function registerResident(villaId: string, ho: string, name: string, phon
         is_owner: false,
       });
     }
-  })());
+  });
 }
 
 // 관리비 월 생성
@@ -232,7 +231,7 @@ export function createBillMonth(villaId: string, yearMonth: string, label: strin
   const localId = genId();
   villa.billMonths.push({ id: localId, yearMonth, label, status: 'draft', items: [], paid: {} });
   notify();
-  bgWrite('createBillMonth', (async () => {
+  bgWrite('createBillMonth', async () => {
     const { supabase } = await import('./supabase');
     const { data } = await supabase.from('bill_months').insert({
       villa_id: villaId,
@@ -244,7 +243,7 @@ export function createBillMonth(villaId: string, yearMonth: string, label: strin
       const m = villa.billMonths.find(x => x.id === localId);
       if (m) { m.id = data.id; notify(); }
     }
-  })());
+  });
 }
 
 // 전월 항목 복사 (관리자 노가다 방지)
@@ -272,7 +271,7 @@ export function addBillItem(villaId: string, monthId: string, name: string, amou
   if (!month) return;
   month.items.push({ name, amount });
   notify();
-  bgWrite('addBillItem', (async () => {
+  bgWrite('addBillItem', async () => {
     const { supabase } = await import('./supabase');
     if (monthId.length < 32) return; // local-only id, skip
     await supabase.from('bill_items').insert({
@@ -280,7 +279,7 @@ export function addBillItem(villaId: string, monthId: string, name: string, amou
       name,
       amount,
     });
-  })());
+  });
 }
 
 // 관리비 항목 삭제
@@ -292,7 +291,7 @@ export function removeBillItem(villaId: string, monthId: string, idx: number) {
   const removed = month.items[idx];
   month.items.splice(idx, 1);
   notify();
-  bgWrite('removeBillItem', (async () => {
+  bgWrite('removeBillItem', async () => {
     const { supabase } = await import('./supabase');
     if (monthId.length < 32 || !removed) return;
     await supabase.from('bill_items')
@@ -300,7 +299,7 @@ export function removeBillItem(villaId: string, monthId: string, idx: number) {
       .eq('bill_month_id', monthId)
       .eq('name', removed.name)
       .eq('amount', removed.amount);
-  })());
+  });
 }
 
 // 관리비 발행
@@ -320,7 +319,7 @@ export function publishBill(villaId: string, monthId: string) {
     isNew: true,
   });
   notify();
-  bgWrite('publishBill', (async () => {
+  bgWrite('publishBill', async () => {
     const { supabase } = await import('./supabase');
     if (monthId.length < 32) return;
     await supabase.from('bill_months').update({
@@ -341,7 +340,7 @@ export function publishBill(villaId: string, monthId: string) {
       }));
       await supabase.from('payments').insert(payments);
     }
-  })());
+  });
 }
 
 // 관리비 월 마감 (published → closed)
@@ -352,11 +351,11 @@ export function closeBillMonth(villaId: string, monthId: string) {
   if (!month) return;
   month.status = 'closed';
   notify();
-  bgWrite('closeBillMonth', (async () => {
+  bgWrite('closeBillMonth', async () => {
     const { supabase } = await import('./supabase');
     if (monthId.length < 32) return;
     await supabase.from('bill_months').update({ status: 'closed' }).eq('id', monthId);
-  })());
+  });
 }
 
 // 납부 처리
@@ -369,7 +368,7 @@ export function confirmPayment(villaId: string, monthId: string, ho: string, met
   if (!month.paidInfo) month.paidInfo = {};
   month.paidInfo[ho] = { method, paidAt: new Date().toISOString() };
   notify();
-  bgWrite('confirmPayment', (async () => {
+  bgWrite('confirmPayment', async () => {
     const { supabase } = await import('./supabase');
     if (monthId.length < 32) return;
     const { data: unitRow } = await supabase
@@ -385,7 +384,7 @@ export function confirmPayment(villaId: string, monthId: string, ho: string, met
       method,
       confirmed_by: store.admin.name ?? 'admin',
     }).eq('bill_month_id', monthId).eq('unit_id', unitRow.id);
-  })());
+  });
 }
 
 // 입주민 이사 처리 (호실은 유지하고 이름/전화 비움 + Supabase status='moved_out')
@@ -399,7 +398,7 @@ export function moveOutResident(villaId: string, ho: string) {
   unit.name = '';
   unit.phone = '';
   notify();
-  bgWrite('moveOutResident', (async () => {
+  bgWrite('moveOutResident', async () => {
     const { supabase } = await import('./supabase');
     const normalized = (prevPhone ?? '').replace(/\D/g, '');
     if (!normalized) return;
@@ -419,7 +418,7 @@ export function moveOutResident(villaId: string, ho: string) {
       .eq('unit_id', unitRow.id)
       .eq('phone', normalized)
       .eq('name', prevName);
-  })());
+  });
 }
 
 // 공지 추가
@@ -429,14 +428,14 @@ export function addNotice(villaId: string, title: string, body: string) {
   const localId = genId();
   villa.notices.unshift({ id: localId, title, body, date: now(), isNew: true, isPinned: false });
   notify();
-  bgWrite('addNotice', (async () => {
+  bgWrite('addNotice', async () => {
     const { supabase } = await import('./supabase');
     const { data } = await supabase.from('notices').insert({ villa_id: villaId, title, body }).select().single();
     if (data) {
       const n = villa.notices.find(x => x.id === localId);
       if (n) { n.id = data.id; notify(); }
     }
-  })());
+  });
 }
 
 // 공지 수정
@@ -448,11 +447,11 @@ export function updateNotice(villaId: string, noticeId: string, title: string, b
   n.title = title;
   n.body = body;
   notify();
-  bgWrite('updateNotice', (async () => {
+  bgWrite('updateNotice', async () => {
     const { supabase } = await import('./supabase');
     if (noticeId.length < 32) return;
     await supabase.from('notices').update({ title, body }).eq('id', noticeId);
-  })());
+  });
 }
 
 // 공지 삭제
@@ -461,11 +460,11 @@ export function removeNotice(villaId: string, noticeId: string) {
   if (!villa) return;
   villa.notices = villa.notices.filter(x => x.id !== noticeId);
   notify();
-  bgWrite('removeNotice', (async () => {
+  bgWrite('removeNotice', async () => {
     const { supabase } = await import('./supabase');
     if (noticeId.length < 32) return;
     await supabase.from('notices').delete().eq('id', noticeId);
-  })());
+  });
 }
 
 // 공지 고정/해제 토글
@@ -481,11 +480,11 @@ export function togglePinNotice(villaId: string, noticeId: string) {
     return 0;
   });
   notify();
-  bgWrite('togglePinNotice', (async () => {
+  bgWrite('togglePinNotice', async () => {
     const { supabase } = await import('./supabase');
     if (noticeId.length < 32) return;
     await supabase.from('notices').update({ is_pinned: n.isPinned ?? false }).eq('id', noticeId);
-  })());
+  });
 }
 
 // 메시지 보내기 (입주민 → 관리자)
@@ -495,7 +494,7 @@ export function sendMessage(villaId: string, ho: string, fromName: string, text:
   const localId = genId();
   villa.messages.unshift({ id: localId, from: ho, fromName, text, date: now(), read: false, replies: [] });
   notify();
-  bgWrite('sendMessage', (async () => {
+  bgWrite('sendMessage', async () => {
     const { supabase } = await import('./supabase');
     const unit = villa.units.find(u => u.ho === ho);
     let unitId: string | null = null;
@@ -519,7 +518,7 @@ export function sendMessage(villaId: string, ho: string, fromName: string, text:
       const m = villa.messages.find(x => x.id === localId);
       if (m) { m.id = data.id; notify(); }
     }
-  })());
+  });
 }
 
 // 메시지 답변 (관리자 → 입주민)
@@ -531,7 +530,7 @@ export function replyMessage(villaId: string, msgId: string, text: string) {
   msg.replies.push({ text, from: '관리자', date: now() });
   msg.read = true;
   notify();
-  bgWrite('replyMessage', (async () => {
+  bgWrite('replyMessage', async () => {
     const { supabase } = await import('./supabase');
     if (msgId.length < 32) return;
     await supabase.from('message_replies').insert({
@@ -541,7 +540,7 @@ export function replyMessage(villaId: string, msgId: string, text: string) {
       author_name: store.admin.name,
     });
     await supabase.from('messages').update({ is_read: true }).eq('id', msgId);
-  })());
+  });
 }
 
 // 입주민 추가 답글 (입주민 → 관리자, 같은 thread)
@@ -553,7 +552,7 @@ export function addResidentReply(villaId: string, msgId: string, text: string, f
   msg.replies.push({ text, from: fromName, date: now() });
   msg.read = false; // 관리자가 다시 확인해야 함
   notify();
-  bgWrite('addResidentReply', (async () => {
+  bgWrite('addResidentReply', async () => {
     const { supabase } = await import('./supabase');
     if (msgId.length < 32) return;
     await supabase.from('message_replies').insert({
@@ -563,7 +562,7 @@ export function addResidentReply(villaId: string, msgId: string, text: string, f
       author_name: fromName,
     });
     await supabase.from('messages').update({ is_read: false }).eq('id', msgId);
-  })());
+  });
 }
 
 // 주차 등록
@@ -580,7 +579,7 @@ export function addParking(
   const localId = genId();
   villa.parking.push({ id: localId, ho, plate, type, memo, expiresAt });
   notify();
-  bgWrite('addParking', (async () => {
+  bgWrite('addParking', async () => {
     const { supabase } = await import('./supabase');
     const { data: unitRow } = await supabase.from('units').select('id').eq('villa_id', villaId).eq('ho_number', ho).maybeSingle();
     const { data } = await supabase.from('parking').insert({
@@ -595,7 +594,7 @@ export function addParking(
       const p = villa.parking.find(x => x.id === localId);
       if (p) { p.id = data.id; notify(); }
     }
-  })());
+  });
 }
 
 // 주차 삭제
@@ -604,10 +603,10 @@ export function removeParking(villaId: string, parkingId: string) {
   if (!villa) return;
   villa.parking = villa.parking.filter(p => p.id !== parkingId);
   notify();
-  bgWrite('removeParking', (async () => {
+  bgWrite('removeParking', async () => {
     const { supabase } = await import('./supabase');
     await supabase.from('parking').delete().eq('id', parkingId);
-  })());
+  });
 }
 
 // 커뮤니티 글 등록
@@ -617,7 +616,7 @@ export function addPost(villaId: string, from: string, fromName: string, title: 
   const localId = genId();
   villa.community.unshift({ id: localId, from, fromName, title, body, date: now(), likes: 0, comments: [] });
   notify();
-  bgWrite('addPost', (async () => {
+  bgWrite('addPost', async () => {
     let unitId: string | null = null;
     let residentId: string | null = null;
     if (from) {
@@ -655,7 +654,7 @@ export function addPost(villaId: string, from: string, fromName: string, title: 
       const p = villa.community.find(x => x.id === localId);
       if (p) { p.id = data.id; notify(); }
     }
-  })());
+  });
 }
 
 // 커뮤니티 댓글
@@ -666,7 +665,7 @@ export function addComment(villaId: string, postId: string, from: string, fromNa
   if (!post) return;
   post.comments.push({ from, fromName, text, date: now() });
   notify();
-  bgWrite('addComment', (async () => {
+  bgWrite('addComment', async () => {
     if (postId.length < 32) return; // local-only id, skip
     let unitId: string | null = null;
     let residentId: string | null = null;
@@ -699,7 +698,7 @@ export function addComment(villaId: string, postId: string, from: string, fromNa
       resident_id: residentId,
       text,
     });
-  })());
+  });
 }
 
 // 좋아요
@@ -710,10 +709,10 @@ export function likePost(villaId: string, postId: string) {
   if (!post) return;
   post.likes++;
   notify();
-  bgWrite('likePost', (async () => {
+  bgWrite('likePost', async () => {
     if (postId.length < 32) return; // local-only id, skip
     await _supabase.from('posts').update({ likes: post.likes }).eq('id', postId);
-  })());
+  });
 }
 
 // 입주민 로그인
@@ -729,6 +728,15 @@ export function residentLogin(name: string, phone: string): Resident | null {
     }
   }
   return null;
+}
+
+// 입주민 로그아웃 — 관리자 signOut 과 달리 auth.users 세션이 없으므로
+// 로컬 store 만 비운다. fcm_token 은 다음 로그인 시 새로 저장된다.
+export function residentLogout() {
+  store.loggedResident = null;
+  store.loggedVillaId = null;
+  store.villas = [];
+  notify();
 }
 
 // ============================================================

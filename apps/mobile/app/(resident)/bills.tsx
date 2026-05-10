@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { store, subscribe } from '@/lib/store';
 import { supabase } from '@/lib/supabase';
@@ -13,6 +14,7 @@ const ITEM_COLORS = ['#4263E8', '#2ECC71', '#F39C12', '#EC4899', '#E74C3C', '#6B
 export default function BillsScreen() {
   const [_, setTick] = useState(0);
   useEffect(() => subscribe(() => setTick(t => t + 1)), []);
+  const insets = useSafeAreaInsets();
 
   const villa = store.villas.find(v => v.id === store.loggedVillaId);
   const resident = store.loggedResident;
@@ -137,7 +139,7 @@ export default function BillsScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 100 }}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <View>
             <Text style={styles.headerTitle}>관리비</Text>
@@ -249,7 +251,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F5F6FA' },
   header: {
     paddingHorizontal: 20,
-    paddingTop: 60,
     paddingBottom: 16,
   },
   headerTitle: { fontSize: 22, fontWeight: '900', color: '#1A1D26' },

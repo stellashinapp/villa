@@ -1,10 +1,12 @@
 import { useState, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 import { router, useLocalSearchParams } from 'expo-router';
 import { buildCheckoutHtml, confirmPaymentOnServer } from '@/lib/payment';
 
 export default function CheckoutScreen() {
+  const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{
     amount?: string;
     orderId?: string;
@@ -69,7 +71,7 @@ export default function CheckoutScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Text style={styles.backText}>← 취소</Text>
         </TouchableOpacity>
@@ -98,7 +100,6 @@ export default function CheckoutScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
   header: {
-    paddingTop: 50,
     paddingHorizontal: 16,
     paddingBottom: 12,
     borderBottomWidth: 1,

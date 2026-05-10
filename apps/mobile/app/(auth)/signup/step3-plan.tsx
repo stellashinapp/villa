@@ -5,14 +5,11 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  Alert,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Alert } from 'react-native';
-import { getSignupData, clearSignupData } from '@/lib/signup-store';
-import { signUpAdmin, getMyAdmin } from '@/lib/auth';
-import { createVilla } from '@/lib/villas';
-import { syncAdminFromSupabase } from '@/lib/sync';
-import { supabase } from '@/lib/supabase';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { completeSignup } from '@/lib/signup-complete';
 
 const C = {
   bg: '#F5F6FA',
@@ -105,95 +102,40 @@ function recommendPlan(units: number): PlanId {
 
 export default function SignupStep3Screen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ totalUnits?: string }>();
 
   const totalUnits = params.totalUnits ? Number(params.totalUnits) : 0;
 
-  const [selectedPlan, setSelectedPlan] = useState<PlanId>('medium');
-
-  useEffect(() => {
-    if (totalUnits > 0) {
-      setSelectedPlan(recommendPlan(totalUnits));
-    }
-  }, [totalUnits]);
+  // 세대수에 따른 자동 플랜 배정 — 사용자가 선택할 항목이 아님
+  const assignedPlanId: PlanId = totalUnits > 0 ? recommendPlan(totalUnits) : 'small';
+  const assignedPlan = PLANS.find((p) => p.id === assignedPlanId) ?? PLANS[0];
 
   const [loading, setLoading] = useState(false);
 
   const handleStart = async () => {
     setLoading(true);
     try {
-      const signupData = await getSignupData();
-      if (!signupData?.email || !signupData?.password) {
-        Alert.alert('오류', '가입 정보가 누락되었습니다. 처음부터 다시 시도해주세요.');
-        router.replace('/(auth)/signup/step1-account');
-        return;
-      }
-
-      const adminName = signupData.name ?? '관리자';
-
-      // 1) Supabase Auth 회원가입 — 실패하면 즉시 중단
-      try {
-        await signUpAdmin({
-          email: signupData.email,
-          password: signupData.password,
-          name: signupData.name,
-          phone: signupData.phone,
-        });
-      } catch (err: any) {
-        Alert.alert('회원가입 실패', err?.message ?? '계정을 만들 수 없습니다');
-        return;
-      }
-
-      // 2) 구독(trialing) + 빌라 등록 — 실패해도 계정은 살아있으므로 안내 후 진행
-      let adminId: string | null = null;
-      try {
-        const admin = await getMyAdmin();
-        if (!admin) throw new Error('관리자 프로필을 찾을 수 없습니다');
-        adminId = admin.id;
-
-        await supabase.from('subscriptions').insert({
-          admin_id: admin.id,
-          status: 'trialing',
-          billing_day: 1,
-          trial_ends_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        });
-
-        if (signupData.villaName && signupData.totalUnits) {
-          await createVilla({
-            name: signupData.villaName,
-            address: signupData.villaAddress || '',
-            totalUnits: signupData.totalUnits,
-            unitsPerFloor: signupData.unitsPerFloor || 2,
-            accountBank: signupData.accountBank,
-            accountNumber: signupData.accountNumber,
-            accountHolder: signupData.accountHolder,
-          });
-        }
-
-        // 3) store 동기화 — billing/home 진입 시 빌라가 즉시 보이도록
-        await syncAdminFromSupabase();
-      } catch (err: any) {
-        console.error('[signup] post-auth error:', err);
-        Alert.alert(
-          '일부 정보 등록 실패',
-          (err?.message ?? String(err)) + '\n계정은 생성됐습니다. 설정에서 빌라를 다시 추가해주세요.',
-        );
-      }
-
-      await clearSignupData();
-
-      if (adminId) {
+      // 어떤 단계에서 실패해도 사용자는 무조건 다음으로 진행하도록 강제.
+      const result = await completeSignup({ createVillaIfPresent: true });
+      if (result.adminId) {
         router.replace({
           pathname: '/payment/billing',
-          params: { adminId, customerName: adminName, fromSignup: '1' },
+          params: {
+            adminId: result.adminId,
+            customerName: result.customerName,
+            fromSignup: '1',
+          },
         });
-      } else {
+      } else if (result.ok) {
         router.replace('/(admin)/home');
+      } else {
+        // 가입 실패 (이메일 중복+비번 불일치 등) → 로그인으로 보내서 갇히지 않게
+        router.replace('/(auth)/login');
       }
     } catch (err: any) {
       console.error('[signup] unexpected:', err);
       Alert.alert('오류', err?.message ?? '예상치 못한 오류가 발생했습니다');
-      await clearSignupData();
     } finally {
       setLoading(false);
     }
@@ -202,101 +144,43 @@ export default function SignupStep3Screen() {
   return (
     <ScrollView
       style={styles.container}
-      contentContainerStyle={styles.contentContainer}
+      contentContainerStyle={[styles.contentContainer, { paddingTop: insets.top + 16 }]}
       showsVerticalScrollIndicator={false}
     >
       <ProgressBar step={3} />
 
       <Text style={styles.stepLabel}>STEP 3 / 3</Text>
-      <Text style={styles.title}>플랜을 선택하세요</Text>
+      <Text style={styles.title}>플랜을 확인하세요</Text>
       <Text style={styles.subtitle}>
-        첫 1개월 무료! 부담 없이 시작하세요
+        세대수에 맞춰 자동으로 배정된 플랜이에요
       </Text>
 
-      {/* Free trial banner */}
-      <View style={styles.trialBanner}>
-        <Text style={styles.trialEmoji}>🎉</Text>
-        <View style={styles.trialTextWrap}>
-          <Text style={styles.trialTitle}>첫 1개월 완전 무료</Text>
-          <Text style={styles.trialSub}>
-            카드 등록 없이도 모든 기능을 사용할 수 있어요
+      {/* 자동 플랜 배정 카드 */}
+      <View style={styles.autoPlanCard}>
+        <Text style={styles.autoPlanLabel}>자동 플랜 배정</Text>
+
+        <View style={styles.autoPlanInner}>
+          <View style={styles.autoPlanHeader}>
+            <Text style={styles.autoPlanName}>{assignedPlan.name} 플랜</Text>
+            <Text style={styles.autoPlanRange}>{assignedPlan.range}</Text>
+          </View>
+          <Text style={styles.autoPlanPrice}>월 {assignedPlan.priceLabel}</Text>
+          {totalUnits > 0 && (
+            <View style={styles.autoPlanMetaRow}>
+              <Text style={styles.autoPlanMetaLabel}>세대수</Text>
+              <Text style={styles.autoPlanMetaValue}>{totalUnits}세대</Text>
+            </View>
+          )}
+        </View>
+
+        {/* 🎉 첫 1개월 완전 무료 — 카드 안 배너 */}
+        <View style={styles.trialBannerInline}>
+          <Text style={styles.trialBannerInlineTitle}>🎉 첫 1개월 완전 무료</Text>
+          <Text style={styles.trialBannerInlineSub}>
+            카드 등록 없이 바로 시작 · 언제든 해지 가능
           </Text>
         </View>
       </View>
-
-      {/* Plan cards */}
-      {PLANS.map((plan) => {
-        const isSelected = selectedPlan === plan.id;
-        // 세대수가 입력됐으면 그에 맞는 1개만 선택 가능, 나머지는 비활성화
-        const isAvailable = totalUnits > 0
-          ? recommendPlan(totalUnits) === plan.id
-          : true;
-
-        return (
-          <TouchableOpacity
-            key={plan.id}
-            style={[
-              styles.planCard,
-              isSelected && styles.planCardSelected,
-              !isAvailable && styles.planCardDisabled,
-            ]}
-            onPress={() => isAvailable && setSelectedPlan(plan.id)}
-            disabled={!isAvailable}
-            activeOpacity={0.7}
-          >
-            <View style={styles.planHeader}>
-              <View style={styles.planTitleRow}>
-                <View
-                  style={[
-                    styles.radio,
-                    isSelected && styles.radioSelected,
-                  ]}
-                >
-                  {isSelected && <View style={styles.radioInner} />}
-                </View>
-                <Text
-                  style={[
-                    styles.planName,
-                    isSelected && styles.planNameSelected,
-                    !isAvailable && styles.planTextDisabled,
-                  ]}
-                >
-                  {plan.name}
-                </Text>
-              </View>
-              <Text style={[
-                styles.planRange,
-                isSelected && styles.planRangeSelected,
-                !isAvailable && styles.planTextDisabled,
-              ]}>{plan.range}</Text>
-            </View>
-
-            <View style={styles.planPriceRow}>
-              <Text style={[
-                styles.planPrice,
-                isSelected && styles.planPriceSelected,
-                !isAvailable && styles.planTextDisabled,
-              ]}>월 {plan.priceLabel}</Text>
-              <Text style={[
-                styles.planPriceNote,
-                isSelected && styles.planPriceNoteSelected,
-                !isAvailable && styles.planTextDisabled,
-              ]}>/월 (VAT 별도)</Text>
-            </View>
-
-            {isSelected && (
-              <View style={styles.planFeatures}>
-                {plan.features.map((f, i) => (
-                  <View key={i} style={styles.featureRow}>
-                    <Text style={[styles.featureCheck, styles.featureCheckSelected]}>✓</Text>
-                    <Text style={[styles.featureText, styles.featureTextSelected]}>{f}</Text>
-                  </View>
-                ))}
-              </View>
-            )}
-          </TouchableOpacity>
-        );
-      })}
 
       <View style={styles.cardNoticeBox}>
         <Text style={styles.cardNoticeTitle}>💳 30일 무료체험 안내</Text>
@@ -325,7 +209,7 @@ export default function SignupStep3Screen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg },
-  contentContainer: { padding: 24, paddingTop: 56 },
+  contentContainer: { padding: 24 },
 
   progressRow: {
     flexDirection: 'row',
@@ -360,7 +244,87 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
 
-  // Trial banner
+  // 자동 플랜 배정 카드
+  autoPlanCard: {
+    backgroundColor: C.card,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#DCE3F4',
+    padding: 18,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  autoPlanLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: C.primary,
+    letterSpacing: 0.5,
+    marginBottom: 12,
+  },
+  autoPlanInner: {
+    backgroundColor: '#F4F7FE',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 14,
+  },
+  autoPlanHeader: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
+  autoPlanName: {
+    fontSize: 17,
+    fontWeight: '900',
+    color: C.text,
+  },
+  autoPlanRange: {
+    fontSize: 12,
+    color: C.sub,
+    fontWeight: '600',
+  },
+  autoPlanPrice: {
+    fontSize: 28,
+    fontWeight: '900',
+    color: C.primary,
+    marginBottom: 12,
+    letterSpacing: -0.5,
+  },
+  autoPlanMetaRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F4',
+  },
+  autoPlanMetaLabel: { fontSize: 13, color: C.sub, fontWeight: '600' },
+  autoPlanMetaValue: { fontSize: 13, color: C.text, fontWeight: '700' },
+
+  // 🎉 trial banner — 카드 안에 들어가는 버전
+  trialBannerInline: {
+    backgroundColor: '#F1F6FF',
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    alignItems: 'center',
+  },
+  trialBannerInlineTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: C.primary,
+    marginBottom: 3,
+  },
+  trialBannerInlineSub: {
+    fontSize: 11,
+    color: '#5B6D8F',
+    fontWeight: '500',
+  },
+
+  // (구) 외부 trial banner — 더 이상 사용 안 하지만 호환을 위해 남김
   trialBanner: {
     flexDirection: 'row',
     backgroundColor: '#F1F6FF',

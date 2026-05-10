@@ -11,6 +11,7 @@ import {
   Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { saveSignupData } from '@/lib/signup-store';
 import NiceAuthModal, { type NiceAuthSuccess } from '@/components/NiceAuthModal';
 
@@ -46,6 +47,7 @@ function ProgressBar({ step }: { step: number }) {
 
 export default function SignupStep1Screen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   // __DEV__ 일 때만 더미 데이터로 자동 채움 (이메일/아이디는 timestamp 로 매번 새로 — 중복 방지)
   const devSuffix = String(Date.now()).slice(-6);
@@ -260,7 +262,7 @@ export default function SignupStep1Screen() {
     >
       <ScrollView
         style={styles.container}
-        contentContainerStyle={styles.contentContainer}
+        contentContainerStyle={[styles.contentContainer, { paddingTop: insets.top + 16 }]}
         showsVerticalScrollIndicator={false}
       >
         <ProgressBar step={1} />
@@ -401,7 +403,7 @@ export default function SignupStep1Screen() {
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: C.bg },
   container: { flex: 1, backgroundColor: C.bg },
-  contentContainer: { padding: 24, paddingTop: 56 },
+  contentContainer: { padding: 24 },
 
   progressRow: {
     flexDirection: 'row',

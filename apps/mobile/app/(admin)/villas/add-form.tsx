@@ -11,6 +11,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { addVilla, store } from '@/lib/store';
 import { getMyAdmin } from '@/lib/auth';
@@ -36,6 +37,7 @@ function makeUnits(floorLabel: string, count: number): UnitData[] {
 }
 
 export default function AddVillaFormScreen() {
+  const insets = useSafeAreaInsets();
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
   const [bank, setBank] = useState('');
@@ -207,7 +209,7 @@ export default function AddVillaFormScreen() {
       contentContainerStyle={{ paddingBottom: 60 }}
       keyboardShouldPersistTaps="handled"
     >
-      <View style={s.header}>
+      <View style={[s.header, { paddingTop: insets.top + 8 }]}>
         <TouchableOpacity onPress={() => router.back()}>
           <Text style={s.backText}>← 돌아가기</Text>
         </TouchableOpacity>
@@ -473,7 +475,7 @@ export default function AddVillaFormScreen() {
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg },
-  header: { paddingHorizontal: 20, paddingTop: 56, paddingBottom: 8 },
+  header: { paddingHorizontal: 20, paddingBottom: 8 },
   backText: { fontSize: 14, color: C.pri, fontWeight: '600', marginBottom: 12 },
   title: { fontSize: 22, fontWeight: '900', color: C.text },
 

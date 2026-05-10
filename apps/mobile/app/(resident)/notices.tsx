@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { store, subscribe } from '@/lib/store';
 
 export default function NoticesScreen() {
   const [_, setTick] = useState(0);
   useEffect(() => subscribe(() => setTick(t => t + 1)), []);
+  const insets = useSafeAreaInsets();
 
   const villa = store.villas.find(v => v.id === store.loggedVillaId);
   const resident = store.loggedResident;
@@ -36,7 +38,7 @@ export default function NoticesScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 100 }}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <Text style={styles.title}>공지</Text>
         <Text style={styles.headerSub}>{villa.name}</Text>
       </View>
@@ -91,7 +93,7 @@ export default function NoticesScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F5F6FA' },
-  header: { paddingHorizontal: 20, paddingTop: 60, paddingBottom: 12 },
+  header: { paddingHorizontal: 20, paddingBottom: 12 },
   title: { fontSize: 22, fontWeight: '900', color: '#1A1D26' },
   headerSub: { fontSize: 13, color: '#6B7280', marginTop: 2 },
 

@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState, useEffect } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import { router } from 'expo-router';
@@ -22,6 +23,7 @@ export default function VillaMessagesScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [_, setTick] = useState(0);
   useEffect(() => subscribe(() => setTick(t => t + 1)), []);
+  const insets = useSafeAreaInsets();
 
   const villa = store.villas.find(v => v.id === id);
 
@@ -59,7 +61,7 @@ export default function VillaMessagesScreen() {
   };
 
   return (
-    <ScrollView style={s.container} contentContainerStyle={{ paddingBottom: 40 }}>
+    <ScrollView style={s.container} contentContainerStyle={{ paddingTop: insets.top + 12, paddingBottom: 40 }}>
       {unreadCount > 0 && (
         <View style={s.unreadBanner}>
           <Text style={s.unreadText}>읽지 않은 메시지 {unreadCount}건</Text>
@@ -121,7 +123,7 @@ export default function VillaMessagesScreen() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg, padding: 20, paddingTop: 10 },
+  container: { flex: 1, backgroundColor: C.bg, paddingHorizontal: 20 },
   unreadBanner: { backgroundColor: 'rgba(255,107,53,0.08)', borderRadius: 12, padding: 12, marginBottom: 14 },
   unreadText: { fontSize: 13, color: C.accent, fontWeight: '700' },
   card: {

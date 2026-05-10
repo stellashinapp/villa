@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { store, subscribe } from '@/lib/store';
 
@@ -21,6 +22,7 @@ const TABS = [
 export default function VillaDetailScreen() {
   const [_, setTick] = useState(0);
   useEffect(() => subscribe(() => setTick(t => t + 1)), []);
+  const insets = useSafeAreaInsets();
 
   const { id } = useLocalSearchParams<{ id: string }>();
   const villa = store.villas.find(v => v.id === id);
@@ -44,7 +46,7 @@ export default function VillaDetailScreen() {
   return (
     <ScrollView style={s.container} contentContainerStyle={{ paddingBottom: 40 }}>
       {/* 헤더 */}
-      <View style={s.header}>
+      <View style={[s.header, { paddingTop: insets.top + 12 }]}>
         <TouchableOpacity onPress={() => router.back()}>
           <Text style={s.backLink}>← 빌라 목록</Text>
         </TouchableOpacity>
@@ -112,7 +114,7 @@ export default function VillaDetailScreen() {
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg },
-  header: { paddingHorizontal: 20, paddingTop: 60, paddingBottom: 16 },
+  header: { paddingHorizontal: 20, paddingBottom: 16 },
   backLink: { fontSize: 14, color: C.pri, fontWeight: '600', marginBottom: 12 },
   villaName: { fontSize: 24, fontWeight: '900', color: C.text },
   villaAddr: { fontSize: 13, color: C.sub, marginTop: 4 },

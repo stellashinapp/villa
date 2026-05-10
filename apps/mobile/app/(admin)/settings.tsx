@@ -8,6 +8,7 @@ import {
   TextInput,
   Alert,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { store, subscribe, notify } from '@/lib/store';
 import { signOut } from '@/lib/auth';
@@ -46,6 +47,7 @@ function Badge({ label, color, bg }: { label: string; color: string; bg: string 
 export default function AdminSettingsScreen() {
   const [_, setTick] = useState(0);
   useEffect(() => subscribe(() => setTick(t => t + 1)), []);
+  const insets = useSafeAreaInsets();
 
   const sub = store.subscription;
   const villas = store.villas;
@@ -121,7 +123,7 @@ export default function AdminSettingsScreen() {
 
   return (
     <ScrollView style={s.container} contentContainerStyle={{ paddingBottom: 120 }}>
-      <View style={s.header}>
+      <View style={[s.header, { paddingTop: insets.top + 12 }]}>
         <Text style={s.headerLabel}>ADMIN</Text>
         <Text style={s.headerTitle}>설정</Text>
       </View>
@@ -421,7 +423,7 @@ function LangButton({ lang, label }: { lang: 'ko' | 'en'; label: string }) {
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg },
-  header: { paddingHorizontal: 20, paddingTop: 60, paddingBottom: 12 },
+  header: { paddingHorizontal: 20, paddingBottom: 12 },
   headerLabel: { fontSize: 11, color: C.pri, fontWeight: '700', letterSpacing: 2 },
   headerTitle: { fontSize: 22, fontWeight: '900', color: C.text, marginTop: 6 },
   sectionTitle: {

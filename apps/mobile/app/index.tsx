@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { common } from '@/constants/theme';
@@ -25,6 +26,7 @@ function HeroIllustration({ size = 180 }: { size?: number }) {
 }
 
 export default function EntryScreen() {
+  const insets = useSafeAreaInsets();
   const [phase, setPhase] = useState<'checking' | 'splash'>('checking');
 
   useEffect(() => {
@@ -76,7 +78,7 @@ export default function EntryScreen() {
         <Text style={s.taglineEmphasis}>스마트 공동 관리 서비스</Text>
       </View>
 
-      <View style={s.buttonArea}>
+      <View style={[s.buttonArea, { paddingBottom: Math.max(insets.bottom + 16, 40) }]}>
         <TouchableOpacity
           style={s.btnPrimary}
           onPress={() => router.push('/(auth)/login')}
@@ -119,11 +121,11 @@ const s = StyleSheet.create({
     paddingHorizontal: 40,
   },
   brandTitle: {
-    fontSize: 34,
-    fontWeight: '800',
+    fontSize: 36,
+    fontWeight: '900',
     marginTop: 16,
     marginBottom: 16,
-    letterSpacing: -0.6,
+    letterSpacing: -0.8,
   },
   tagline: {
     fontSize: 14,
