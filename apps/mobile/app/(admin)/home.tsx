@@ -191,6 +191,22 @@ export default function AdminHomeScreen() {
           >
             <Text style={styles.emptyHeroBtnText}>+ 새 빌라 등록하기</Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.resyncBtn}
+            onPress={async () => {
+              const ok = await syncAdminFromSupabase().catch(() => false);
+              const cnt = store.villas.length;
+              const adminId = store.admin?.id ?? '(none)';
+              Alert.alert(
+                '동기화 결과',
+                `결과: ${ok ? '성공' : '실패'}\n조회된 빌라: ${cnt}개\n관리자: ${adminId}\n\n` +
+                  `여전히 빌라가 안 보이면 브라우저 콘솔(F12)을 열어 [sync] 로그를 확인해주세요.`,
+              );
+            }}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.resyncBtnText}>이미 등록했는데 안 보여요? 다시 동기화</Text>
+          </TouchableOpacity>
         </View>
       )}
 
@@ -723,6 +739,22 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 15,
     fontWeight: '800',
+  },
+  resyncBtn: {
+    marginTop: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: C.cardBorder,
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
+  },
+  resyncBtnText: {
+    color: C.textSub,
+    fontSize: 13,
+    fontWeight: '600',
   },
 
   /* ── Quick Action ───────────────────────────────────────── */

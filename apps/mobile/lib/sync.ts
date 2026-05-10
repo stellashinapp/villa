@@ -145,24 +145,41 @@ function toVilla(v: VillaRaw, paymentMap: Map<string, Set<string>>): Villa {
 }
 
 export async function syncAdminFromSupabase() {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return false;
+  console.log('[sync] start');
 
-  const { data: admin } = await supabase
+  const { data: { user }, error: userErr } = await supabase.auth.getUser();
+  if (userErr) console.warn('[sync] auth.getUser error:', userErr.message);
+  if (!user) {
+    console.log('[sync] no auth user');
+    return false;
+  }
+  console.log('[sync] auth user:', user.id);
+
+  const { data: admin, error: adminErr } = await supabase
     .from('admins')
     .select('id, name, phone, email')
     .eq('auth_id', user.id)
     .maybeSingle();
-  if (!admin) return false;
+  if (adminErr) console.warn('[sync] admin lookup error:', adminErr.message);
+  if (!admin) {
+    console.warn('[sync] admin row not found for auth_id', user.id);
+    return false;
+  }
+  console.log('[sync] admin:', admin.id);
 
   store.admin = { id: admin.id, name: admin.name ?? '관리자', phone: admin.phone ?? '', email: admin.email ?? '' };
 
-  const { data: sub } = await supabase
+  // 구독 — 다중 row 가능성 회피 위해 limit(1) 명시
+  const { data: subRows, error: subErr } = await supabase
     .from('subscriptions')
-    .select('*, subscription_items(villa_id, plan, price)')
+    .select('id, status, card_brand, card_last4, billing_day, current_period_start, current_period_end')
     .eq('admin_id', admin.id)
     .in('status', ['trialing', 'active', 'past_due', 'pending_cancel'])
-    .maybeSingle();
+    .order('created_at', { ascending: false })
+    .limit(1);
+  if (subErr) console.warn('[sync] subscription lookup error:', subErr.message);
+  const sub = subRows?.[0];
+  console.log('[sync] subscription:', sub?.id ?? '(none)', sub?.status ?? '');
 
   if (sub) {
     store.subscription = {
@@ -175,65 +192,139 @@ export async function syncAdminFromSupabase() {
     };
   }
 
-  // 1차: 빌라 + (있으면) 구독 아이템 join — left join 으로 빌라 누락 방지
-  // bill_months 는 최근 6개월만 (toVilla 에서 클라이언트 필터),
-  // notices/messages/posts 는 최근 50건만 로드 (서버 limit)
-  let villaList: VillaRaw[] = [];
-  if (sub) {
-    const { data: villas } = await supabase
-      .from('villas')
-      .select(`
-        id, name, address, total_units, units_per_floor, account_bank, account_number,
-        units ( id, ho_number, floor, residents ( name, phone, status ) ),
-        bill_months ( id, year_month, label, status, bill_items ( name, amount ) ),
-        notices ( id, title, body, created_at, is_pinned ),
-        messages ( id, text, is_read, created_at, unit_id, resident_id, message_replies ( text, author_type, author_name, created_at ) ),
-        parking ( id, plate_number, vehicle_type, memo, unit_id ),
-        posts ( id, title, body, likes, created_at, resident_id, comments ( text, created_at, resident_id ) ),
-        subscription_items ( subscription_id, plan, price )
-      `)
-      .eq('admin_id', admin.id)
-      .eq('status', 'active')
-      .order('created_at', { ascending: false, referencedTable: 'notices' })
-      .limit(RECENT_LIST_LIMIT, { referencedTable: 'notices' })
-      .order('created_at', { ascending: false, referencedTable: 'messages' })
-      .limit(RECENT_LIST_LIMIT, { referencedTable: 'messages' })
-      .order('created_at', { ascending: false, referencedTable: 'posts' })
-      .limit(RECENT_LIST_LIMIT, { referencedTable: 'posts' });
+  // 단순 빌라 쿼리 — nested join 실패 시에도 무조건 villa 는 잡힘.
+  const { data: simpleVillas, error: villaErr } = await supabase
+    .from('villas')
+    .select('id, name, address, total_units, units_per_floor, account_bank, account_number')
+    .eq('admin_id', admin.id)
+    .eq('status', 'active')
+    .order('created_at', { ascending: false });
+  if (villaErr) {
+    console.error('[sync] villas query error:', villaErr.message);
+    notify();
+    return false;
+  }
+  console.log('[sync] villas (simple):', simpleVillas?.length ?? 0);
 
-    type RawWithSubItems = Omit<VillaRaw, 'subscription_items'> & {
-      subscription_items: Array<{ subscription_id: string; plan: string; price: number }>;
-    };
-    villaList = ((villas as unknown as RawWithSubItems[]) ?? []).map((v) => ({
-      ...v,
-      // 현재 활성 구독에 매핑된 항목만 사용 — 없으면 빈 배열로 두어도 villaList 에는 포함됨
-      subscription_items: v.subscription_items.filter((it) => it.subscription_id === sub.id),
-    }));
+  if (!simpleVillas || simpleVillas.length === 0) {
+    store.villas = [];
+    notify();
+    return true;
   }
 
-  // 2차 (fallback): sub 가 없거나, 1차에서 빌라가 0개로 나오면 구독 필터 없이 재조회
-  if (villaList.length === 0) {
-    const { data: v2 } = await supabase
-      .from('villas')
-      .select(`
-        id, name, address, total_units, units_per_floor, account_bank, account_number,
-        units ( id, ho_number, floor, residents ( name, phone, status ) ),
-        bill_months ( id, year_month, label, status, bill_items ( name, amount ) ),
-        notices ( id, title, body, created_at, is_pinned ),
-        messages ( id, text, is_read, created_at, unit_id, resident_id, message_replies ( text, author_type, author_name, created_at ) ),
-        parking ( id, plate_number, vehicle_type, memo, unit_id ),
-        posts ( id, title, body, likes, created_at, resident_id, comments ( text, created_at, resident_id ) )
-      `)
-      .eq('admin_id', admin.id)
-      .eq('status', 'active')
-      .order('created_at', { ascending: false, referencedTable: 'notices' })
-      .limit(RECENT_LIST_LIMIT, { referencedTable: 'notices' })
-      .order('created_at', { ascending: false, referencedTable: 'messages' })
-      .limit(RECENT_LIST_LIMIT, { referencedTable: 'messages' })
-      .order('created_at', { ascending: false, referencedTable: 'posts' })
-      .limit(RECENT_LIST_LIMIT, { referencedTable: 'posts' });
-    villaList = ((v2 as unknown as Omit<VillaRaw, 'subscription_items'>[]) ?? []).map((v) => ({ ...v, subscription_items: [] }));
-  }
+  const villaIds = simpleVillas.map((v) => v.id);
+
+  // 관련 리소스 병렬 fetch — 한 쿼리가 실패해도 다른 데이터는 살림.
+  const [
+    unitsRes,
+    billMonthsRes,
+    noticesRes,
+    messagesRes,
+    parkingRes,
+    postsRes,
+    subItemsRes,
+  ] = await Promise.all([
+    supabase
+      .from('units')
+      .select('id, villa_id, ho_number, floor, residents ( name, phone, status )')
+      .in('villa_id', villaIds),
+    supabase
+      .from('bill_months')
+      .select('id, villa_id, year_month, label, status, bill_items ( name, amount )')
+      .in('villa_id', villaIds),
+    supabase
+      .from('notices')
+      .select('id, villa_id, title, body, created_at, is_pinned')
+      .in('villa_id', villaIds)
+      .order('created_at', { ascending: false })
+      .limit(RECENT_LIST_LIMIT * villaIds.length),
+    supabase
+      .from('messages')
+      .select('id, villa_id, text, is_read, created_at, unit_id, resident_id, message_replies ( text, author_type, author_name, created_at )')
+      .in('villa_id', villaIds)
+      .order('created_at', { ascending: false })
+      .limit(RECENT_LIST_LIMIT * villaIds.length),
+    supabase
+      .from('parking')
+      .select('id, villa_id, plate_number, vehicle_type, memo, unit_id, expires_at')
+      .in('villa_id', villaIds),
+    supabase
+      .from('posts')
+      .select('id, villa_id, title, body, likes, created_at, resident_id, comments ( text, created_at, resident_id )')
+      .in('villa_id', villaIds)
+      .order('created_at', { ascending: false })
+      .limit(RECENT_LIST_LIMIT * villaIds.length),
+    sub
+      ? supabase
+          .from('subscription_items')
+          .select('villa_id, plan, price')
+          .eq('subscription_id', sub.id)
+      : Promise.resolve({ data: [] as Array<{ villa_id: string; plan: string; price: number }>, error: null }),
+  ]);
+
+  if (unitsRes.error) console.warn('[sync] units error:', unitsRes.error.message);
+  if (billMonthsRes.error) console.warn('[sync] bill_months error:', billMonthsRes.error.message);
+  if (noticesRes.error) console.warn('[sync] notices error:', noticesRes.error.message);
+  if (messagesRes.error) console.warn('[sync] messages error:', messagesRes.error.message);
+  if (parkingRes.error) console.warn('[sync] parking error:', parkingRes.error.message);
+  if (postsRes.error) console.warn('[sync] posts error:', postsRes.error.message);
+  if (subItemsRes.error) console.warn('[sync] subscription_items error:', subItemsRes.error.message);
+
+  console.log(
+    '[sync] related counts —',
+    'units:', unitsRes.data?.length ?? 0,
+    'bill_months:', billMonthsRes.data?.length ?? 0,
+    'notices:', noticesRes.data?.length ?? 0,
+    'messages:', messagesRes.data?.length ?? 0,
+    'parking:', parkingRes.data?.length ?? 0,
+    'posts:', postsRes.data?.length ?? 0,
+    'sub_items:', subItemsRes.data?.length ?? 0,
+  );
+
+  // villa_id 기준으로 그룹핑
+  type UnitRow = { id: string; villa_id: string; ho_number: string; floor: number | null; residents: Array<{ name: string; phone: string; status: string }> };
+  type BMRow = { id: string; villa_id: string; year_month: string; label: string | null; status: 'draft'|'published'|'closed'; bill_items: Array<{ name: string; amount: number }> };
+  type NoticeRow = { id: string; villa_id: string; title: string; body: string; created_at: string; is_pinned?: boolean };
+  type MsgRow = { id: string; villa_id: string; text: string; is_read: boolean; created_at: string; unit_id: string | null; resident_id: string | null; message_replies: Array<{ text: string; author_type: string; author_name: string | null; created_at: string }> };
+  type ParkRow = { id: string; villa_id: string; plate_number: string; vehicle_type: 'resident'|'visitor'; memo: string | null; unit_id: string | null; expires_at: string | null };
+  type PostRow = { id: string; villa_id: string; title: string | null; body: string; likes: number; created_at: string; resident_id: string | null; comments: Array<{ text: string; created_at: string; resident_id: string | null }> };
+
+  const groupBy = <T extends { villa_id: string }>(arr: T[] | null | undefined): Record<string, T[]> => {
+    const m: Record<string, T[]> = {};
+    (arr ?? []).forEach((row) => {
+      (m[row.villa_id] = m[row.villa_id] ?? []).push(row);
+    });
+    return m;
+  };
+
+  const unitsByVilla = groupBy(unitsRes.data as UnitRow[] | null);
+  const bmByVilla = groupBy(billMonthsRes.data as BMRow[] | null);
+  const noticesByVilla = groupBy(noticesRes.data as NoticeRow[] | null);
+  const msgsByVilla = groupBy(messagesRes.data as MsgRow[] | null);
+  const parkByVilla = groupBy(parkingRes.data as ParkRow[] | null);
+  const postsByVilla = groupBy(postsRes.data as PostRow[] | null);
+
+  const subItemByVilla: Record<string, { plan: string; price: number }> = {};
+  (subItemsRes.data ?? []).forEach((it: { villa_id: string; plan: string; price: number }) => {
+    subItemByVilla[it.villa_id] = { plan: it.plan, price: it.price };
+  });
+
+  const villaList: VillaRaw[] = simpleVillas.map((v) => ({
+    id: v.id,
+    name: v.name,
+    address: v.address,
+    total_units: v.total_units,
+    units_per_floor: v.units_per_floor,
+    account_bank: v.account_bank,
+    account_number: v.account_number,
+    units: unitsByVilla[v.id] ?? [],
+    bill_months: bmByVilla[v.id] ?? [],
+    notices: noticesByVilla[v.id] ?? [],
+    messages: msgsByVilla[v.id] ?? [],
+    parking: parkByVilla[v.id] ?? [],
+    posts: postsByVilla[v.id] ?? [],
+    subscription_items: subItemByVilla[v.id] ? [subItemByVilla[v.id]] : [],
+  }));
 
   const billMonthIds = villaList.flatMap((v) => (v.bill_months ?? []).map((b) => b.id));
   const paymentMap = new Map<string, Set<string>>();
@@ -252,6 +343,7 @@ export async function syncAdminFromSupabase() {
   }
 
   store.villas = villaList.map((v) => toVilla(v, paymentMap));
+  console.log('[sync] done — store.villas:', store.villas.length);
   notify();
   return true;
 }
