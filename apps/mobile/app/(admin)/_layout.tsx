@@ -13,7 +13,12 @@ const TAB_ICON_MAP: Record<string, IconName> = {
 function TabIcon({ label, focused }: { label: string; focused: boolean }) {
   return (
     <View style={s.iconWrap}>
-      <Icon name={TAB_ICON_MAP[label] ?? 'home'} size={22} color={focused ? '#4263E8' : '#9CA3AF'} />
+      <Icon
+        name={TAB_ICON_MAP[label] ?? 'home'}
+        size={22}
+        color={focused ? '#4263E8' : '#9CA3AF'}
+        filled={focused}
+      />
       {focused && <View style={s.dot} />}
     </View>
   );

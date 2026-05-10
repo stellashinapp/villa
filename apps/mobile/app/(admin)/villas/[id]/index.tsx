@@ -1,9 +1,13 @@
 import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, TextInput, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { store, subscribe } from '@/lib/store';
 import Icon, { type IconName } from '@/components/Icon';
+import { updateVilla } from '@/lib/villas';
+import { syncAdminFromSupabase } from '@/lib/sync';
+import { showToast } from '@/lib/toast';
+import { BANK_NAMES } from '@villatolk/shared';
 
 const C = {
   bg: '#F5F6FA', card: '#FFFFFF', border: '#E8EBF0',
@@ -24,6 +28,12 @@ export default function VillaDetailScreen() {
   const [_, setTick] = useState(0);
   useEffect(() => subscribe(() => setTick(t => t + 1)), []);
   const insets = useSafeAreaInsets();
+  const [editAccount, setEditAccount] = useState(false);
+  const [bankPickerOpen, setBankPickerOpen] = useState(false);
+  const [bank, setBank] = useState('');
+  const [accNum, setAccNum] = useState('');
+  const [accHolder, setAccHolder] = useState('');
+  const [saving, setSaving] = useState(false);
 
   const { id } = useLocalSearchParams<{ id: string }>();
   const villa = store.villas.find(v => v.id === id);
@@ -78,9 +88,118 @@ export default function VillaDetailScreen() {
       {/* 빌라 정보 */}
       <View style={s.infoCard}>
         <View style={s.infoRow}><Text style={s.infoLabel}>플랜</Text><Text style={s.infoValue}>{villa.plan} ({villa.price.toLocaleString()}원/월)</Text></View>
-        <View style={s.infoRow}><Text style={s.infoLabel}>계좌</Text><Text style={s.infoValue}>{villa.account || '-'}</Text></View>
+        <TouchableOpacity
+          style={s.infoRow}
+          onPress={() => {
+            const [b, n] = (villa.account || '').split(' ');
+            setBank(b ?? ''); setAccNum(n ?? ''); setAccHolder('');
+            setEditAccount(true);
+          }}
+          activeOpacity={0.6}
+        >
+          <Text style={s.infoLabel}>입금계좌</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Text style={s.infoValue}>{villa.account || '미등록'}</Text>
+            <Text style={{ fontSize: 12, color: C.pri, fontWeight: '700' }}>수정</Text>
+          </View>
+        </TouchableOpacity>
         <View style={s.infoRow}><Text style={s.infoLabel}>층당 세대</Text><Text style={s.infoValue}>{villa.unitsPerFloor}세대</Text></View>
       </View>
+
+      {/* 입금계좌 수정 모달 */}
+      <Modal visible={editAccount} transparent animationType="slide" onRequestClose={() => setEditAccount(false)}>
+        <View style={s.modalBg}>
+          <View style={s.modalCard}>
+            <Text style={s.modalTitle}>입금계좌 수정</Text>
+            <Text style={s.modalDesc}>{villa.name} 의 입금계좌입니다. 빌라마다 다르게 설정 가능합니다.</Text>
+
+            <Text style={s.fieldLabel}>은행</Text>
+            <TouchableOpacity
+              style={[s.input, { justifyContent: 'center' }]}
+              onPress={() => setBankPickerOpen(true)}
+              activeOpacity={0.7}
+            >
+              <Text style={{ fontSize: 14, color: bank ? C.text : C.muted }}>{bank || '은행 선택'}</Text>
+            </TouchableOpacity>
+
+            <Text style={s.fieldLabel}>계좌번호</Text>
+            <TextInput
+              style={s.input}
+              placeholder="예: 123-456-789012"
+              placeholderTextColor={C.muted}
+              keyboardType="number-pad"
+              value={accNum}
+              onChangeText={setAccNum}
+            />
+
+            <Text style={s.fieldLabel}>예금주 (선택)</Text>
+            <TextInput
+              style={s.input}
+              placeholder="예금주 이름"
+              placeholderTextColor={C.muted}
+              value={accHolder}
+              onChangeText={setAccHolder}
+            />
+
+            <View style={{ flexDirection: 'row', gap: 8, marginTop: 16 }}>
+              <TouchableOpacity
+                style={[s.modalBtn, s.modalBtnCancel]}
+                onPress={() => setEditAccount(false)}
+                disabled={saving}
+              >
+                <Text style={s.modalBtnCancelText}>취소</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[s.modalBtn, s.modalBtnSave, saving && { opacity: 0.5 }]}
+                disabled={saving}
+                onPress={async () => {
+                  if (!bank.trim() || !accNum.trim()) {
+                    showToast('은행과 계좌번호를 입력하세요', 'warn');
+                    return;
+                  }
+                  setSaving(true);
+                  try {
+                    await updateVilla(villa.id, {
+                      account_bank: bank.trim(),
+                      account_number: accNum.trim(),
+                      account_holder: accHolder.trim() || undefined,
+                    });
+                    await syncAdminFromSupabase().catch(() => {});
+                    setEditAccount(false);
+                    showToast('입금계좌 저장 완료', 'success');
+                  } catch (err: any) {
+                    Alert.alert('저장 실패', err?.message ?? String(err));
+                  } finally {
+                    setSaving(false);
+                  }
+                }}
+              >
+                <Text style={s.modalBtnSaveText}>{saving ? '저장 중…' : '저장'}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* 은행 선택 모달 */}
+      <Modal visible={bankPickerOpen} transparent animationType="slide" onRequestClose={() => setBankPickerOpen(false)}>
+        <TouchableOpacity style={s.modalBg} activeOpacity={1} onPress={() => setBankPickerOpen(false)}>
+          <View style={[s.modalCard, { maxHeight: '70%' }]}>
+            <Text style={s.modalTitle}>은행 선택</Text>
+            <ScrollView style={{ maxHeight: 380 }}>
+              {BANK_NAMES.map((b) => (
+                <TouchableOpacity
+                  key={b}
+                  style={[s.bankItem, bank === b && { backgroundColor: '#F1F6FF' }]}
+                  onPress={() => { setBank(b); setBankPickerOpen(false); }}
+                >
+                  <Text style={[s.bankItemText, bank === b && { color: C.pri, fontWeight: '700' }]}>{b}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
       {/* 5개 탭 버튼 */}
       <Text style={s.sectionTitle}>관리 메뉴</Text>
@@ -150,4 +269,18 @@ const s = StyleSheet.create({
   tabLabel: { fontSize: 14, fontWeight: '700', color: C.text },
   tabBadge: { position: 'absolute', top: 8, right: 8, backgroundColor: C.priL, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 },
   tabBadgeText: { fontSize: 10, fontWeight: '700', color: C.pri },
+  // 입금계좌 수정 모달
+  modalBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+  modalCard: { backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, paddingBottom: 40 },
+  modalTitle: { fontSize: 16, fontWeight: '800', color: C.text, marginBottom: 6 },
+  modalDesc: { fontSize: 12, color: C.sub, marginBottom: 16 },
+  fieldLabel: { fontSize: 12, fontWeight: '700', color: C.sub, marginTop: 8, marginBottom: 4 },
+  input: { backgroundColor: '#F0F2F6', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 10, padding: 12, fontSize: 14, color: C.text, marginBottom: 4 },
+  modalBtn: { flex: 1, paddingVertical: 14, borderRadius: 12, alignItems: 'center' },
+  modalBtnCancel: { backgroundColor: '#F3F4F6' },
+  modalBtnCancelText: { color: C.sub, fontSize: 14, fontWeight: '700' },
+  modalBtnSave: { backgroundColor: C.pri },
+  modalBtnSaveText: { color: '#fff', fontSize: 14, fontWeight: '800' },
+  bankItem: { paddingVertical: 14, paddingHorizontal: 14, borderRadius: 10 },
+  bankItemText: { fontSize: 15, color: C.text },
 });

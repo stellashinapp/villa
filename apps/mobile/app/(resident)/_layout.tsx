@@ -14,7 +14,12 @@ const RES_TAB_ICONS: Record<string, IconName> = {
 function TabIcon({ label, focused }: { label: string; focused: boolean }) {
   return (
     <View style={s.iconWrap}>
-      <Icon name={RES_TAB_ICONS[label] ?? 'bills'} size={22} color={focused ? '#4263E8' : '#9CA3AF'} />
+      <Icon
+        name={RES_TAB_ICONS[label] ?? 'bills'}
+        size={22}
+        color={focused ? '#4263E8' : '#9CA3AF'}
+        filled={focused}
+      />
       {focused && <View style={s.dot} />}
     </View>
   );
