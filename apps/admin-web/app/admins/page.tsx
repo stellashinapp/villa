@@ -1,26 +1,17 @@
-import Link from 'next/link';
 import { createServerClient } from '@/lib/supabase-server';
+import AdminsTable, { type AdminRow } from './AdminsTable';
 
-type AdminRow = {
+type RawAdmin = {
   id: string;
   name: string | null;
   email: string;
   phone: string | null;
   created_at: string;
-  villas: { id: string }[] | null;
+  villas: { id: string; name: string }[] | null;
   subscriptions: {
     status: 'trialing' | 'active' | 'past_due' | 'cancelled' | 'pending_cancel';
     subscription_items: { plan: string; price: number }[] | null;
   }[] | null;
-};
-
-const STATUS_STYLE: Record<string, { label: string; cls: string }> = {
-  trialing: { label: '무료체험', cls: 'bg-priL text-priT' },
-  active: { label: '활성', cls: 'bg-okL text-ok' },
-  past_due: { label: '결제실패', cls: 'bg-errL text-err' },
-  pending_cancel: { label: '해지예정', cls: 'bg-warnL text-warn' },
-  cancelled: { label: '해지됨', cls: 'bg-bg text-t3' },
-  none: { label: '미가입', cls: 'bg-bg text-t3' },
 };
 
 function formatPhone(p: string | null) {
@@ -46,11 +37,10 @@ export default async function AdminsPage() {
     .from('admins')
     .select(`
       id, name, email, phone, created_at,
-      villas ( id ),
+      villas ( id, name ),
       subscriptions ( status, subscription_items ( plan, price ) )
     `)
-    .order('created_at', { ascending: false })
-    .returns<AdminRow[]>();
+    .order('created_at', { ascending: false });
 
   if (error) {
     return (
@@ -63,9 +53,10 @@ export default async function AdminsPage() {
     );
   }
 
-  const rows = admins ?? [];
+  const rawRows = (admins ?? []) as RawAdmin[];
 
-  const adminIds = rows.map((a) => a.id);
+  // 세대수 합계용 — units 별도 카운트
+  const adminIds = rawRows.map(a => a.id);
   let unitsByAdmin = new Map<string, number>();
   if (adminIds.length > 0) {
     const { data: units } = await supabase
@@ -77,7 +68,7 @@ export default async function AdminsPage() {
     });
   }
 
-  const enriched = rows.map((a) => {
+  const enriched: AdminRow[] = rawRows.map((a) => {
     const villaCount = a.villas?.length ?? 0;
     const unitsCount = unitsByAdmin.get(a.id) ?? 0;
     const sub = a.subscriptions?.[0];
@@ -88,12 +79,14 @@ export default async function AdminsPage() {
     return {
       id: a.id,
       name: a.name ?? a.email,
+      email: a.email,
       phone: formatPhone(a.phone),
       villas: villaCount,
       units: unitsCount,
       mrr,
       joinedAt: new Date(a.created_at).toISOString().slice(0, 10),
       status,
+      villaNames: (a.villas ?? []).map(v => v.name),
     };
   });
 
@@ -118,56 +111,7 @@ export default async function AdminsPage() {
         ))}
       </div>
 
-      <div className="bg-card border border-border rounded-[10px] overflow-hidden">
-        <div className="px-5 py-4 border-b border-border">
-          <h3 className="text-sm font-bold">관리자 목록</h3>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border text-t3 text-xs">
-                <th className="text-left px-5 py-3 font-medium">관리자명</th>
-                <th className="text-left px-5 py-3 font-medium">연락처</th>
-                <th className="text-right px-5 py-3 font-medium">빌라수</th>
-                <th className="text-right px-5 py-3 font-medium">세대수</th>
-                <th className="text-right px-5 py-3 font-medium">월 구독료</th>
-                <th className="text-left px-5 py-3 font-medium">가입일</th>
-                <th className="text-left px-5 py-3 font-medium">상태</th>
-              </tr>
-            </thead>
-            <tbody>
-              {enriched.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-5 py-10 text-center text-t3">
-                    아직 가입한 관리자가 없습니다
-                  </td>
-                </tr>
-              ) : (
-                enriched.map((a) => {
-                  const st = STATUS_STYLE[a.status];
-                  return (
-                    <Link key={a.id} href={`/admins/${a.id}`} legacyBehavior>
-                      <tr className="border-b border-border last:border-0 hover:bg-priL cursor-pointer transition-colors">
-                        <td className="px-5 py-3.5 font-semibold text-t1">{a.name}</td>
-                        <td className="px-5 py-3.5 text-t2">{a.phone || '-'}</td>
-                        <td className="px-5 py-3.5 text-right text-t2">{a.villas}</td>
-                        <td className="px-5 py-3.5 text-right text-t2">{a.units}</td>
-                        <td className="px-5 py-3.5 text-right font-semibold">{a.mrr.toLocaleString()}원</td>
-                        <td className="px-5 py-3.5 text-t3">{a.joinedAt}</td>
-                        <td className="px-5 py-3.5">
-                          <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${st.cls}`}>
-                            {st.label}
-                          </span>
-                        </td>
-                      </tr>
-                    </Link>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <AdminsTable rows={enriched} />
     </div>
   );
 }
