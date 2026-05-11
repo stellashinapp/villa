@@ -14,6 +14,8 @@ export const metadata: Metadata = {
   description: 'ANDNEW 본사 관리 시스템',
 };
 
+// 민원·공지 는 별도 메뉴로 노출하지 않고 관리자 상세 (/admins/[id]) 안의
+// 이슈/활동지표 섹션에 통합. 페이지 자체는 남겨두어 URL 직접 접근은 가능.
 const NAV_ITEMS = [
   { href: '/', icon: '📊', label: '대시보드', group: 'OVERVIEW' },
   { href: '/admins', icon: '👤', label: '관리자 관리', group: 'MANAGEMENT' },
@@ -21,8 +23,6 @@ const NAV_ITEMS = [
   { href: '/residents', icon: '👥', label: '입주민', group: 'MANAGEMENT' },
   { href: '/subscriptions', icon: '📈', label: '구독·매출', group: 'REVENUE' },
   { href: '/payments', icon: '💳', label: '결제 내역', group: 'REVENUE' },
-  { href: '/inquiries', icon: '💬', label: '관리자 문의', group: 'SUPPORT' },
-  { href: '/notices', icon: '📢', label: '공지 발송', group: 'SUPPORT' },
   { href: '/settings', icon: '⚙️', label: '설정', group: 'SYSTEM' },
 ];
 

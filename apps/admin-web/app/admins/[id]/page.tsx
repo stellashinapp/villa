@@ -138,6 +138,7 @@ export default async function AdminDetailPage({ params }: { params: Promise<{ id
     { data: villasData },
     { data: noticesData },
     { data: billsData },
+    { data: messagesData },
   ] = await Promise.all([
     supabase
       .from('subscriptions')
@@ -163,11 +164,29 @@ export default async function AdminDetailPage({ params }: { params: Promise<{ id
       .eq('villas.admin_id', id)
       .order('created_at', { ascending: false })
       .limit(5),
+    supabase
+      .from('messages')
+      .select('id, text, created_at, villas!inner(admin_id, name), units(ho_number), message_replies(id, created_at)')
+      .eq('villas.admin_id', id)
+      .order('created_at', { ascending: false })
+      .limit(50),
   ]);
   const sub = subData as Subscription | null;
   const villas = (villasData ?? []) as Villa[];
   const recentNotices = (noticesData ?? []) as Array<{ id: string; title: string; created_at: string }>;
   const recentBills = (billsData ?? []) as Array<{ id: string; year_month: string; label: string | null; status: string; created_at: string }>;
+  type MessageRow = {
+    id: string;
+    text: string;
+    created_at: string;
+    villas: { name: string } | null;
+    units: { ho_number: string } | null;
+    message_replies: { id: string; created_at: string }[] | null;
+  };
+  // PostgREST 가 nested join 을 array 로 추론 → 런타임은 객체. unknown 캐스트로 우회.
+  const messages = (messagesData ?? []) as unknown as MessageRow[];
+  const pendingInquiries = messages.filter(m => (m.message_replies?.length ?? 0) === 0);
+  const resolvedInquiries = messages.filter(m => (m.message_replies?.length ?? 0) > 0);
 
   const activeVillas = villas.filter(v => v.status === 'active');
   const totalUnits = activeVillas.reduce((s, v) => s + (v.total_units ?? 0), 0);
@@ -283,6 +302,31 @@ export default async function AdminDetailPage({ params }: { params: Promise<{ id
       severity: 'info',
       title: '등록된 빌라 없음',
       detail: '가입 후 빌라 미등록 상태. 온보딩 안내 필요할 수 있음',
+    });
+  }
+
+  // 미답변 민원 누적
+  if (pendingInquiries.length >= 10) {
+    issues.push({
+      severity: 'critical',
+      title: `미답변 민원 ${pendingInquiries.length}건 누적`,
+      detail: '입주민 불만 폭증 위험. CS 개입 필요',
+    });
+  } else if (pendingInquiries.length >= 5) {
+    issues.push({
+      severity: 'warning',
+      title: `미답변 민원 ${pendingInquiries.length}건`,
+      detail: '관리자가 입주민 민원에 답변 지연 중',
+    });
+  }
+
+  // 오래된 미답변 민원 (7일 이상)
+  const oldPending = pendingInquiries.filter(m => daysBetween(m.created_at) >= 7);
+  if (oldPending.length > 0) {
+    issues.push({
+      severity: 'warning',
+      title: `7일+ 미답변 민원 ${oldPending.length}건`,
+      detail: '장기간 답변 지연. 입주민 이탈 위험',
     });
   }
 
@@ -427,7 +471,7 @@ export default async function AdminDetailPage({ params }: { params: Promise<{ id
       {/* 활동 지표 (사용 빈도) */}
       <div className="bg-card border border-border rounded-[10px] p-6 mb-6">
         <h3 className="text-sm font-bold mb-4">활동 지표 (사용 빈도)</h3>
-        <div className="grid grid-cols-4 gap-4 text-sm">
+        <div className="grid grid-cols-5 gap-4 text-sm">
           <ActivityCell
             label="마지막 로그인"
             primary={lastLoginDays !== null ? fmtRelative(lastSignInAt) : '기록 없음'}
@@ -459,6 +503,20 @@ export default async function AdminDetailPage({ params }: { params: Promise<{ id
             primary={lastBillDays !== null ? fmtRelative(recentBills[0].created_at) : '없음'}
             secondary={recentBills[0]?.year_month ? `${recentBills[0].year_month} (${recentBills[0].status})` : '-'}
             severity={lastBillDays === null ? 'info' : lastBillDays > 45 ? 'warning' : 'ok'}
+          />
+          <ActivityCell
+            label="미답변 민원"
+            primary={`${pendingInquiries.length}건`}
+            secondary={pendingInquiries.length > 0 ? `최근 ${fmtRelative(pendingInquiries[0].created_at)}` : '깨끗함'}
+            severity={
+              pendingInquiries.length >= 10
+                ? 'critical'
+                : pendingInquiries.length >= 5
+                ? 'warning'
+                : pendingInquiries.length > 0
+                ? 'info'
+                : 'ok'
+            }
           />
         </div>
       </div>
@@ -582,6 +640,68 @@ export default async function AdminDetailPage({ params }: { params: Promise<{ id
               )}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* 입주민 민원 — 이 관리자가 받은 민원 */}
+      <div className="bg-card border border-border rounded-[10px] overflow-hidden mb-6">
+        <div className="px-5 py-4 border-b border-border flex items-center justify-between">
+          <h3 className="text-sm font-bold">
+            <span className={pendingInquiries.length > 0 ? 'text-warn' : 'text-t1'}>
+              {pendingInquiries.length > 0 ? '⚠ ' : ''}
+            </span>
+            입주민 민원
+          </h3>
+          <span className="text-xs text-t3">
+            미답변 {pendingInquiries.length}건 · 답변완료 {resolvedInquiries.length}건 · 총 {messages.length}건
+          </span>
+        </div>
+        <div className="overflow-x-auto">
+          {messages.length === 0 ? (
+            <div className="p-8 text-center text-t3 text-sm">접수된 민원이 없습니다</div>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-t3 text-xs">
+                  <th className="text-left px-5 py-3 font-medium">접수</th>
+                  <th className="text-left px-5 py-3 font-medium">빌라</th>
+                  <th className="text-left px-5 py-3 font-medium">호실</th>
+                  <th className="text-left px-5 py-3 font-medium">내용</th>
+                  <th className="text-left px-5 py-3 font-medium">상태</th>
+                </tr>
+              </thead>
+              <tbody>
+                {messages.slice(0, 15).map(m => {
+                  const replyCount = m.message_replies?.length ?? 0;
+                  const isResolved = replyCount > 0;
+                  const days = daysBetween(m.created_at);
+                  return (
+                    <tr key={m.id} className="border-b border-border last:border-0">
+                      <td className="px-5 py-3.5 text-t3 text-xs whitespace-nowrap">
+                        {fmtRelative(m.created_at)}
+                        {!isResolved && days >= 7 && (
+                          <span className="ml-1 text-err font-bold">·{days}일째</span>
+                        )}
+                      </td>
+                      <td className="px-5 py-3.5 text-t2">{m.villas?.name ?? '-'}</td>
+                      <td className="px-5 py-3.5 text-t2">{m.units?.ho_number ?? '-'}</td>
+                      <td className="px-5 py-3.5 text-t1 max-w-md truncate" title={m.text}>{m.text}</td>
+                      <td className="px-5 py-3.5">
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${isResolved ? 'bg-okL text-ok' : 'bg-warnL text-warn'}`}>
+                          {isResolved ? `답변 ${replyCount}건` : '대기중'}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+          {messages.length > 15 && (
+            <div className="px-5 py-3 text-xs text-t3 text-center border-t border-border">
+              상위 15건만 표시 · 전체 {messages.length}건
+            </div>
+          )}
         </div>
       </div>
 
