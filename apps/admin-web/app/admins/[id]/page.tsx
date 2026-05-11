@@ -1,66 +1,99 @@
-'use client';
-
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { createServerClient } from '@/lib/supabase-server';
 
-const ADMINS: Record<string, {
-  name: string; email: string; phone: string; status: string;
-  joinedAt: string; totalVillas: number; totalUnits: number;
-  villas: { name: string; address: string; units: number; plan: string; price: number; payRate: number }[];
-  subscription: { items: { label: string; qty: number; unitPrice: number }[]; volumeDiscount: number; total: number };
-}> = {
-  'adm-001': {
-    name: '김철수', email: 'kim@example.com', phone: '010-1234-5678', status: '활성',
-    joinedAt: '2025-08-12', totalVillas: 3, totalUnits: 87,
-    villas: [
-      { name: '선릉 파크빌', address: '서울 강남구 선릉로 123', units: 32, plan: '중형', price: 50000, payRate: 94 },
-      { name: '역삼 그린빌', address: '서울 강남구 역삼동 456', units: 28, plan: '소형', price: 30000, payRate: 88 },
-      { name: '삼성 리버뷰', address: '서울 강남구 삼성동 789', units: 27, plan: '대형', price: 70000, payRate: 96 },
-    ],
-    subscription: {
-      items: [
-        { label: '중형 플랜 x1', qty: 1, unitPrice: 50000 },
-        { label: '소형 플랜 x1', qty: 1, unitPrice: 30000 },
-        { label: '대형 플랜 x1', qty: 1, unitPrice: 70000 },
-      ],
-      volumeDiscount: 0,
-      total: 150000,
-    },
-  },
-  'adm-002': {
-    name: '박영희', email: 'park@example.com', phone: '010-2345-6789', status: '활성',
-    joinedAt: '2025-09-03', totalVillas: 7, totalUnits: 210,
-    villas: [
-      { name: '강남 힐스테이트', address: '서울 강남구 논현동 11', units: 40, plan: '대형', price: 70000, payRate: 92 },
-      { name: '서초 브라운빌', address: '서울 서초구 방배동 22', units: 25, plan: '소형', price: 30000, payRate: 85 },
-      { name: '잠실 레이크빌', address: '서울 송파구 잠실동 33', units: 35, plan: '중형', price: 50000, payRate: 97 },
-      { name: '송파 파크뷰', address: '서울 송파구 가락동 44', units: 30, plan: '중형', price: 50000, payRate: 91 },
-      { name: '강동 리버사이드', address: '서울 강동구 천호동 55', units: 20, plan: '소형', price: 30000, payRate: 78 },
-      { name: '마포 하늘빌', address: '서울 마포구 상수동 66', units: 32, plan: '중형', price: 50000, payRate: 93 },
-      { name: '용산 센트럴', address: '서울 용산구 한남동 77', units: 28, plan: '대형', price: 70000, payRate: 89 },
-    ],
-    subscription: {
-      items: [
-        { label: '대형 플랜 x2', qty: 2, unitPrice: 70000 },
-        { label: '중형 플랜 x3', qty: 3, unitPrice: 50000 },
-        { label: '소형 플랜 x2', qty: 2, unitPrice: 30000 },
-      ],
-      volumeDiscount: 20,
-      total: 280000,
-    },
-  },
+export const dynamic = 'force-dynamic';
+
+type Admin = {
+  id: string;
+  name: string | null;
+  email: string;
+  phone: string | null;
+  role: string;
+  created_at: string;
+  profile_image_url: string | null;
 };
 
-const STATUS_STYLE: Record<string, string> = {
-  '활성': 'bg-okL text-ok',
-  '미정산': 'bg-warnL text-warn',
-  '결제실패': 'bg-errL text-err',
+type Subscription = {
+  id: string;
+  status: 'trialing' | 'active' | 'past_due' | 'cancelled' | 'pending_cancel';
+  billing_day: number;
+  card_brand: string | null;
+  card_last4: string | null;
+  card_expiry_year: number | null;
+  card_expiry_month: number | null;
+  billing_key: string | null;
+  current_period_start: string | null;
+  current_period_end: string | null;
+  trial_ends_at: string | null;
+  created_at: string;
+  subscription_items: { villa_id: string | null; plan: string; price: number }[] | null;
 };
 
-export default function AdminDetailPage() {
-  const params = useParams();
-  const id = params.id as string;
-  const admin = ADMINS[id];
+type Villa = {
+  id: string;
+  name: string;
+  address: string;
+  total_units: number;
+  units_per_floor: number;
+  account_bank: string | null;
+  account_number: string | null;
+  status: string;
+  created_at: string;
+};
+
+type Payment = {
+  id: string;
+  amount: number;
+  status: 'success' | 'failed' | 'refunded';
+  created_at: string;
+  error_message: string | null;
+};
+
+const STATUS_STYLE: Record<Subscription['status'] | 'none', { label: string; cls: string }> = {
+  trialing: { label: '무료체험', cls: 'bg-priL text-priT' },
+  active: { label: '활성', cls: 'bg-okL text-ok' },
+  past_due: { label: '결제실패', cls: 'bg-errL text-err' },
+  pending_cancel: { label: '해지예정', cls: 'bg-warnL text-warn' },
+  cancelled: { label: '해지됨', cls: 'bg-bg text-t3' },
+  none: { label: '미가입', cls: 'bg-bg text-t3' },
+};
+
+const PLAN_KO: Record<string, string> = { small: '소형', medium: '중형', large: '대형', popular: '중형' };
+const PLAN_PRICE: Record<string, number> = { small: 30000, medium: 50000, large: 70000 };
+
+function fmtPhone(p: string | null) {
+  const d = (p ?? '').replace(/\D/g, '');
+  if (d.length === 11) return `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7)}`;
+  if (d.length === 10) return `${d.slice(0, 3)}-${d.slice(3, 6)}-${d.slice(6)}`;
+  return p ?? '-';
+}
+function fmtDate(iso: string | null | undefined) {
+  if (!iso) return '-';
+  return new Date(iso).toLocaleDateString('ko-KR');
+}
+function fmtDateTime(iso: string | null | undefined) {
+  if (!iso) return '-';
+  return new Date(iso).toLocaleString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+}
+function volumeDiscount(c: number) {
+  if (c >= 10) return 0.15;
+  if (c >= 5) return 0.1;
+  if (c >= 3) return 0.05;
+  return 0;
+}
+
+export default async function AdminDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const supabase = createServerClient();
+
+  const { data: adminData, error: adminErr } = await supabase
+    .from('admins')
+    .select('id, name, email, phone, role, created_at, profile_image_url')
+    .eq('id', id)
+    .maybeSingle();
+  const admin = adminData as Admin | null;
+  if (adminErr) console.error('[admin-detail] admin query error:', adminErr);
+  if (!admin) console.warn('[admin-detail] admin not found for id=', id);
 
   if (!admin) {
     return (
@@ -71,38 +104,146 @@ export default function AdminDetailPage() {
     );
   }
 
+  const [{ data: subData }, { data: villasData }] = await Promise.all([
+    supabase
+      .from('subscriptions')
+      .select('id, status, billing_day, card_brand, card_last4, card_expiry_year, card_expiry_month, billing_key, current_period_start, current_period_end, trial_ends_at, created_at, subscription_items ( villa_id, plan, price )')
+      .eq('admin_id', id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from('villas')
+      .select('id, name, address, total_units, units_per_floor, account_bank, account_number, status, created_at')
+      .eq('admin_id', id)
+      .order('created_at', { ascending: false }),
+  ]);
+  const sub = subData as Subscription | null;
+  const villas = (villasData ?? []) as Villa[];
+
+  const activeVillas = (villas ?? []).filter(v => v.status === 'active');
+  const totalUnits = activeVillas.reduce((s, v) => s + (v.total_units ?? 0), 0);
+
+  let payments: Payment[] = [];
+  if (sub?.id) {
+    const { data } = await supabase
+      .from('subscription_payments')
+      .select('id, amount, status, created_at, error_message')
+      .eq('subscription_id', sub.id)
+      .order('created_at', { ascending: false })
+      .limit(12);
+    payments = (data ?? []) as Payment[];
+  }
+
+  // 빌라별 subscription_items 매핑
+  const itemsByVilla = new Map<string, { plan: string; price: number }>();
+  for (const it of (sub?.subscription_items ?? [])) {
+    if (it.villa_id) itemsByVilla.set(it.villa_id, { plan: it.plan, price: it.price });
+  }
+
+  // MRR 계산 (볼륨 할인 반영)
+  const items = sub?.subscription_items ?? [];
+  const baseAmount = items.reduce((s, it) => s + (it.price ?? 0), 0);
+  const discountRate = volumeDiscount(items.length);
+  const discountAmount = Math.round(baseAmount * discountRate);
+  const totalMRR = baseAmount - discountAmount;
+
+  // 카드 만료까지 D-day
+  const cardExpiryDays = (sub?.card_expiry_year && sub?.card_expiry_month)
+    ? Math.floor((new Date(sub.card_expiry_year, sub.card_expiry_month, 0, 23, 59, 59).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    : null;
+
+  const subStatus = sub?.status ?? 'none';
+  const subStyle = STATUS_STYLE[subStatus];
+
   return (
     <div>
-      {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-t3 mb-5">
         <Link href="/admins" className="hover:text-t1 transition-colors">관리자 목록</Link>
         <span>/</span>
-        <span className="text-t1 font-semibold">{admin.name}</span>
+        <span className="text-t1 font-semibold">{admin.name ?? admin.email}</span>
       </div>
 
-      {/* Profile Card */}
+      {/* 프로필 */}
       <div className="bg-card border border-border rounded-[10px] p-6 mb-6">
-        <div className="flex items-start justify-between">
-          <div>
-            <h2 className="text-xl font-bold mb-1">{admin.name}</h2>
-            <p className="text-sm text-t3 mb-3">{admin.email}</p>
-            <div className="flex gap-6 text-sm">
-              <div><span className="text-t3">연락처</span> <span className="text-t1 ml-1">{admin.phone}</span></div>
-              <div><span className="text-t3">가입일</span> <span className="text-t1 ml-1">{admin.joinedAt}</span></div>
-              <div><span className="text-t3">빌라</span> <span className="text-pri font-bold ml-1">{admin.totalVillas}개</span></div>
-              <div><span className="text-t3">세대</span> <span className="text-[#4DA6FF] font-bold ml-1">{admin.totalUnits}세대</span></div>
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              <h2 className="text-xl font-bold">{admin.name ?? '(이름 없음)'}</h2>
+              <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${subStyle.cls}`}>
+                {subStyle.label}
+              </span>
+              {admin.role === 'super' && (
+                <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-warnL text-warn">슈퍼관리자</span>
+              )}
+            </div>
+            <p className="text-sm text-t3 mb-4">{admin.email}</p>
+            <div className="grid grid-cols-4 gap-4 text-sm">
+              <Info label="연락처" value={fmtPhone(admin.phone)} />
+              <Info label="가입일" value={fmtDate(admin.created_at)} />
+              <Info label="관리 빌라" value={`${activeVillas.length}개`} valueCls="text-pri font-bold" />
+              <Info label="총 세대" value={`${totalUnits}세대`} valueCls="text-[#4DA6FF] font-bold" />
             </div>
           </div>
-          <span className={`px-3 py-1.5 rounded-full text-xs font-semibold ${STATUS_STYLE[admin.status] ?? 'bg-surface text-t3'}`}>
-            {admin.status}
-          </span>
         </div>
       </div>
 
-      {/* Villa List */}
+      {/* KPI 3개 */}
+      <div className="grid grid-cols-3 gap-4 mb-6">
+        <KpiCard
+          label="월 구독료 (MRR)"
+          value={`${totalMRR.toLocaleString()}원`}
+          color="text-pri"
+          hint={discountRate > 0 ? `정가 ${baseAmount.toLocaleString()} · 할인 ${Math.round(discountRate * 100)}%` : '할인 없음'}
+        />
+        <KpiCard
+          label="결제 수단"
+          value={sub?.card_brand ? `${sub.card_brand} ····${sub.card_last4 ?? ''}` : '미등록'}
+          color={sub?.card_brand ? 'text-t1' : 'text-t3'}
+          hint={
+            cardExpiryDays !== null
+              ? cardExpiryDays < 0
+                ? '만료됨'
+                : cardExpiryDays <= 30
+                ? `D-${cardExpiryDays} 만료 임박`
+                : `${String(sub?.card_expiry_month).padStart(2, '0')}/${String(sub?.card_expiry_year).slice(-2)} 만료`
+              : '카드 정보 없음'
+          }
+        />
+        <KpiCard
+          label="다음 결제"
+          value={sub?.current_period_end ? fmtDate(sub.current_period_end) : '미정'}
+          color="text-warn"
+          hint={sub?.billing_day ? `매월 ${sub.billing_day}일 자동결제` : '결제일 미설정'}
+        />
+      </div>
+
+      {/* 구독 상세 */}
+      <div className="bg-card border border-border rounded-[10px] p-6 mb-6">
+        <h3 className="text-sm font-bold mb-4">구독 상세</h3>
+        {!sub ? (
+          <div className="text-t3 text-sm py-4 text-center">구독 정보 없음</div>
+        ) : (
+          <div className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
+            <Info label="구독 상태" value={subStyle.label} valueCls={subStyle.cls.replace('bg-', 'text-').split(' ')[1]} />
+            <Info label="구독 시작" value={fmtDate(sub.created_at)} />
+            <Info label="현재 결제 주기" value={`${fmtDate(sub.current_period_start)} ~ ${fmtDate(sub.current_period_end)}`} />
+            <Info label="결제일" value={`매월 ${sub.billing_day}일`} />
+            {sub.trial_ends_at && (
+              <Info label="무료체험 종료" value={fmtDate(sub.trial_ends_at)} valueCls="text-warn" />
+            )}
+            {sub.billing_key && (
+              <Info label="빌링키" value={sub.billing_key.slice(0, 8) + '…'} valueCls="font-mono text-xs text-t3" />
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* 관리 빌라 */}
       <div className="bg-card border border-border rounded-[10px] overflow-hidden mb-6">
-        <div className="px-5 py-4 border-b border-border">
+        <div className="px-5 py-4 border-b border-border flex items-center justify-between">
           <h3 className="text-sm font-bold">관리 빌라 목록</h3>
+          <span className="text-xs text-t3">{activeVillas.length}개 · 총 {totalUnits}세대</span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -112,54 +253,123 @@ export default function AdminDetailPage() {
                 <th className="text-left px-5 py-3 font-medium">주소</th>
                 <th className="text-right px-5 py-3 font-medium">세대수</th>
                 <th className="text-left px-5 py-3 font-medium">플랜</th>
-                <th className="text-right px-5 py-3 font-medium">가격</th>
-                <th className="text-right px-5 py-3 font-medium">납부율</th>
+                <th className="text-right px-5 py-3 font-medium">월 가격</th>
+                <th className="text-left px-5 py-3 font-medium">납부 계좌</th>
               </tr>
             </thead>
             <tbody>
-              {admin.villas.map((v, i) => (
-                <tr key={i} className="border-b border-border last:border-0 hover:bg-priL transition-colors">
-                  <td className="px-5 py-3.5 font-semibold text-t1">{v.name}</td>
-                  <td className="px-5 py-3.5 text-t2">{v.address}</td>
-                  <td className="px-5 py-3.5 text-right text-t2">{v.units}</td>
-                  <td className="px-5 py-3.5">
-                    <span className="px-2 py-0.5 rounded text-xs font-medium bg-priL text-priT">{v.plan}</span>
-                  </td>
-                  <td className="px-5 py-3.5 text-right">{v.price.toLocaleString()}원</td>
-                  <td className="px-5 py-3.5 text-right">
-                    <span className={v.payRate >= 90 ? 'text-ok' : v.payRate >= 80 ? 'text-warn' : 'text-err'}>
-                      {v.payRate}%
-                    </span>
-                  </td>
-                </tr>
-              ))}
+              {activeVillas.length === 0 ? (
+                <tr><td colSpan={6} className="px-5 py-10 text-center text-t3">등록된 빌라가 없습니다</td></tr>
+              ) : (
+                activeVillas.map(v => {
+                  const item = itemsByVilla.get(v.id);
+                  const planKey = item?.plan ?? null;
+                  const planLabel = planKey ? (PLAN_KO[planKey] ?? planKey) : '미설정';
+                  const price = item?.price ?? (planKey ? PLAN_PRICE[planKey] : 0);
+                  const account = [v.account_bank, v.account_number].filter(Boolean).join(' ');
+                  return (
+                    <tr key={v.id} className="border-b border-border last:border-0 hover:bg-priL transition-colors">
+                      <td className="px-5 py-3.5 font-semibold text-t1">{v.name}</td>
+                      <td className="px-5 py-3.5 text-t2">{v.address}</td>
+                      <td className="px-5 py-3.5 text-right text-t2">{v.total_units}</td>
+                      <td className="px-5 py-3.5">
+                        {planKey ? (
+                          <span className="px-2 py-0.5 rounded text-xs font-medium bg-priL text-priT">{planLabel}</span>
+                        ) : (
+                          <span className="text-xs text-t3">-</span>
+                        )}
+                      </td>
+                      <td className="px-5 py-3.5 text-right">{price ? `${price.toLocaleString()}원` : '-'}</td>
+                      <td className="px-5 py-3.5 text-t2 text-xs">{account || '-'}</td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* Subscription Detail */}
-      <div className="bg-card border border-border rounded-[10px] p-6">
-        <h3 className="text-sm font-bold mb-4">구독 상세</h3>
-        <div className="space-y-2 mb-4">
-          {admin.subscription.items.map((item, i) => (
-            <div key={i} className="flex justify-between text-sm">
-              <span className="text-t2">{item.label}</span>
-              <span>{(item.qty * item.unitPrice).toLocaleString()}원</span>
-            </div>
-          ))}
+      {/* 최근 결제 내역 */}
+      <div className="bg-card border border-border rounded-[10px] overflow-hidden mb-6">
+        <div className="px-5 py-4 border-b border-border flex items-center justify-between">
+          <h3 className="text-sm font-bold">최근 결제 내역</h3>
+          <span className="text-xs text-t3">최근 12건</span>
         </div>
-        {admin.subscription.volumeDiscount > 0 && (
-          <div className="flex justify-between text-sm text-ok border-t border-border pt-3 mb-3">
-            <span>볼륨 할인 ({admin.subscription.volumeDiscount}%)</span>
-            <span>-{((admin.subscription.items.reduce((s, i) => s + i.qty * i.unitPrice, 0) - admin.subscription.total)).toLocaleString()}원</span>
-          </div>
-        )}
-        <div className="flex justify-between text-base font-bold border-t border-border pt-3">
-          <span>월 합계</span>
-          <span className="text-pri">{admin.subscription.total.toLocaleString()}원</span>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border text-t3 text-xs">
+                <th className="text-left px-5 py-3 font-medium">결제일시</th>
+                <th className="text-right px-5 py-3 font-medium">금액</th>
+                <th className="text-left px-5 py-3 font-medium">상태</th>
+                <th className="text-left px-5 py-3 font-medium">메모</th>
+              </tr>
+            </thead>
+            <tbody>
+              {payments.length === 0 ? (
+                <tr><td colSpan={4} className="px-5 py-10 text-center text-t3">결제 내역 없음</td></tr>
+              ) : (
+                payments.map(p => {
+                  const styleMap: Record<Payment['status'], string> = {
+                    success: 'bg-okL text-ok',
+                    failed: 'bg-errL text-err',
+                    refunded: 'bg-warnL text-warn',
+                  };
+                  const labelMap: Record<Payment['status'], string> = {
+                    success: '성공',
+                    failed: '실패',
+                    refunded: '환불',
+                  };
+                  return (
+                    <tr key={p.id} className="border-b border-border last:border-0">
+                      <td className="px-5 py-3.5 text-t2">{fmtDateTime(p.created_at)}</td>
+                      <td className="px-5 py-3.5 text-right font-semibold">{(p.amount ?? 0).toLocaleString()}원</td>
+                      <td className="px-5 py-3.5">
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${styleMap[p.status]}`}>
+                          {labelMap[p.status]}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5 text-xs text-t3">{p.error_message ?? ''}</td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
+
+      {/* 설정 / 디버그 정보 */}
+      <details className="bg-card border border-border rounded-[10px] overflow-hidden">
+        <summary className="px-5 py-4 cursor-pointer text-sm font-bold">설정 / 디버그 정보</summary>
+        <div className="px-5 py-4 border-t border-border text-xs text-t3 font-mono space-y-1">
+          <div>admin.id: {admin.id}</div>
+          <div>admin.role: {admin.role}</div>
+          <div>admin.email: {admin.email}</div>
+          <div>subscription.id: {sub?.id ?? '(없음)'}</div>
+          <div>subscription.billing_key: {sub?.billing_key ?? '(없음)'}</div>
+        </div>
+      </details>
+    </div>
+  );
+}
+
+function Info({ label, value, valueCls }: { label: string; value: string; valueCls?: string }) {
+  return (
+    <div>
+      <div className="text-t3 text-xs mb-1">{label}</div>
+      <div className={valueCls ?? 'text-t1 font-semibold'}>{value}</div>
+    </div>
+  );
+}
+
+function KpiCard({ label, value, color, hint }: { label: string; value: string; color: string; hint?: string }) {
+  return (
+    <div className="bg-card border border-border rounded-[10px] p-5">
+      <div className="text-xs text-t3 font-medium mb-2">{label}</div>
+      <div className={`text-xl font-extrabold tracking-tight ${color}`}>{value}</div>
+      {hint && <div className="text-[11px] text-t3 mt-1">{hint}</div>}
     </div>
   );
 }
