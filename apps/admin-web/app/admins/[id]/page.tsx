@@ -11,7 +11,7 @@ type Admin = {
   phone: string | null;
   role: string;
   created_at: string;
-  profile_image_url: string | null;
+  avatar_url: string | null;
 };
 
 type Subscription = {
@@ -116,11 +116,12 @@ export default async function AdminDetailPage({ params }: { params: Promise<{ id
   const { id } = await params;
   const supabase = createServerClient();
 
-  const { data: adminData } = await supabase
+  const { data: adminData, error: adminErr } = await supabase
     .from('admins')
-    .select('id, auth_id, name, email, phone, role, created_at, profile_image_url')
+    .select('id, auth_id, name, email, phone, role, created_at, avatar_url')
     .eq('id', id)
     .maybeSingle();
+  if (adminErr) console.error('[admin-detail] admin lookup error:', adminErr);
   const admin = adminData as Admin | null;
 
   if (!admin) {
