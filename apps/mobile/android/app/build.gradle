@@ -81,13 +81,6 @@ def enableProguardInReleaseBuilds = (findProperty('android.enableProguardInRelea
  */
 def jscFlavor = 'org.webkit:android-jsc:+'
 
-// Disable JS bundling task — bundle is pre-generated via expo export:embed
-project.afterEvaluate {
-    tasks.matching { it.name == 'createBundleReleaseJsAndAssets' }.configureEach {
-        enabled = false
-    }
-}
-
 android {
     ndkVersion rootProject.ext.ndkVersion
 
