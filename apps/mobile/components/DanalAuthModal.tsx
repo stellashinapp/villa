@@ -1,27 +1,28 @@
 /**
- * NICE 본인인증 (체크플러스) WebView 모달.
+ * 다날 본인확인 (BARO) WebView 모달.
  *
  * 사용 흐름:
  *  1. 부모 화면에서 visible=true 로 설정
- *  2. 모달이 admin-web /api/nice/encrypt 호출 → encData / niceUrl 받음
- *  3. WebView 에서 NICE 인증 페이지로 자동 form submit
- *  4. 사용자 인증 완료 후 NICE 가 /api/nice/callback 으로 redirect
- *  5. callback 페이지가 postMessage 로 결과 전달 → onSuccess 콜백 호출
+ *  2. 모달이 admin-web /api/danal/start 호출 → { tid, authUrl } 받음
+ *  3. WebView 가 authUrl 로 이동 → 사용자가 통신3사 PASS / SMS 인증
+ *  4. 인증 완료 후 다날 → /api/danal/callback 으로 redirect
+ *  5. callback 페이지가 confirm API 결과를 postMessage 로 전달 → onSuccess 콜백 호출
  *
- * NICE 키 미발급 상태에서는 encrypt API 가 500 을 반환하므로
+ * 다날 키 미발급 상태에서는 start API 가 500 을 반환하므로
  * 호출부에서 __DEV__ 일 때 "테스트 통과" 버튼을 별도로 제공할 것.
  */
 import { useEffect, useRef, useState } from 'react';
 import { Modal, View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 
-const NICE_API_BASE =
-  process.env.EXPO_PUBLIC_NICE_API_BASE ??
+const DANAL_API_BASE =
+  process.env.EXPO_PUBLIC_DANAL_API_BASE ??
   process.env.EXPO_PUBLIC_ADMIN_WEB_URL ??
   'https://admin.andnew.kr';
 
-export type NiceAuthSuccess = {
-  requestId: string;
+export type DanalAuthSuccess = {
+  txSeq: string;
+  tid: string;
   name: string;
   phone: string;
   birthDate: string;
@@ -30,22 +31,22 @@ export type NiceAuthSuccess = {
   ci: string;
 };
 
-export interface NiceAuthModalProps {
+export interface DanalAuthModalProps {
   visible: boolean;
-  onSuccess: (result: NiceAuthSuccess) => void;
+  onSuccess: (result: DanalAuthSuccess) => void;
   onCancel: () => void;
   onFail?: (reason: string) => void;
 }
 
-export default function NiceAuthModal({ visible, onSuccess, onCancel, onFail }: NiceAuthModalProps) {
-  const [html, setHtml] = useState<string | null>(null);
+export default function DanalAuthModal({ visible, onSuccess, onCancel, onFail }: DanalAuthModalProps) {
+  const [authUrl, setAuthUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const handled = useRef(false);
 
   useEffect(() => {
     if (!visible) {
-      setHtml(null);
+      setAuthUrl(null);
       setLoading(true);
       setError(null);
       handled.current = false;
@@ -55,21 +56,21 @@ export default function NiceAuthModal({ visible, onSuccess, onCancel, onFail }: 
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(`${NICE_API_BASE}/api/nice/encrypt`, {
+        const res = await fetch(`${DANAL_API_BASE}/api/danal/start`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ authType: 'M' }),
+          body: JSON.stringify({}),
         });
         if (!res.ok) {
           const body = await res.text();
           throw new Error(`${res.status} ${body.slice(0, 200)}`);
         }
-        const { encData, niceUrl } = (await res.json()) as { encData: string; niceUrl: string };
+        const { authUrl: url } = (await res.json()) as { authUrl: string; tid: string; txSeq: string };
         if (cancelled) return;
-        setHtml(buildAutoSubmitHtml(encData, niceUrl));
+        setAuthUrl(url);
       } catch (e) {
         if (cancelled) return;
-        setError(e instanceof Error ? e.message : 'NICE 본인인증 시작 실패');
+        setError(e instanceof Error ? e.message : '다날 본인확인 시작 실패');
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -83,12 +84,13 @@ export default function NiceAuthModal({ visible, onSuccess, onCancel, onFail }: 
   function handleMessage(e: WebViewMessageEvent) {
     if (handled.current) return;
     try {
-      const msg = JSON.parse(e.nativeEvent.data) as { type: string; payload: { ok: boolean } & NiceAuthSuccess };
-      if (msg.type !== 'NICE_AUTH_RESULT') return;
+      const msg = JSON.parse(e.nativeEvent.data) as { type: string; payload: { ok: boolean } & DanalAuthSuccess };
+      if (msg.type !== 'DANAL_AUTH_RESULT') return;
       handled.current = true;
       if (msg.payload.ok) {
         onSuccess({
-          requestId: msg.payload.requestId,
+          txSeq: msg.payload.txSeq,
+          tid: msg.payload.tid,
           name: msg.payload.name,
           phone: msg.payload.phone,
           birthDate: msg.payload.birthDate,
@@ -97,7 +99,7 @@ export default function NiceAuthModal({ visible, onSuccess, onCancel, onFail }: 
           ci: msg.payload.ci,
         });
       } else {
-        onFail?.((msg.payload as unknown as { error?: string }).error ?? '본인인증 실패');
+        onFail?.((msg.payload as unknown as { error?: string }).error ?? '본인확인 실패');
       }
     } catch {
       // ignore
@@ -115,23 +117,23 @@ export default function NiceAuthModal({ visible, onSuccess, onCancel, onFail }: 
       {loading && (
         <View style={styles.center}>
           <ActivityIndicator size="large" color="#1f63e9" />
-          <Text style={styles.loadingText}>NICE 인증 페이지를 불러오는 중…</Text>
+          <Text style={styles.loadingText}>다날 인증 페이지를 불러오는 중…</Text>
         </View>
       )}
       {error && (
         <View style={styles.center}>
-          <Text style={styles.errorTitle}>본인인증을 시작할 수 없습니다</Text>
+          <Text style={styles.errorTitle}>본인확인을 시작할 수 없습니다</Text>
           <Text style={styles.errorBody}>{error}</Text>
           <Text style={styles.errorHint}>
-            관리자에게 NICE 본인인증 키 설정 여부를 확인해주세요.{'\n'}
-            (NICE_SP_ID / NICE_SP_SECRET)
+            관리자에게 다날 본인확인 키 설정 여부를 확인해주세요.{'\n'}
+            (DANAL_CPID / DANAL_CPPWD)
           </Text>
         </View>
       )}
-      {!loading && !error && html && (
+      {!loading && !error && authUrl && (
         <WebView
           originWhitelist={['*']}
-          source={{ html, baseUrl: NICE_API_BASE }}
+          source={{ uri: authUrl }}
           javaScriptEnabled
           domStorageEnabled
           onMessage={handleMessage}
@@ -140,24 +142,6 @@ export default function NiceAuthModal({ visible, onSuccess, onCancel, onFail }: 
       )}
     </Modal>
   );
-}
-
-function buildAutoSubmitHtml(encData: string, niceUrl: string): string {
-  const safeEnc = encData.replace(/"/g, '&quot;');
-  return `<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-</head>
-<body>
-  <form id="checkplusForm" name="checkplusForm" method="post" action="${niceUrl}">
-    <input type="hidden" name="m" value="checkplusService" />
-    <input type="hidden" name="EncodeData" value="${safeEnc}" />
-  </form>
-  <script>document.getElementById('checkplusForm').submit();</script>
-</body>
-</html>`;
 }
 
 const styles = StyleSheet.create({

@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { residentLogin } from '@/lib/store';
 import { syncResidentFromSupabase } from '@/lib/sync';
-import NiceAuthModal, { type NiceAuthSuccess } from '@/components/NiceAuthModal';
+import DanalAuthModal, { type DanalAuthSuccess } from '@/components/DanalAuthModal';
 
 export default function ResidentLoginScreen() {
   const insets = useSafeAreaInsets();
@@ -12,14 +12,14 @@ export default function ResidentLoginScreen() {
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
   const [phoneVerified, setPhoneVerified] = useState(false);
-  const [niceModalVisible, setNiceModalVisible] = useState(false);
+  const [authModalVisible, setAuthModalVisible] = useState(false);
 
   function handlePassVerify() {
-    setNiceModalVisible(true);
+    setAuthModalVisible(true);
   }
 
-  function handleNiceSuccess(result: NiceAuthSuccess) {
-    setNiceModalVisible(false);
+  function handleAuthSuccess(result: DanalAuthSuccess) {
+    setAuthModalVisible(false);
     if (!name.trim()) setName(result.name);
     const inputPhone = phone.replace(/\D/g, '');
     if (inputPhone && inputPhone !== result.phone) {
@@ -33,8 +33,8 @@ export default function ResidentLoginScreen() {
     setPhoneVerified(true);
   }
 
-  function handleNiceFail(reason: string) {
-    setNiceModalVisible(false);
+  function handleAuthFail(reason: string) {
+    setAuthModalVisible(false);
     Alert.alert('본인인증 실패', reason);
   }
 
@@ -131,11 +131,11 @@ export default function ResidentLoginScreen() {
         </TouchableOpacity>
       </View>
 
-      <NiceAuthModal
-        visible={niceModalVisible}
-        onSuccess={handleNiceSuccess}
-        onCancel={() => setNiceModalVisible(false)}
-        onFail={handleNiceFail}
+      <DanalAuthModal
+        visible={authModalVisible}
+        onSuccess={handleAuthSuccess}
+        onCancel={() => setAuthModalVisible(false)}
+        onFail={handleAuthFail}
       />
     </View>
   );

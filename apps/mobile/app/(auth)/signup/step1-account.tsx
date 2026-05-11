@@ -13,7 +13,7 @@ import {
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { saveSignupData } from '@/lib/signup-store';
-import NiceAuthModal, { type NiceAuthSuccess } from '@/components/NiceAuthModal';
+import DanalAuthModal, { type DanalAuthSuccess } from '@/components/DanalAuthModal';
 
 const C = {
   bg: '#F5F6FA',
@@ -66,14 +66,14 @@ export default function SignupStep1Screen() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
-  // 본인인증 (NICE 체크플러스)
+  // 본인인증 (다날 BARO)
   const [phoneVerified, setPhoneVerified] = useState(__DEV__);
-  const [niceModalVisible, setNiceModalVisible] = useState(false);
+  const [authModalVisible, setAuthModalVisible] = useState(false);
 
-  const handlePassVerify = () => setNiceModalVisible(true);
+  const handlePassVerify = () => setAuthModalVisible(true);
 
-  const handleNiceSuccess = (result: NiceAuthSuccess) => {
-    setNiceModalVisible(false);
+  const handleAuthSuccess = (result: DanalAuthSuccess) => {
+    setAuthModalVisible(false);
     const inputPhone = phone.replace(/\D/g, '');
     if (inputPhone && inputPhone !== result.phone) {
       Alert.alert(
@@ -98,8 +98,8 @@ export default function SignupStep1Screen() {
     setPhoneVerified(true);
   };
 
-  const handleNiceFail = (reason: string) => {
-    setNiceModalVisible(false);
+  const handleAuthFail = (reason: string) => {
+    setAuthModalVisible(false);
     Alert.alert('본인인증 실패', reason);
   };
 
@@ -390,11 +390,11 @@ export default function SignupStep1Screen() {
         <View style={{ height: 40 }} />
       </ScrollView>
 
-      <NiceAuthModal
-        visible={niceModalVisible}
-        onSuccess={handleNiceSuccess}
-        onCancel={() => setNiceModalVisible(false)}
-        onFail={handleNiceFail}
+      <DanalAuthModal
+        visible={authModalVisible}
+        onSuccess={handleAuthSuccess}
+        onCancel={() => setAuthModalVisible(false)}
+        onFail={handleAuthFail}
       />
     </KeyboardAvoidingView>
   );
