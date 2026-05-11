@@ -14,6 +14,40 @@ type VillaRow = {
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * 주소 문자열을 도/광역시(province) + 구/시/군(district) 으로 분리.
+ *
+ * 예시:
+ *   '서울특별시 강남구 역삼동 123' → { province: '서울', district: '강남구' }
+ *   '서울 송파구 잠실동 789'        → { province: '서울', district: '송파구' }
+ *   '인천 남동구 만경로8번길 3'     → { province: '인천', district: '남동구' }
+ *   '경기 부천시 소사구 범안로 50'  → { province: '경기', district: '부천시 소사구' }
+ *   '경기 성남시 중원구 자혜로 14'  → { province: '경기', district: '성남시 중원구' }
+ *   '경기 성남시 자혜로 14'          → { province: '경기', district: '성남시' }
+ */
+function parseRegion(address: string | null | undefined): { province: string; district: string } {
+  if (!address) return { province: '-', district: '-' };
+  const parts = address.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return { province: '-', district: '-' };
+
+  // 1차: province 정규화 — 서울특별시/부산광역시/세종특별자치시/경기도 → 서울/부산/세종/경기
+  let province = parts[0]
+    .replace(/특별자치도$/, '')
+    .replace(/특별자치시$/, '')
+    .replace(/특별시$/, '')
+    .replace(/광역시$/, '')
+    .replace(/도$/, '');
+  if (!province) province = parts[0];
+
+  // 2차: district — parts[1] 기준, OO시 OO구 패턴이면 두 단어 결합
+  let district = parts[1] ?? '-';
+  if (parts.length >= 3 && parts[1]?.endsWith('시') && parts[2]?.endsWith('구')) {
+    district = `${parts[1]} ${parts[2]}`;
+  }
+
+  return { province, district };
+}
+
 export default async function VillasPage() {
   const supabase = createServerClient();
 
@@ -96,6 +130,7 @@ export default async function VillasPage() {
     const planInfo = planByVilla.get(v.id);
     const payRate = payRateByVilla.get(v.id) ?? 0;
     const overdue = overdueByVilla.get(v.id) ?? { amount: 0, units: 0, bills: 0 };
+    const region = parseRegion(v.address);
     return {
       id: v.id,
       name: v.name,
@@ -106,7 +141,8 @@ export default async function VillasPage() {
       price: planInfo?.price ?? 0,
       payRate,
       residents: residentCount,
-      region: v.address.split(' ')[1] ?? '-',
+      province: region.province,
+      district: region.district,
       overdueAmount: overdue.amount,
       overdueUnits: overdue.units,
     };

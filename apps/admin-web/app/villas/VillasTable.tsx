@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 
 type Villa = {
   id: string;
@@ -12,7 +12,8 @@ type Villa = {
   price: number;
   payRate: number;
   residents: number;
-  region: string;
+  province: string;   // 1차: 도/광역시 (서울/경기/인천/...)
+  district: string;   // 2차: 구/시/군 (강남구/송파구/부천시/...)
   overdueAmount: number;
   overdueUnits: number;
 };
@@ -21,17 +22,37 @@ const PLANS = ['전체', '소형', '중형', '대형'];
 
 export default function VillasTable({ villas }: { villas: Villa[] }) {
   const [planFilter, setPlanFilter] = useState('전체');
-  const [regionFilter, setRegionFilter] = useState('전체');
+  const [provinceFilter, setProvinceFilter] = useState('전체');
+  const [districtFilter, setDistrictFilter] = useState('전체');
   const [search, setSearch] = useState('');
 
-  const regions = useMemo(
-    () => ['전체', ...Array.from(new Set(villas.map((v) => v.region).filter((r) => r !== '-')))],
-    [villas]
-  );
+  // 1차 (province) 옵션 — 전체 빌라에서 추출
+  const provinces = useMemo(() => {
+    const set = new Set<string>();
+    villas.forEach(v => { if (v.province && v.province !== '-') set.add(v.province); });
+    return ['전체', ...Array.from(set).sort()];
+  }, [villas]);
+
+  // 2차 (district) 옵션 — province 필터 적용된 빌라들에서만 추출
+  const districts = useMemo(() => {
+    const set = new Set<string>();
+    villas
+      .filter(v => provinceFilter === '전체' || v.province === provinceFilter)
+      .forEach(v => { if (v.district && v.district !== '-') set.add(v.district); });
+    return ['전체', ...Array.from(set).sort()];
+  }, [villas, provinceFilter]);
+
+  // province 가 바뀌면 district 초기화 (옵션이 사라질 수 있으므로)
+  useEffect(() => {
+    if (districtFilter !== '전체' && !districts.includes(districtFilter)) {
+      setDistrictFilter('전체');
+    }
+  }, [districts, districtFilter]);
 
   const filtered = villas.filter((v) => {
     if (planFilter !== '전체' && v.plan !== planFilter) return false;
-    if (regionFilter !== '전체' && v.region !== regionFilter) return false;
+    if (provinceFilter !== '전체' && v.province !== provinceFilter) return false;
+    if (districtFilter !== '전체' && v.district !== districtFilter) return false;
     if (search && !v.name.includes(search) && !v.admin.includes(search) && !v.address.includes(search)) return false;
     return true;
   });
@@ -61,14 +82,49 @@ export default function VillasTable({ villas }: { villas: Villa[] }) {
         ))}
       </div>
 
-      <div className="flex gap-3 mb-4">
-        <select value={planFilter} onChange={(e) => setPlanFilter(e.target.value)} className="bg-surface border border-border rounded-lg px-3 py-2 text-sm text-t1 outline-none focus:border-pri">
-          {PLANS.map((p) => <option key={p} value={p}>{p === '전체' ? '플랜 전체' : p}</option>)}
+      <div className="flex gap-3 mb-4 flex-wrap items-center">
+        <select
+          value={planFilter}
+          onChange={(e) => setPlanFilter(e.target.value)}
+          className="bg-surface border border-border rounded-lg px-3 py-2 text-sm text-t1 outline-none focus:border-pri"
+        >
+          {PLANS.map((p) => (
+            <option key={p} value={p}>{p === '전체' ? '플랜 전체' : p}</option>
+          ))}
         </select>
-        <select value={regionFilter} onChange={(e) => setRegionFilter(e.target.value)} className="bg-surface border border-border rounded-lg px-3 py-2 text-sm text-t1 outline-none focus:border-pri">
-          {regions.map((r) => <option key={r} value={r}>{r === '전체' ? '지역 전체' : r}</option>)}
+
+        <select
+          value={provinceFilter}
+          onChange={(e) => { setProvinceFilter(e.target.value); setDistrictFilter('전체'); }}
+          className="bg-surface border border-border rounded-lg px-3 py-2 text-sm text-t1 outline-none focus:border-pri"
+        >
+          {provinces.map((p) => (
+            <option key={p} value={p}>{p === '전체' ? '도/광역시 전체' : p}</option>
+          ))}
         </select>
-        <input placeholder="빌라명, 관리자 검색..." value={search} onChange={(e) => setSearch(e.target.value)} className="bg-surface border border-border rounded-lg px-3.5 py-2 text-sm text-t1 w-60 outline-none focus:border-pri" />
+
+        <select
+          value={districtFilter}
+          onChange={(e) => setDistrictFilter(e.target.value)}
+          disabled={districts.length <= 1}
+          className="bg-surface border border-border rounded-lg px-3 py-2 text-sm text-t1 outline-none focus:border-pri disabled:opacity-50"
+        >
+          {districts.map((d) => (
+            <option key={d} value={d}>{d === '전체' ? '구/시/군 전체' : d}</option>
+          ))}
+        </select>
+
+        <input
+          placeholder="빌라명, 관리자, 주소 검색..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="flex-1 min-w-[200px] bg-surface border border-border rounded-lg px-3.5 py-2 text-sm text-t1 outline-none focus:border-pri"
+          autoComplete="off"
+        />
+
+        <span className="text-xs text-t3 whitespace-nowrap">
+          {filtered.length} / {totalVillas}
+        </span>
       </div>
 
       <div className="bg-card border border-border rounded-[10px] overflow-hidden">
@@ -89,7 +145,11 @@ export default function VillasTable({ villas }: { villas: Villa[] }) {
             </thead>
             <tbody>
               {filtered.length === 0 ? (
-                <tr><td colSpan={9} className="px-5 py-10 text-center text-t3">{villas.length === 0 ? '등록된 빌라가 없습니다' : '검색 결과가 없습니다'}</td></tr>
+                <tr>
+                  <td colSpan={9} className="px-5 py-10 text-center text-t3">
+                    {villas.length === 0 ? '등록된 빌라가 없습니다' : '검색 결과가 없습니다'}
+                  </td>
+                </tr>
               ) : (
                 filtered.map((v) => (
                   <tr key={v.id} className="border-b border-border last:border-0 hover:bg-priL transition-colors">
