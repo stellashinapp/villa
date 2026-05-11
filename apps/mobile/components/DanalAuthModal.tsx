@@ -20,6 +20,14 @@ const DANAL_API_BASE =
   process.env.EXPO_PUBLIC_ADMIN_WEB_URL ??
   'https://admin.andnew.kr';
 
+/**
+ * 본인인증 강제 통과 모드 — 다날 키 발급 전 테스트용.
+ * .env 의 EXPO_PUBLIC_BYPASS_PASS_AUTH=1 일 때 true.
+ * 호출부에서 이 값이 true 면 모달을 띄우지 않고 즉시 onSuccess 호출 권장.
+ * 출시 직전 .env 에서 0 또는 제거해야 정상 다날 본인확인 진행.
+ */
+export const PASS_AUTH_BYPASSED = process.env.EXPO_PUBLIC_BYPASS_PASS_AUTH === '1';
+
 export type DanalAuthSuccess = {
   txSeq: string;
   tid: string;

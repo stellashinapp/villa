@@ -63,3 +63,7 @@ supabase/.temp/
 # Local-only diagnostic scripts (use service_role key — never commit)
 check-db-state.mjs
 *.local.mjs
+
+# Local-only artifacts (emulator screenshots, test bundles)
+.emu-current.png
+.test-bundle.txt

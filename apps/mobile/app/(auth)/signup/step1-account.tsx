@@ -13,7 +13,7 @@ import {
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { saveSignupData } from '@/lib/signup-store';
-import DanalAuthModal, { type DanalAuthSuccess } from '@/components/DanalAuthModal';
+import DanalAuthModal, { type DanalAuthSuccess, PASS_AUTH_BYPASSED } from '@/components/DanalAuthModal';
 
 const C = {
   bg: '#F5F6FA',
@@ -70,7 +70,24 @@ export default function SignupStep1Screen() {
   const [phoneVerified, setPhoneVerified] = useState(__DEV__);
   const [authModalVisible, setAuthModalVisible] = useState(false);
 
-  const handlePassVerify = () => setAuthModalVisible(true);
+  const handlePassVerify = () => {
+    // 우회 모드: 모달 안 띄우고 입력 폼 값 그대로 인증 완료 처리.
+    // 다날 키 발급 후 .env 의 EXPO_PUBLIC_BYPASS_PASS_AUTH 제거하면 정상 모달 진행.
+    if (PASS_AUTH_BYPASSED) {
+      handleAuthSuccess({
+        txSeq: 'BYPASS',
+        tid: 'BYPASS',
+        name: name.trim() || '테스트사용자',
+        phone: phone.replace(/\D/g, '') || '01000000000',
+        birthDate: '19900101',
+        gender: '',
+        di: '',
+        ci: '',
+      });
+      return;
+    }
+    setAuthModalVisible(true);
+  };
 
   const handleAuthSuccess = (result: DanalAuthSuccess) => {
     setAuthModalVisible(false);
@@ -358,7 +375,11 @@ export default function SignupStep1Screen() {
             activeOpacity={0.8}
           >
             <Text style={[styles.passButtonText, phoneVerified && { color: C.primary }]}>
-              {phoneVerified ? '✓ 본인인증 완료' : '본인인증 (PASS)'}
+              {phoneVerified
+                ? '✓ 본인인증 완료'
+                : PASS_AUTH_BYPASSED
+                ? '본인인증 (PASS) · 테스트 우회 모드'
+                : '본인인증 (PASS)'}
             </Text>
           </TouchableOpacity>
           {__DEV__ && !phoneVerified && (

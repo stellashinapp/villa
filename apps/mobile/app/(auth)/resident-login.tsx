@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { residentLogin } from '@/lib/store';
 import { syncResidentFromSupabase } from '@/lib/sync';
-import DanalAuthModal, { type DanalAuthSuccess } from '@/components/DanalAuthModal';
+import DanalAuthModal, { type DanalAuthSuccess, PASS_AUTH_BYPASSED } from '@/components/DanalAuthModal';
 
 export default function ResidentLoginScreen() {
   const insets = useSafeAreaInsets();
@@ -15,6 +15,20 @@ export default function ResidentLoginScreen() {
   const [authModalVisible, setAuthModalVisible] = useState(false);
 
   function handlePassVerify() {
+    // 우회 모드: 모달 안 띄우고 입력 폼 값 그대로 인증 완료 처리.
+    if (PASS_AUTH_BYPASSED) {
+      handleAuthSuccess({
+        txSeq: 'BYPASS',
+        tid: 'BYPASS',
+        name: name.trim() || '테스트입주민',
+        phone: phone.replace(/\D/g, '') || '01000000000',
+        birthDate: '19900101',
+        gender: '',
+        di: '',
+        ci: '',
+      });
+      return;
+    }
     setAuthModalVisible(true);
   }
 
@@ -108,7 +122,11 @@ export default function ResidentLoginScreen() {
           activeOpacity={0.8}
         >
           <Text style={[styles.passBtnText, phoneVerified && { color: '#4263E8' }]}>
-            {phoneVerified ? '✓ 본인인증 완료' : '본인인증 (PASS)'}
+            {phoneVerified
+              ? '✓ 본인인증 완료'
+              : PASS_AUTH_BYPASSED
+              ? '본인인증 (PASS) · 테스트 우회 모드'
+              : '본인인증 (PASS)'}
           </Text>
         </TouchableOpacity>
         {__DEV__ && !phoneVerified && (
