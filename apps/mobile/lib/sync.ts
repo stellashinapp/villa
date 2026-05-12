@@ -351,19 +351,20 @@ export async function syncAdminFromSupabase() {
 }
 
 export async function syncResidentFromSupabase(phone: string, name: string): Promise<Resident | null> {
-  const normalized = phone.replace(/\D/g, '');
-  const { data: residents } = await supabase
-    .from('residents')
-    .select('id, name, phone, unit_id, units!inner(id, ho_number, villas!inner(id, name))')
-    .eq('phone', normalized)
-    .eq('name', name)
-    .eq('status', 'active');
+  // residents·villas·payments 의 RLS 정책이 admin JWT 기반이라 anon 으로 직접 SELECT 불가.
+  // resident-login Edge Function (service_role) 한 번 호출로 매칭 + 빌라 전체 데이터를 받는다.
+  const { data, error } = await supabase.functions.invoke('resident-login', {
+    body: { name, phone },
+  });
+  if (error || !data || (data as any).error) return null;
 
-  const first = residents?.[0] as
-    | { id: string; name: string; phone: string; units: { ho_number: string; villas: { id: string; name: string } } }
-    | undefined;
-  if (!first) return null;
+  const payload = data as {
+    resident: { id: string; name: string; phone: string; unit_id: string; units: { ho_number: string; villa_id: string; villas: { id: string; name: string } } };
+    villa: unknown | null;
+    payments: { bill_month_id: string; is_paid: boolean; units: { ho_number: string } }[];
+  };
 
+  const first = payload.resident;
   const villaId = first.units.villas.id;
   const resident: Resident = {
     name: first.name,
@@ -380,43 +381,15 @@ export async function syncResidentFromSupabase(phone: string, name: string): Pro
     await saveResidentPushToken(first.id);
   } catch {}
 
-  const { data: villaRaw } = await supabase
-    .from('villas')
-    .select(`
-      id, name, address, total_units, units_per_floor, account_bank, account_number,
-      units ( id, ho_number, floor, residents ( name, phone, status ) ),
-      bill_months ( id, year_month, label, status, billing_mode, per_unit_amounts, bill_items ( name, amount ) ),
-      notices ( id, title, body, created_at, is_pinned ),
-      messages ( id, text, is_read, created_at, unit_id, resident_id, message_replies ( text, author_type, author_name, created_at ) ),
-      parking ( id, plate_number, vehicle_type, memo, unit_id ),
-      posts ( id, title, body, likes, created_at, resident_id, comments ( text, created_at, resident_id ) )
-    `)
-    .eq('id', villaId)
-    .order('created_at', { ascending: false, referencedTable: 'notices' })
-    .limit(RECENT_LIST_LIMIT, { referencedTable: 'notices' })
-    .order('created_at', { ascending: false, referencedTable: 'messages' })
-    .limit(RECENT_LIST_LIMIT, { referencedTable: 'messages' })
-    .order('created_at', { ascending: false, referencedTable: 'posts' })
-    .limit(RECENT_LIST_LIMIT, { referencedTable: 'posts' })
-    .single();
-
-  if (villaRaw) {
-    const billMonthIds = (villaRaw as unknown as { bill_months: { id: string }[] }).bill_months?.map((b) => b.id) ?? [];
+  if (payload.villa) {
     const paymentMap = new Map<string, Set<string>>();
-    if (billMonthIds.length > 0) {
-      const { data: payments } = await supabase
-        .from('payments')
-        .select('bill_month_id, is_paid, units!inner(ho_number)')
-        .in('bill_month_id', billMonthIds)
-        .eq('is_paid', true);
-      // supabase-js 가 N:1 관계를 배열로 잘못 추론 — 런타임은 객체 1개. as any 로 우회.
-    (payments ?? []).forEach((p: any) => {
-        const set = paymentMap.get(p.bill_month_id) ?? new Set<string>();
-        set.add(p.units.ho_number);
-        paymentMap.set(p.bill_month_id, set);
-      });
-    }
-    store.villas = [toVilla({ ...(villaRaw as unknown as VillaRaw), subscription_items: [] }, paymentMap)];
+    (payload.payments ?? []).forEach((p) => {
+      if (!p.is_paid) return;
+      const set = paymentMap.get(p.bill_month_id) ?? new Set<string>();
+      set.add(p.units.ho_number);
+      paymentMap.set(p.bill_month_id, set);
+    });
+    store.villas = [toVilla({ ...(payload.villa as unknown as VillaRaw), subscription_items: [] }, paymentMap)];
   }
 
   notify();
