@@ -23,6 +23,7 @@ const NAV_ITEMS = [
   { href: '/residents', icon: '👥', label: '입주민', group: 'MANAGEMENT' },
   { href: '/subscriptions', icon: '📈', label: '구독·매출', group: 'REVENUE' },
   { href: '/payments', icon: '💳', label: '결제 내역', group: 'REVENUE' },
+  { href: '/schema', icon: '🗄️', label: 'DB / API', group: 'SYSTEM' },
   { href: '/settings', icon: '⚙️', label: '설정', group: 'SYSTEM' },
 ];
 
