@@ -1,5 +1,61 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from 'next/link';
+import FaqList from '@/components/FaqList';
+
+const FAQ_ITEMS = [
+  {
+    q: '무료체험은 어떻게 시작하나요?',
+    a: '앱 다운로드 후 회원가입만 하시면 자동으로 30일 무료체험이 시작됩니다. 카드 등록은 무료체험이 끝나기 전까지 하지 않아도 됩니다.',
+  },
+  {
+    q: '카드 등록 안 하면 어떻게 되나요?',
+    a: '30일 무료체험 종료 시점까지 카드를 등록하지 않으면 본사 콘솔과 관리자 앱 일부 기능이 일시 정지됩니다. 카드만 등록하시면 즉시 재개되며, 등록 후에도 30일 이내 해지하면 요금은 청구되지 않습니다.',
+  },
+  {
+    q: '입주민도 요금을 내나요?',
+    a: '입주민은 빌라톡 앱을 무료로 사용합니다. 구독료는 관리자(빌라 소유주)만 매월 지불합니다.\n입주민이 앱에서 관리비를 카드로 결제하실 때만 토스페이먼츠 표준 결제 수수료가 결제 금액에서 자동 차감됩니다 (관리자 부담 0).',
+  },
+  {
+    q: '빌라가 여러 개인데 어떻게 하나요?',
+    a: '한 계정으로 여러 빌라를 통합 관리할 수 있습니다. 빌라 수에 따라 자동 볼륨 할인이 적용됩니다 — 3개 이상 5%, 5개 이상 10%, 10개 이상 15%.\n각 빌라별로 플랜(소형/중형/대형)을 다르게 선택 가능합니다.',
+  },
+  {
+    q: '관리비는 어떻게 정산되나요?',
+    a: '매월 자동으로 청구서가 발행되고 입주민에게 푸시·SMS 알림이 발송됩니다. 입주민은 앱 내에서 카드 또는 계좌이체로 즉시 납부 가능합니다.\n미납 세대는 자동으로 추적되어 관리자 대시보드의 "미납 현황" 에 표시됩니다.',
+  },
+  {
+    q: '구독 해지하면 데이터는 어떻게 되나요?',
+    a: '해지 후 30일 동안 데이터가 보관되며, 이 기간 내에 재가입하시면 모든 데이터(빌라·입주민·청구·납부 이력)가 그대로 복원됩니다.\n30일 경과 후에는 개인정보보호법에 따라 영구 삭제됩니다 (단, 결제·세금 관련 기록은 전자상거래법상 5년 보관 의무 적용).',
+  },
+  {
+    q: '입주민이 앱을 못 깔거나 안 쓰면 어떻게 하나요?',
+    a: '관리자는 입주민 동의 없이도 빌라톡으로 청구서 발행과 공지 관리가 가능합니다.\n미설치 입주민에게는 SMS·카카오 알림으로 청구서 링크를 전달하실 수 있고, 무통장 입금 또는 계좌이체 납부도 가능합니다.\n앱 사용은 입주민에게 권장 사항일 뿐 필수가 아닙니다.',
+  },
+  {
+    q: '관리비 항목을 어떻게 입력하나요?',
+    a: '관리자 앱의 "청구서 작성" 메뉴에서 항목과 금액을 입력하면 자동으로 세대별 분담액이 계산됩니다.\n일반관리비·청소비·승강기·수도·전기 등 항목별로 자유롭게 추가하거나, 평수에 따른 차등 청구도 가능합니다.\n전월 청구서를 그대로 복제하는 기능도 제공합니다.',
+  },
+  {
+    q: '데이터가 안전한가요?',
+    a: '모든 통신은 HTTPS/TLS 로 암호화되며, 데이터는 Supabase (글로벌 SOC2 인증) 의 한국·미국 리전 서버에 저장됩니다.\n카드 정보는 토스페이먼츠가 직접 처리하며 빌라톡 서버에는 카드사명과 마지막 4자리만 저장됩니다.\n본사 콘솔 접근은 접근 로그(IP·계정·일시)로 1년 이상 추적·감사됩니다.',
+  },
+  {
+    q: '본인인증은 어떻게 진행되나요?',
+    a: '다날(Danal) BARO 본인확인 시스템을 통해 통신3사 PASS 앱·SMS·신용카드 등으로 본인 확인합니다.\n가입 시 1회만 진행하면 되며, 이름·생년월일·휴대폰번호가 검증되어 실명 사용이 보장됩니다.',
+  },
+  {
+    q: '결제 카드를 변경할 수 있나요?',
+    a: '관리자 앱의 "설정 → 결제 수단" 에서 언제든 카드를 변경할 수 있습니다.\n변경 즉시 다음 결제일부터 새 카드로 청구되며, 현재 진행 중인 결제 주기에는 영향을 주지 않습니다.',
+  },
+  {
+    q: '환불 정책은 어떻게 되나요?',
+    a: '30일 무료체험 기간 내 해지 시 요금이 일절 청구되지 않습니다.\n유료 결제 후에는 사용한 일수에 비례한 부분 환불을 제공합니다 (월 단위 청구).\n환불 신청은 villatolk@andnew.kr 로 메일 주시면 영업일 기준 3일 이내 처리됩니다.',
+  },
+  {
+    q: '문의 어디로 하나요?',
+    a: '운영 시간 (평일 10시~18시) 내 villatolk@andnew.kr 로 메일 주시면 영업일 기준 1일 이내 답변드립니다.\n긴급한 장애·결제 문의는 메일 제목에 [긴급] 표시 부탁드립니다.',
+  },
+];
 
 function CheckIcon({ color, size = 24 }: { color: string; size?: number }) {
   return (
@@ -608,64 +664,7 @@ export default function HomePage() {
               로 문의해 주세요.
             </p>
           </div>
-          <div className="content-stretch flex flex-col gap-[25px] items-start relative shrink-0">
-            {/* Q1 expanded */}
-            <div className="content-stretch flex items-center relative shrink-0 w-[1116px]">
-              <div className="bg-white border border-[#ebebeb] border-solid content-stretch drop-shadow-[0px_0px_11px_rgba(168,196,255,0.22)] flex flex-[1_0_0] flex-col gap-[45px] h-[273px] items-start min-w-px px-[29px] py-[27px] relative rounded-[15px]">
-                <div className="content-stretch flex flex-col gap-[25px] items-start relative shrink-0 w-full">
-                  <div className="content-stretch flex gap-[720px] items-center relative shrink-0">
-                    <p className="font-semibold leading-[50px] not-italic relative shrink-0 text-[#0f2242] text-[25px] tracking-[-0.375px] whitespace-nowrap">무료체험은 어떻게 시작하나요?</p>
-                    <div className="relative shrink-0 size-[24px]">
-                      <div className="absolute inset-1/4">
-                        <div className="absolute inset-[-8.33%]">
-                          <img alt="" className="block max-w-none size-full" src={imgIcon} />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="h-0 relative shrink-0 w-[1058px]">
-                    <div className="absolute inset-[-1px_0_0_0]">
-                      <img alt="" className="block max-w-none size-full" src={imgLine3} />
-                    </div>
-                  </div>
-                </div>
-                <p className="font-normal leading-[32px] not-italic relative shrink-0 text-[#0f2242] text-[22px] tracking-[-0.44px] w-[951px]">
-                  앱 다운로드 후 회원가입만 하시면 자동으로 30일 무료체험이 시작됩니다. 카드 등록은 무료체험이 끝나기 전까지 하지 않아도 됩니다.
-                </p>
-              </div>
-            </div>
-            {/* Q2-Q10 collapsed */}
-            {[
-              '카드 등록 안 하면 어떻게 되나요?',
-              '입주민도 요금을 내나요?',
-              '빌라가 여러 개인데 어떻게 하나요?',
-              '관리비는 어떻게 정산되나요?',
-              '구독 해지하면 데이터는 어떻게 되나요?',
-              '입주민이 앱을 못 깔거나 안 쓰면 어떻게 하나요?',
-              '관리비 항목을 어떻게 입력하나요?',
-              '데이터가 안전한가요?',
-              '문의 어디로 하나요?',
-            ].map((q) => (
-              <div key={q} className="bg-white border border-[#ebebeb] border-solid content-stretch drop-shadow-[0px_0px_11px_rgba(168,196,255,0.22)] flex flex-col h-[112px] items-start justify-center px-[29px] py-[10px] relative rounded-[15px] shrink-0 w-[1116px]">
-                <div className="content-stretch flex flex-col items-start relative shrink-0 w-full">
-                  <div className="content-stretch flex items-center justify-between relative shrink-0 w-full">
-                    <p className="font-semibold leading-[50px] not-italic relative shrink-0 text-[#0f2242] text-[25px] tracking-[-0.375px] whitespace-nowrap">{q}</p>
-                    <div className="flex items-center justify-center relative shrink-0 size-[33.941px]">
-                      <div className="-rotate-45 flex-none">
-                        <div className="relative size-[24px]">
-                          <div className="absolute inset-1/4">
-                            <div className="absolute inset-[-8.33%]">
-                              <img alt="" className="block max-w-none size-full" src={imgIcon} />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <FaqList items={FAQ_ITEMS} initialOpen={0} />
         </div>
 
         {/* Footer */}

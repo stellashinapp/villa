@@ -18,18 +18,21 @@ export default function DownloadPage() {
 
       <section className="pb-16">
         <div className="max-w-4xl mx-auto px-6">
-          <div className="grid md:grid-cols-2 gap-6">
+          {/* 스토어 두 박스 — 동일 높이 + 회사 로고 배지 + 정렬된 심사진행중 라인 */}
+          <div className="grid md:grid-cols-2 gap-6 items-stretch">
             {/* Google Play */}
-            <div className="bg-white border-2 border-gray-200 rounded-2xl p-7 hover:border-primary/30 transition">
+            <div className="bg-white border-2 border-gray-200 rounded-2xl p-7 hover:border-primary/30 transition flex flex-col h-full">
               <div className="flex items-center gap-3 mb-4">
-                <div className="text-3xl">🤖</div>
+                <div className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg bg-primary/10 text-primary font-black text-base tracking-tight">
+                  Villatolk
+                </div>
                 <div>
                   <div className="text-xs font-bold text-gray-500">FOR ANDROID</div>
                   <div className="text-lg font-black">Google Play</div>
                 </div>
               </div>
-              <p className="text-sm text-gray-600 mb-5 leading-relaxed">
-                Play 스토어에서 "빌라톡"으로 검색하시거나 아래 버튼으로 이동하세요.
+              <p className="text-sm text-gray-600 mb-5 leading-relaxed flex-1">
+                Play 스토어에서 &quot;빌라톡&quot;으로 검색하시거나 출시 후 아래 버튼으로 이동하세요.
               </p>
               <button
                 disabled
@@ -40,16 +43,18 @@ export default function DownloadPage() {
             </div>
 
             {/* App Store */}
-            <div className="bg-white border-2 border-gray-200 rounded-2xl p-7 hover:border-primary/30 transition">
+            <div className="bg-white border-2 border-gray-200 rounded-2xl p-7 hover:border-primary/30 transition flex flex-col h-full">
               <div className="flex items-center gap-3 mb-4">
-                <div className="text-3xl">🍎</div>
+                <div className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg bg-primary/10 text-primary font-black text-base tracking-tight">
+                  Villatolk
+                </div>
                 <div>
                   <div className="text-xs font-bold text-gray-500">FOR iOS</div>
                   <div className="text-lg font-black">App Store</div>
                 </div>
               </div>
-              <p className="text-sm text-gray-600 mb-5 leading-relaxed">
-                App Store에서 "빌라톡"으로 검색하세요.
+              <p className="text-sm text-gray-600 mb-5 leading-relaxed flex-1">
+                App Store 에서 &quot;빌라톡&quot;으로 검색하시거나 출시 후 아래 버튼으로 이동하세요.
               </p>
               <button
                 disabled
@@ -75,7 +80,7 @@ export default function DownloadPage() {
               href="mailto:villatolk@andnew.kr?subject=빌라톡%20베타테스트%20신청&body=빌라명%2C%20세대수%2C%20연락처를%20알려주세요"
               className="inline-flex px-6 py-3 bg-white text-primary font-bold rounded-xl hover:bg-gray-50 transition text-sm"
             >
-              ✉ 베타 테스트 신청
+              베타 테스트 신청
             </a>
           </div>
 
@@ -119,7 +124,9 @@ export default function DownloadPage() {
           </div>
 
           <div className="mt-12 text-center">
-            <Link href="/faq" className="text-primary font-bold hover:underline text-sm">자주 묻는 질문 보기 →</Link>
+            <Link href="/#faq" className="text-primary font-bold hover:underline text-sm">
+              자주 묻는 질문 보기 →
+            </Link>
           </div>
         </div>
       </section>
