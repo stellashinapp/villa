@@ -105,34 +105,38 @@ const imgLine3 = '/figma/line3.png';
 
 export default function HomePage() {
   return (
-    <div className="bg-white relative w-full overflow-x-clip">
-      <div className="figma-page relative w-[1920px] mx-auto flex flex-col items-center">
-        {/* Header — sticky 고정, 텍스트 로고 + 텍스트 nav + 앱 다운로드 CTA */}
-        <header className="sticky top-0 z-50 w-[1920px] h-[68px] bg-[#0f2242] flex items-center justify-between px-[244px] shrink-0 shadow-[0_2px_12px_rgba(15,34,66,0.18)]">
+    <>
+      {/* Header — fixed 고정 (zoom 바깥, viewport 기준) */}
+      <header className="fixed top-0 left-0 right-0 z-[100] bg-[#0f2242] shadow-[0_2px_12px_rgba(15,34,66,0.18)]">
+        <div className="h-[68px] flex items-center justify-between max-w-[1920px] mx-auto px-6 lg:px-[244px]">
           <Link
             href="/"
-            className="text-[28px] font-black tracking-tight text-white hover:text-[#3d54ff] transition-colors"
+            className="text-[24px] lg:text-[28px] font-black tracking-tight text-white hover:text-[#3d54ff] transition-colors"
           >
             Villatolk
           </Link>
-          <nav className="flex items-center gap-[48px]">
-            <a href="#features" className="text-[16px] font-semibold text-white hover:text-[#3d54ff] transition-colors">
+          <nav className="flex items-center gap-[20px] lg:gap-[48px]">
+            <a href="#features" className="text-[14px] lg:text-[16px] font-semibold text-white hover:text-[#3d54ff] transition-colors">
               기능
             </a>
-            <a href="#pricing" className="text-[16px] font-semibold text-white hover:text-[#3d54ff] transition-colors">
+            <a href="#pricing" className="text-[14px] lg:text-[16px] font-semibold text-white hover:text-[#3d54ff] transition-colors">
               요금
             </a>
-            <a href="#faq" className="text-[16px] font-semibold text-white hover:text-[#3d54ff] transition-colors">
+            <a href="#faq" className="text-[14px] lg:text-[16px] font-semibold text-white hover:text-[#3d54ff] transition-colors">
               FAQ
             </a>
             <Link
               href="/download"
-              className="ml-[8px] px-[20px] py-[10px] bg-[#1f63e9] text-[16px] font-bold text-white rounded-[10px] hover:bg-[#3d54ff] transition-colors"
+              className="ml-[4px] lg:ml-[8px] px-[14px] lg:px-[20px] py-[8px] lg:py-[10px] bg-[#1f63e9] text-[14px] lg:text-[16px] font-bold text-white rounded-[10px] hover:bg-[#3d54ff] transition-colors whitespace-nowrap"
             >
               앱 다운로드
             </Link>
           </nav>
-        </header>
+        </div>
+      </header>
+
+    <div className="bg-white relative w-full overflow-x-clip pt-[68px]">
+      <div className="figma-page relative w-[1920px] mx-auto flex flex-col items-center">
 
         {/* Hero */}
         <div className="grid-cols-[max-content] grid-rows-[max-content] inline-grid leading-[0] place-items-start relative shrink-0">
@@ -708,5 +712,6 @@ export default function HomePage() {
         </footer>
       </div>
     </div>
+    </>
   );
 }
