@@ -469,7 +469,7 @@ export default function HomePage() {
         </div>
 
         {/* Pricing */}
-        <div id="pricing" className="content-stretch flex flex-col gap-[90px] h-[1948px] items-center pt-[117px] relative shrink-0 w-full scroll-mt-[120px]" style={{ backgroundImage: 'linear-gradient(151.3395801934072deg, rgb(255, 255, 255) 28.884%, rgb(240, 244, 255) 83.59%)' }}>
+        <div id="pricing" className="content-stretch flex flex-col gap-[90px] items-center pt-[117px] pb-[120px] relative shrink-0 w-full scroll-mt-[120px]" style={{ backgroundImage: 'linear-gradient(151.3395801934072deg, rgb(255, 255, 255) 28.884%, rgb(240, 244, 255) 83.59%)' }}>
           <div className="content-stretch flex flex-col gap-[24px] items-center not-italic relative shrink-0 text-center w-[796px]">
             <p className="font-bold leading-[55px] relative shrink-0 text-[#0f2242] text-[45px] tracking-[-0.9px] w-full">
               세대 수만큼만 내세요.
@@ -652,8 +652,8 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* FAQ */}
-        <div id="faq" className="bg-[#f0f4ff] content-stretch flex flex-col gap-[90px] h-[2046px] items-center pt-[107px] relative shrink-0 w-full scroll-mt-[120px]">
+        {/* FAQ — 동적 높이 (h-fix 제거: 12 항목 + 펼침 시 오버플로우 방지) */}
+        <div id="faq" className="bg-[#f0f4ff] content-stretch flex flex-col gap-[60px] items-center pt-[107px] pb-[120px] relative shrink-0 w-full scroll-mt-[120px]">
           <div className="content-stretch flex flex-col gap-[24px] items-center not-italic relative shrink-0 text-center w-[796px]">
             <p className="font-bold leading-[55px] relative shrink-0 text-[#0f2242] text-[45px] tracking-[-0.9px] w-full">자주 묻는 질문</p>
             <p className="font-medium leading-[50px] relative shrink-0 text-[#5b6d8f] text-[25px] tracking-[-0.25px] w-full">
@@ -665,7 +665,7 @@ export default function HomePage() {
           <FaqList items={FAQ_ITEMS} initialOpen={0} />
         </div>
 
-        {/* Footer — 영문 로고 + 정보 (figma 이미지 푸터 교체) */}
+        {/* Footer — 영문 로고 + 서비스 nav + 법적고지 + 사업자정보 */}
         <footer className="w-[1920px] bg-[#0f2242] flex flex-col items-center pt-[60px] pb-[40px] shrink-0">
           <Link
             href="/"
@@ -673,14 +673,33 @@ export default function HomePage() {
           >
             Villatolk
           </Link>
-          <div className="flex items-center gap-[32px] mb-[24px]">
+
+          {/* 서비스 nav */}
+          <div className="flex items-center gap-[32px] mb-[18px]">
             <a href="#features" className="text-[15px] font-semibold text-white/80 hover:text-white transition-colors">기능</a>
             <a href="#pricing" className="text-[15px] font-semibold text-white/80 hover:text-white transition-colors">요금</a>
             <a href="#faq" className="text-[15px] font-semibold text-white/80 hover:text-white transition-colors">FAQ</a>
             <Link href="/download" className="text-[15px] font-semibold text-white/80 hover:text-white transition-colors">앱 다운로드</Link>
-            <Link href="/legal/terms" className="text-[15px] font-semibold text-white/80 hover:text-white transition-colors">이용약관</Link>
-            <Link href="/legal/privacy" className="text-[15px] font-semibold text-white/80 hover:text-white transition-colors">개인정보처리방침</Link>
           </div>
+
+          {/* 법적 고지 — 별도 라인으로 분리 (의무 표시) */}
+          <div className="flex items-center gap-[24px] mb-[24px]">
+            <Link
+              href="/legal/terms"
+              className="text-[14px] font-bold text-white/90 underline underline-offset-[6px] decoration-white/30 hover:decoration-white hover:text-white transition-colors"
+            >
+              이용약관
+            </Link>
+            <span className="text-white/30 text-[13px]">|</span>
+            <Link
+              href="/legal/privacy"
+              className="text-[14px] font-bold text-white/90 underline underline-offset-[6px] decoration-white/30 hover:decoration-white hover:text-white transition-colors"
+            >
+              개인정보처리방침
+            </Link>
+          </div>
+
+          {/* 사업자 정보 */}
           <div className="text-center text-white/50 text-[13px] leading-[22px]">
             <p>앤뉴 (ANDNEW) · 대표: 신경아 · 사업자등록번호: 296-86-02637</p>
             <p>서울특별시 송파구 송파대로 111 · <a href="mailto:villatolk@andnew.kr" className="text-white/70 hover:text-white">villatolk@andnew.kr</a></p>
