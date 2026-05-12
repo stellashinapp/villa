@@ -4,17 +4,13 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 export default function Footer() {
-  const pathname = usePathname();
-  if (pathname === '/') return null;
+  usePathname();
   return (
     <footer className="bg-gray-50 border-t border-gray-200 mt-32">
       <div className="max-w-6xl mx-auto px-6 py-12">
         <div className="grid md:grid-cols-4 gap-8 mb-10">
           <div>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white font-black text-sm">V</div>
-              <span className="text-lg font-black">빌라톡</span>
-            </div>
+            <div className="text-xl font-black text-primary mb-3">빌라톡</div>
             <p className="text-xs text-gray-500 leading-relaxed">
               빌라·다세대 공동관리의 모든 것.<br />
               관리비부터 입주민 소통까지.
