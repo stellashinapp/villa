@@ -1,11 +1,40 @@
 import { NextResponse } from 'next/server';
+import { headers } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
 import { isSuperAdmin } from '@/lib/auth-context';
 import { logAdminAccess } from '@/lib/access-log';
+import { createServerClient } from '@/lib/supabase-server';
 
 export const dynamic = 'force-dynamic';
 
 const VIEWER_COOKIE = 'villatolk_viewer_email';
+
+async function recordLoginLog(authId: string, email: string) {
+  try {
+    const hdrs = await headers();
+    const xff = hdrs.get('x-forwarded-for');
+    const ip = xff ? xff.split(',')[0].trim() : (hdrs.get('x-real-ip') ?? null);
+    const userAgent = hdrs.get('user-agent') ?? null;
+
+    const supabase = createServerClient();
+    const { data: admin } = await supabase
+      .from('admins')
+      .select('id, name, phone')
+      .eq('auth_id', authId)
+      .maybeSingle();
+
+    await supabase.from('login_logs').insert({
+      user_type: 'admin',
+      user_id: admin?.id ?? null,
+      user_name: admin?.name ?? email,
+      user_phone: admin?.phone ?? null,
+      ip_address: ip,
+      device_info: userAgent ? `admin-web · ${userAgent.slice(0, 200)}` : 'admin-web',
+    });
+  } catch (e) {
+    console.error('[login_logs] insert failed:', e);
+  }
+}
 
 export async function POST(req: Request) {
   let body: { email?: string; password?: string };
@@ -39,11 +68,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: '이메일 또는 비밀번호가 올바르지 않습니다' }, { status: 401 });
   }
 
-  await logAdminAccess({
-    path: '/api/auth/login',
-    viewerEmail: email,
-    payload: { event: 'login_success' },
-  });
+  await Promise.all([
+    logAdminAccess({
+      path: '/api/auth/login',
+      viewerEmail: email,
+      payload: { event: 'login_success' },
+    }),
+    recordLoginLog(data.user.id, email),
+  ]);
 
   const res = NextResponse.json({ ok: true });
   res.cookies.set(VIEWER_COOKIE, email, {

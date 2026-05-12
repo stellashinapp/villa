@@ -1,4 +1,21 @@
+import { Platform } from 'react-native';
 import { supabase } from './supabase';
+
+/**
+ * 로그인 직후 호출. login_logs 에 IP·device 기록.
+ * 실패해도 로그인 자체 결과에 영향 없음.
+ */
+async function recordLogin() {
+  try {
+    const deviceInfo = `mobile · ${Platform.OS} ${Platform.Version}`;
+    await supabase.rpc('record_admin_login', {
+      p_ip: null, // 클라이언트 IP 는 서버 측에서 보강. RPC 가 null 허용.
+      p_device_info: deviceInfo,
+    });
+  } catch (e) {
+    console.warn('[auth] record_admin_login failed:', e);
+  }
+}
 
 /**
  * 관리자 회원가입 — Supabase 권장 패턴
@@ -51,6 +68,9 @@ export async function signInAdmin(email: string, password: string) {
   });
 
   if (error) throw new Error(error.message);
+
+  // login_logs 기록 (병렬, 실패해도 로그인 흐름 영향 없음)
+  recordLogin();
 
   try {
     const { saveAdminPushToken } = await import('./notifications');
