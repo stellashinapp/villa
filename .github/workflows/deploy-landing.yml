@@ -1,0 +1,52 @@
+name: Deploy landing to Vercel
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/landing/**'
+      - 'packages/**'
+      - '.github/workflows/deploy-landing.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Production deploy (landing)
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      # Landing 프로젝트 ID 는 admin-web 과 다름 — 직접 명시
+      # (project ID 자체는 비밀이 아님, dashboard URL 에 노출)
+      VERCEL_PROJECT_ID: prj_F8T8y3hxDaYtSpCgsYvEXKz6vDDY
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Vercel whoami (sanity check)
+        run: vercel whoami --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy to production (apps/landing)
+        id: deploy
+        working-directory: apps/landing
+        run: |
+          set -e
+          OUT=$(vercel deploy --prod --yes --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tee /dev/stderr | tail -1)
+          echo "url=$OUT" >> $GITHUB_OUTPUT
+          echo "Deployed: $OUT"
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "### Landing deploy" >> $GITHUB_STEP_SUMMARY
+          echo "- Result: ${{ steps.deploy.outcome }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Deployment URL: ${{ steps.deploy.outputs.url }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Production alias: https://villatolk.vercel.app" >> $GITHUB_STEP_SUMMARY
+          echo "- Commit: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
