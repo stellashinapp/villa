@@ -1,5 +1,3 @@
-import Link from 'next/link';
-
 export const metadata = {
   title: '앱 다운로드 - 빌라톡',
   description: '관리자/입주민 모두 빌라톡 앱 하나로. iOS·Android 지원.',
@@ -18,51 +16,42 @@ export default function DownloadPage() {
 
       <section className="pb-16">
         <div className="max-w-4xl mx-auto px-6">
-          {/* 스토어 두 박스 — 동일 높이 + 회사 로고 배지 + 정렬된 심사진행중 라인 */}
+          {/* 스토어 두 박스 — 동일 높이·정렬, 로고/OS/설명/버튼 라인 매칭 */}
           <div className="grid md:grid-cols-2 gap-6 items-stretch">
-            {/* Google Play */}
-            <div className="bg-white border-2 border-gray-200 rounded-2xl p-7 hover:border-primary/30 transition flex flex-col h-full">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg bg-primary/10 text-primary font-black text-base tracking-tight">
+            {[
+              {
+                osLabel: 'FOR ANDROID',
+                storeName: 'Google Play',
+                desc: 'Play 스토어에서 "빌라톡"으로 검색하시거나 출시 후 아래 버튼으로 이동하세요.',
+              },
+              {
+                osLabel: 'FOR iOS',
+                storeName: 'App Store',
+                desc: 'App Store에서 "빌라톡"으로 검색하시거나 출시 후 아래 버튼으로 이동하세요.',
+              },
+            ].map((card) => (
+              <div
+                key={card.storeName}
+                className="bg-white border-2 border-gray-200 rounded-2xl p-7 hover:border-primary/30 transition flex flex-col h-full text-center"
+              >
+                <div className="inline-flex self-center px-4 py-2 rounded-lg bg-primary/10 text-primary font-black text-lg tracking-tight mb-5">
                   Villatolk
                 </div>
-                <div>
-                  <div className="text-xs font-bold text-gray-500">FOR ANDROID</div>
-                  <div className="text-lg font-black">Google Play</div>
+                <div className="text-[11px] font-bold text-gray-500 tracking-widest mb-1">
+                  {card.osLabel}
                 </div>
+                <div className="text-xl font-black mb-4">{card.storeName}</div>
+                <p className="text-sm text-gray-600 leading-relaxed flex-1 mb-5">
+                  {card.desc}
+                </p>
+                <button
+                  disabled
+                  className="w-full py-3 bg-gray-100 text-gray-400 font-bold rounded-xl cursor-not-allowed text-sm"
+                >
+                  심사 진행중 (출시 예정)
+                </button>
               </div>
-              <p className="text-sm text-gray-600 mb-5 leading-relaxed flex-1">
-                Play 스토어에서 &quot;빌라톡&quot;으로 검색하시거나 출시 후 아래 버튼으로 이동하세요.
-              </p>
-              <button
-                disabled
-                className="w-full py-3 bg-gray-100 text-gray-400 font-bold rounded-xl cursor-not-allowed text-sm"
-              >
-                심사 진행중 (출시 예정)
-              </button>
-            </div>
-
-            {/* App Store */}
-            <div className="bg-white border-2 border-gray-200 rounded-2xl p-7 hover:border-primary/30 transition flex flex-col h-full">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg bg-primary/10 text-primary font-black text-base tracking-tight">
-                  Villatolk
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-gray-500">FOR iOS</div>
-                  <div className="text-lg font-black">App Store</div>
-                </div>
-              </div>
-              <p className="text-sm text-gray-600 mb-5 leading-relaxed flex-1">
-                App Store 에서 &quot;빌라톡&quot;으로 검색하시거나 출시 후 아래 버튼으로 이동하세요.
-              </p>
-              <button
-                disabled
-                className="w-full py-3 bg-gray-100 text-gray-400 font-bold rounded-xl cursor-not-allowed text-sm"
-              >
-                심사 진행중 (출시 예정)
-              </button>
-            </div>
+            ))}
           </div>
 
           {/* Beta */}
@@ -123,11 +112,6 @@ export default function DownloadPage() {
             </div>
           </div>
 
-          <div className="mt-12 text-center">
-            <Link href="/#faq" className="text-primary font-bold hover:underline text-sm">
-              자주 묻는 질문 보기 →
-            </Link>
-          </div>
         </div>
       </section>
     </>

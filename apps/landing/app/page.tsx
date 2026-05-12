@@ -667,16 +667,28 @@ export default function HomePage() {
           <FaqList items={FAQ_ITEMS} initialOpen={0} />
         </div>
 
-        {/* Footer */}
-        <div className="grid-cols-[max-content] grid-rows-[max-content] inline-grid leading-[0] place-items-start relative shrink-0">
-          <div className="[grid-area:1/1] h-[340px] ml-0 mt-0 relative w-[2015px]">
-            <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgImage2} />
+        {/* Footer — 영문 로고 + 정보 (figma 이미지 푸터 교체) */}
+        <footer className="w-[1920px] bg-[#0f2242] flex flex-col items-center pt-[60px] pb-[40px] shrink-0">
+          <Link
+            href="/"
+            className="text-[36px] font-black tracking-tight text-white hover:text-[#3d54ff] transition-colors mb-[24px]"
+          >
+            Villatolk
+          </Link>
+          <div className="flex items-center gap-[32px] mb-[24px]">
+            <a href="#features" className="text-[15px] font-semibold text-white/80 hover:text-white transition-colors">기능</a>
+            <a href="#pricing" className="text-[15px] font-semibold text-white/80 hover:text-white transition-colors">요금</a>
+            <a href="#faq" className="text-[15px] font-semibold text-white/80 hover:text-white transition-colors">FAQ</a>
+            <Link href="/download" className="text-[15px] font-semibold text-white/80 hover:text-white transition-colors">앱 다운로드</Link>
+            <Link href="/legal/terms" className="text-[15px] font-semibold text-white/80 hover:text-white transition-colors">이용약관</Link>
+            <Link href="/legal/privacy" className="text-[15px] font-semibold text-white/80 hover:text-white transition-colors">개인정보처리방침</Link>
           </div>
-          <div className="bg-[#f9fafb] [grid-area:1/1] h-[72px] ml-[414.5px] mt-[23px] relative w-[128px]" />
-          <div className="[grid-area:1/1] h-[21px] ml-[419.5px] mt-[53px] relative w-[131px]">
-            <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgVillaTalk1} />
+          <div className="text-center text-white/50 text-[13px] leading-[22px]">
+            <p>앤뉴 (ANDNEW) · 대표: 신경아 · 사업자등록번호: 296-86-02637</p>
+            <p>서울특별시 송파구 송파대로 111 · <a href="mailto:villatolk@andnew.kr" className="text-white/70 hover:text-white">villatolk@andnew.kr</a></p>
+            <p className="mt-[12px] text-white/40">© 2026 ANDNEW. All rights reserved.</p>
           </div>
-        </div>
+        </footer>
       </div>
     </div>
   );
