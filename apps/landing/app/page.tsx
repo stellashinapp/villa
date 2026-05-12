@@ -1,4 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
+import Link from 'next/link';
 
 const imgImage1 = '/figma/image1.png';
 const imgRectangle10 = '/figma/rectangle10.png';
@@ -32,18 +33,26 @@ export default function HomePage() {
   return (
     <div className="bg-white relative w-full overflow-x-hidden">
       <div className="figma-page relative w-[1920px] mx-auto flex flex-col items-center">
-        {/* Header */}
-        <div className="grid-cols-[max-content] grid-rows-[max-content] inline-grid leading-[0] place-items-start relative shrink-0">
-          <div className="[grid-area:1/1] grid-cols-[max-content] grid-rows-[max-content] inline-grid ml-0 mt-0 place-items-start relative">
-            <div className="[grid-area:1/1] h-[68px] ml-0 mt-0 relative w-[1920px]">
-              <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgImage1} />
-            </div>
-            <div className="bg-white [grid-area:1/1] h-[46px] ml-[390px] mt-[8px] relative w-[130px]" />
-          </div>
-          <div className="[grid-area:1/1] h-[21px] ml-[381px] mt-[24px] relative w-[131px]">
-            <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgVillaTalk1} />
-          </div>
-        </div>
+        {/* Header — 텍스트 로고 + 텍스트 nav (이미지 nav 교체) */}
+        <header className="w-[1920px] h-[68px] bg-[#0f2242] flex items-center justify-between px-[244px] shrink-0">
+          <Link
+            href="/"
+            className="text-[28px] font-black tracking-tight text-white hover:text-[#3d54ff] transition-colors"
+          >
+            Villatolk
+          </Link>
+          <nav className="flex items-center gap-[56px]">
+            <Link href="/#features" className="text-[16px] font-semibold text-white hover:text-[#3d54ff] transition-colors">
+              기능
+            </Link>
+            <Link href="/pricing" className="text-[16px] font-semibold text-white hover:text-[#3d54ff] transition-colors">
+              요금
+            </Link>
+            <Link href="/faq" className="text-[16px] font-semibold text-white hover:text-[#3d54ff] transition-colors">
+              FAQ
+            </Link>
+          </nav>
+        </header>
 
         {/* Hero */}
         <div className="grid-cols-[max-content] grid-rows-[max-content] inline-grid leading-[0] place-items-start relative shrink-0">
