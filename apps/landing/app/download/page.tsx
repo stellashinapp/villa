@@ -3,6 +3,25 @@ export const metadata = {
   description: '관리자/입주민 모두 빌라톡 앱 하나로. iOS·Android 지원.',
 };
 
+function GooglePlayLogo({ size = 56 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path fill="#EA4335" d="M3 20.5V3.5c0-.83.67-1.5 1.5-1.5l9.59 10L4.5 22c-.83 0-1.5-.67-1.5-1.5z" />
+      <path fill="#FBBC04" d="M16.81 15.12L6.05 21.34l8.04-7.84 2.72 1.62z" />
+      <path fill="#4285F4" d="M20.16 10.81c.55.43.55 1.21 0 1.64L17 14.5l-2.93-2.94L17 8.81l3.16 2z" />
+      <path fill="#34A853" d="M6.05 2.66l10.76 6.22-2.72 1.62L6.05 2.66z" />
+    </svg>
+  );
+}
+
+function AppStoreLogo({ size = 56 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#000000">
+      <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
+    </svg>
+  );
+}
+
 export default function DownloadPage() {
   return (
     <>
@@ -16,15 +35,17 @@ export default function DownloadPage() {
 
       <section className="pb-16">
         <div className="max-w-4xl mx-auto px-6">
-          {/* 스토어 두 박스 — 동일 높이·정렬, 로고/OS/설명/버튼 라인 매칭 */}
+          {/* 스토어 두 박스 — 브랜드 로고 + 동일 정렬 */}
           <div className="grid md:grid-cols-2 gap-6 items-stretch">
             {[
               {
+                Logo: GooglePlayLogo,
                 osLabel: 'FOR ANDROID',
                 storeName: 'Google Play',
                 desc: 'Play 스토어에서 "빌라톡"으로 검색하시거나 출시 후 아래 버튼으로 이동하세요.',
               },
               {
+                Logo: AppStoreLogo,
                 osLabel: 'FOR iOS',
                 storeName: 'App Store',
                 desc: 'App Store에서 "빌라톡"으로 검색하시거나 출시 후 아래 버튼으로 이동하세요.',
@@ -34,8 +55,8 @@ export default function DownloadPage() {
                 key={card.storeName}
                 className="bg-white border-2 border-gray-200 rounded-2xl p-7 hover:border-primary/30 transition flex flex-col h-full text-center"
               >
-                <div className="inline-flex self-center px-4 py-2 rounded-lg bg-primary/10 text-primary font-black text-lg tracking-tight mb-5">
-                  Villatolk
+                <div className="self-center mb-5">
+                  <card.Logo size={56} />
                 </div>
                 <div className="text-[11px] font-bold text-gray-500 tracking-widest mb-1">
                   {card.osLabel}
