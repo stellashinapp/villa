@@ -48,17 +48,28 @@ serve(async (req) => {
     const firstMatch = residents[0] as any;
     const villaId = firstMatch.units?.villa_id ?? firstMatch.units?.villas?.id ?? null;
 
-    const secret = new TextEncoder().encode(Deno.env.get('SUPABASE_JWT_SECRET')!);
-    const key = await crypto.subtle.importKey('raw', secret, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
-    const token = await create(
-      { alg: 'HS256', typ: 'JWT' },
-      {
-        resident_id: firstMatch.id,
-        unit_id: firstMatch.unit_id,
-        exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30,
-      },
-      key
-    );
+    // JWT 토큰은 입주민 세션 식별용 — mobile 은 store.loggedResident 로 식별하므로
+    // 사실 사용 안 함. SUPABASE_JWT_SECRET 가 Edge Function env 에 등록 안 되어 있으면
+    // JWT 생성을 건너뛰고 빈 토큰 반환 (호환성 유지).
+    let token = '';
+    const jwtSecret = Deno.env.get('SUPABASE_JWT_SECRET');
+    if (jwtSecret && jwtSecret.length > 0) {
+      try {
+        const secret = new TextEncoder().encode(jwtSecret);
+        const key = await crypto.subtle.importKey('raw', secret, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+        token = await create(
+          { alg: 'HS256', typ: 'JWT' },
+          {
+            resident_id: firstMatch.id,
+            unit_id: firstMatch.unit_id,
+            exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30,
+          },
+          key
+        );
+      } catch (e) {
+        console.warn('[resident-login] JWT sign skipped:', String(e));
+      }
+    }
 
     // 빌라 전체 데이터 동봉 — service_role 로 RLS 우회
     let villa: any = null;
