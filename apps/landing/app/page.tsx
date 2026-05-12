@@ -355,7 +355,7 @@ export default function HomePage() {
         </div>
 
         {/* 6 Features */}
-        <div id="features" className="bg-[#f8fbff] content-stretch flex flex-col gap-[112px] h-[1543px] items-center pt-[125px] relative shrink-0 w-full scroll-mt-[80px]">
+        <div id="features" className="bg-[#f8fbff] content-stretch flex flex-col gap-[112px] h-[1543px] items-center pt-[125px] relative shrink-0 w-full scroll-mt-[120px]">
           <div className="content-stretch flex flex-col gap-[24px] items-center not-italic relative shrink-0 text-center w-[796px]">
             <p className="font-bold leading-[55px] relative shrink-0 text-[#0f2242] text-[45px] tracking-[-0.9px] w-full">
               관리에 필요한 것, 다 들어있어요.
@@ -469,8 +469,7 @@ export default function HomePage() {
         </div>
 
         {/* Pricing */}
-        <div id="pricing" className="scroll-mt-[80px]" />
-        <div className="content-stretch flex flex-col gap-[90px] h-[1948px] items-center pt-[117px] relative shrink-0 w-full" style={{ backgroundImage: 'linear-gradient(151.3395801934072deg, rgb(255, 255, 255) 28.884%, rgb(240, 244, 255) 83.59%)' }}>
+        <div id="pricing" className="content-stretch flex flex-col gap-[90px] h-[1948px] items-center pt-[117px] relative shrink-0 w-full scroll-mt-[120px]" style={{ backgroundImage: 'linear-gradient(151.3395801934072deg, rgb(255, 255, 255) 28.884%, rgb(240, 244, 255) 83.59%)' }}>
           <div className="content-stretch flex flex-col gap-[24px] items-center not-italic relative shrink-0 text-center w-[796px]">
             <p className="font-bold leading-[55px] relative shrink-0 text-[#0f2242] text-[45px] tracking-[-0.9px] w-full">
               세대 수만큼만 내세요.
@@ -654,8 +653,7 @@ export default function HomePage() {
         </div>
 
         {/* FAQ */}
-        <div id="faq" className="scroll-mt-[80px]" />
-        <div className="bg-[#f0f4ff] content-stretch flex flex-col gap-[90px] h-[2046px] items-center pt-[107px] relative shrink-0 w-full">
+        <div id="faq" className="bg-[#f0f4ff] content-stretch flex flex-col gap-[90px] h-[2046px] items-center pt-[107px] relative shrink-0 w-full scroll-mt-[120px]">
           <div className="content-stretch flex flex-col gap-[24px] items-center not-italic relative shrink-0 text-center w-[796px]">
             <p className="font-bold leading-[55px] relative shrink-0 text-[#0f2242] text-[45px] tracking-[-0.9px] w-full">자주 묻는 질문</p>
             <p className="font-medium leading-[50px] relative shrink-0 text-[#5b6d8f] text-[25px] tracking-[-0.25px] w-full">
