@@ -13,8 +13,8 @@ const noto = Noto_Sans_KR({
 });
 
 export const metadata: Metadata = {
-  title: 'ANDNEW Admin Console',
-  description: 'ANDNEW 본사 관리 시스템',
+  title: '빌라톡 어드민',
+  description: '빌라톡 본사 관리 시스템',
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

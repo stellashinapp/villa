@@ -32,8 +32,8 @@ export default function ChromeShell({
     <div className="flex min-h-screen">
       <aside className="w-60 bg-sidebarBg border-r border-sidebarBorder fixed top-0 left-0 bottom-0 overflow-y-auto z-10">
         <div className="px-5 pt-6 pb-5 border-b border-sidebarBorder">
-          <h1 className="text-base font-extrabold text-white tracking-tight">ANDNEW</h1>
-          <span className="text-[10px] text-sidebarTextMuted tracking-[2px] font-semibold">ADMIN CONSOLE</span>
+          <h1 className="text-base font-extrabold text-white tracking-tight">빌라톡 어드민</h1>
+          <span className="text-[10px] text-sidebarTextMuted tracking-[2px] font-semibold">VILLATOLK ADMIN</span>
         </div>
 
         <nav className="px-3 py-3">
@@ -59,7 +59,7 @@ export default function ChromeShell({
 
       <main className="flex-1 ml-60 min-h-screen bg-bg">
         <header className="h-[60px] border-b border-border flex items-center justify-between px-7 bg-surface sticky top-0 z-5">
-          <span className="text-[15px] font-bold text-t1">ANDNEW Admin</span>
+          <span className="text-[15px] font-bold text-t1">빌라톡 어드민</span>
           <div className="flex items-center gap-3">
             {viewer && (
               <span className="text-xs text-t3">
