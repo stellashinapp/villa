@@ -17,9 +17,8 @@ export default function Header() {
         </Link>
         <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-gray-700">
           <Link href="/#features" className="hover:text-primary transition">기능</Link>
-          <Link href="/pricing" className="hover:text-primary transition">요금</Link>
-          <Link href="/download" className="hover:text-primary transition">다운로드</Link>
-          <Link href="/faq" className="hover:text-primary transition">FAQ</Link>
+          <Link href="/#pricing" className="hover:text-primary transition">요금</Link>
+          <Link href="/#faq" className="hover:text-primary transition">FAQ</Link>
         </nav>
         <Link
           href="/download"

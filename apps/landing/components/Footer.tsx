@@ -24,9 +24,9 @@ export default function Footer() {
             <h4 className="text-sm font-bold mb-3">서비스</h4>
             <ul className="space-y-2 text-xs text-gray-600">
               <li><Link href="/#features" className="hover:text-primary">기능</Link></li>
-              <li><Link href="/pricing" className="hover:text-primary">요금제</Link></li>
+              <li><Link href="/#pricing" className="hover:text-primary">요금제</Link></li>
               <li><Link href="/download" className="hover:text-primary">앱 다운로드</Link></li>
-              <li><Link href="/faq" className="hover:text-primary">FAQ</Link></li>
+              <li><Link href="/#faq" className="hover:text-primary">FAQ</Link></li>
             </ul>
           </div>
           <div>

@@ -1,6 +1,24 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from 'next/link';
 
+function CheckIcon({ color, size = 24 }: { color: string; size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="block"
+    >
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+}
+
 const imgImage1 = '/figma/image1.png';
 const imgRectangle10 = '/figma/rectangle10.png';
 const imgGroup12461 = '/figma/group12461.png';
@@ -42,15 +60,15 @@ export default function HomePage() {
             Villatolk
           </Link>
           <nav className="flex items-center gap-[48px]">
-            <Link href="/#features" className="text-[16px] font-semibold text-white hover:text-[#3d54ff] transition-colors">
+            <a href="#features" className="text-[16px] font-semibold text-white hover:text-[#3d54ff] transition-colors">
               기능
-            </Link>
-            <Link href="/pricing" className="text-[16px] font-semibold text-white hover:text-[#3d54ff] transition-colors">
+            </a>
+            <a href="#pricing" className="text-[16px] font-semibold text-white hover:text-[#3d54ff] transition-colors">
               요금
-            </Link>
-            <Link href="/faq" className="text-[16px] font-semibold text-white hover:text-[#3d54ff] transition-colors">
+            </a>
+            <a href="#faq" className="text-[16px] font-semibold text-white hover:text-[#3d54ff] transition-colors">
               FAQ
-            </Link>
+            </a>
             <Link
               href="/download"
               className="ml-[8px] px-[20px] py-[10px] bg-[#1f63e9] text-[16px] font-bold text-white rounded-[10px] hover:bg-[#3d54ff] transition-colors"
@@ -93,14 +111,14 @@ export default function HomePage() {
                   무료로 시작하기
                 </p>
               </Link>
-              <Link
-                href="/pricing"
+              <a
+                href="#pricing"
                 className="bg-[rgba(255,255,255,0.2)] border border-[rgba(235,235,235,0.5)] border-solid content-stretch flex h-[86px] items-center justify-center p-[10px] relative rounded-[15px] shrink-0 w-[295px] hover:bg-[rgba(255,255,255,0.35)] transition-colors"
               >
                 <p className="font-semibold leading-[25px] not-italic relative shrink-0 text-[20px] text-center text-white whitespace-nowrap">
                   요금제 보기
                 </p>
-              </Link>
+              </a>
             </div>
           </div>
           <div className="[grid-area:1/1] h-[679px] ml-[1371px] mt-[197px] relative w-[360px]">
@@ -239,8 +257,8 @@ export default function HomePage() {
                     '민원 · 주차 · 구독 관리',
                   ].map((label) => (
                     <div key={label} className="bg-[rgba(241,246,255,0.3)] content-stretch flex gap-[10px] h-[68px] items-center pl-[24px] relative rounded-[15px] shrink-0 w-[526px]">
-                      <div className="relative shrink-0 size-[32px]">
-                        <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgCheck02} />
+                      <div className="relative shrink-0 size-[32px] flex items-center justify-center">
+                        <CheckIcon color="#ffffff" size={26} />
                       </div>
                       <div className="font-semibold h-[32px] leading-[0] not-italic relative shrink-0 text-[22px] text-white tracking-[-0.44px] w-[277px]">
                         <p className="leading-[32px] mb-0">{label}</p>
@@ -266,8 +284,8 @@ export default function HomePage() {
                     '차량 등록 및 입주민 커뮤니티',
                   ].map((label) => (
                     <div key={label} className="bg-[#f1f6ff] content-stretch flex gap-[10px] h-[68px] items-center pl-[24px] relative rounded-[15px] shrink-0 w-[524px]">
-                      <div className="relative shrink-0 size-[32px]">
-                        <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgCheck3} />
+                      <div className="relative shrink-0 size-[32px] flex items-center justify-center">
+                        <CheckIcon color="#1f63e9" size={26} />
                       </div>
                       <p className="font-semibold h-[32px] leading-[32px] not-italic relative shrink-0 text-[#242d3d] text-[22px] tracking-[-0.44px] w-[277px]">
                         {label}
@@ -281,7 +299,7 @@ export default function HomePage() {
         </div>
 
         {/* 6 Features */}
-        <div className="bg-[#f8fbff] content-stretch flex flex-col gap-[112px] h-[1543px] items-center pt-[125px] relative shrink-0 w-full">
+        <div id="features" className="bg-[#f8fbff] content-stretch flex flex-col gap-[112px] h-[1543px] items-center pt-[125px] relative shrink-0 w-full scroll-mt-[80px]">
           <div className="content-stretch flex flex-col gap-[24px] items-center not-italic relative shrink-0 text-center w-[796px]">
             <p className="font-bold leading-[55px] relative shrink-0 text-[#0f2242] text-[45px] tracking-[-0.9px] w-full">
               관리에 필요한 것, 다 들어있어요.
@@ -395,6 +413,7 @@ export default function HomePage() {
         </div>
 
         {/* Pricing */}
+        <div id="pricing" className="scroll-mt-[80px]" />
         <div className="content-stretch flex flex-col gap-[90px] h-[1948px] items-center pt-[117px] relative shrink-0 w-full" style={{ backgroundImage: 'linear-gradient(151.3395801934072deg, rgb(255, 255, 255) 28.884%, rgb(240, 244, 255) 83.59%)' }}>
           <div className="content-stretch flex flex-col gap-[24px] items-center not-italic relative shrink-0 text-center w-[796px]">
             <p className="font-bold leading-[55px] relative shrink-0 text-[#0f2242] text-[45px] tracking-[-0.9px] w-full">
@@ -426,14 +445,14 @@ export default function HomePage() {
                 </div>
                 <p className="font-normal leading-[32px] relative shrink-0 text-[#7c7e83] text-[18px] tracking-[-0.36px] w-[197px]">VAT 별도</p>
               </div>
-              <div className="bg-[#3d54ff] content-stretch flex h-[61px] items-center justify-center relative rounded-[15px] shrink-0 w-full">
+              <Link href="/download" className="bg-[#3d54ff] content-stretch flex h-[61px] items-center justify-center relative rounded-[15px] shrink-0 w-full hover:bg-[#1f63e9] transition-colors">
                 <p className="flex-[1_0_0] font-semibold leading-[50px] min-w-px not-italic relative text-[20px] text-center text-white tracking-[-0.3px]">무료체험 시작</p>
-              </div>
+              </Link>
               <div className="content-stretch flex flex-col gap-[7px] items-start relative shrink-0">
                 {['관리비 청구 · 발송', '입주민 공지 / 알림', '민원 1:1 응대', '주차 관리', '커뮤니티 게시판', '카드 / 계좌 결제'].map((feat) => (
                   <div key={feat} className="content-stretch flex gap-[10px] h-[35px] items-center relative rounded-[15px] shrink-0 w-[391px]">
-                    <div className="relative shrink-0 size-[24px]">
-                      <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgCheck4} />
+                    <div className="relative shrink-0 size-[24px] flex items-center justify-center">
+                      <CheckIcon color="#1f63e9" size={20} />
                     </div>
                     <p className="font-medium h-[32px] leading-[32px] not-italic relative shrink-0 text-[#0f2242] text-[20px] tracking-[-0.4px] w-[277px]">{feat}</p>
                   </div>
@@ -460,14 +479,14 @@ export default function HomePage() {
                 </div>
                 <p className="font-normal leading-[32px] relative shrink-0 text-[#b9cbf4] text-[18px] tracking-[-0.36px] w-[197px]">VAT 별도</p>
               </div>
-              <div className="bg-white content-stretch flex h-[61px] items-center justify-center relative rounded-[15px] shrink-0 w-full">
+              <Link href="/download" className="bg-white content-stretch flex h-[61px] items-center justify-center relative rounded-[15px] shrink-0 w-full hover:bg-[#f1f6ff] transition-colors">
                 <p className="flex-[1_0_0] font-semibold leading-[50px] min-w-px not-italic relative text-[#1f63e9] text-[20px] text-center tracking-[-0.3px]">무료체험 시작</p>
-              </div>
+              </Link>
               <div className="content-stretch flex flex-col gap-[7px] items-start relative shrink-0">
                 {['소형 플랜 모든 기능', '자동 청구서 발행', '수납 현황 대시보드', '문자 알림 (예정)', '입주민 회원관리', '우선 고객지원'].map((feat) => (
                   <div key={feat} className="content-stretch flex gap-[10px] h-[35px] items-center relative rounded-[15px] shrink-0 w-[391px]">
-                    <div className="relative shrink-0 size-[24px]">
-                      <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgCheck5} />
+                    <div className="relative shrink-0 size-[24px] flex items-center justify-center">
+                      <CheckIcon color="#ffffff" size={20} />
                     </div>
                     <p className="font-medium h-[32px] leading-[32px] not-italic relative shrink-0 text-[20px] text-white tracking-[-0.4px] w-[277px]">{feat}</p>
                   </div>
@@ -494,14 +513,14 @@ export default function HomePage() {
                 </div>
                 <p className="font-normal leading-[32px] relative shrink-0 text-[#7c7e83] text-[18px] tracking-[-0.36px] w-[197px]">VAT 별도</p>
               </div>
-              <div className="bg-[#3d54ff] content-stretch flex h-[61px] items-center justify-center relative rounded-[15px] shrink-0 w-full">
+              <Link href="/download" className="bg-[#3d54ff] content-stretch flex h-[61px] items-center justify-center relative rounded-[15px] shrink-0 w-full hover:bg-[#1f63e9] transition-colors">
                 <p className="flex-[1_0_0] font-semibold leading-[50px] min-w-px not-italic relative text-[20px] text-center text-white tracking-[-0.3px]">무료체험 시작</p>
-              </div>
+              </Link>
               <div className="content-stretch flex flex-col gap-[7px] items-start relative shrink-0">
                 {['중형 플랜 모든 기능', '다중 빌라 통합관리', '월별 정산 리포트', 'CSV 데이터 내보내기', '전담 매니저 (예정)', 'API 액세스 (예정)'].map((feat) => (
                   <div key={feat} className="content-stretch flex gap-[10px] h-[35px] items-center relative rounded-[15px] shrink-0 w-[391px]">
-                    <div className="relative shrink-0 size-[24px]">
-                      <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgCheck4} />
+                    <div className="relative shrink-0 size-[24px] flex items-center justify-center">
+                      <CheckIcon color="#1f63e9" size={20} />
                     </div>
                     <p className="font-medium h-[32px] leading-[32px] not-italic relative shrink-0 text-[#0f2242] text-[20px] tracking-[-0.4px] w-[277px]">{feat}</p>
                   </div>
@@ -579,6 +598,7 @@ export default function HomePage() {
         </div>
 
         {/* FAQ */}
+        <div id="faq" className="scroll-mt-[80px]" />
         <div className="bg-[#f0f4ff] content-stretch flex flex-col gap-[90px] h-[2046px] items-center pt-[107px] relative shrink-0 w-full">
           <div className="content-stretch flex flex-col gap-[24px] items-center not-italic relative shrink-0 text-center w-[796px]">
             <p className="font-bold leading-[55px] relative shrink-0 text-[#0f2242] text-[45px] tracking-[-0.9px] w-full">자주 묻는 질문</p>
