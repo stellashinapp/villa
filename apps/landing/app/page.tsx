@@ -181,26 +181,83 @@ export default function HomePage() {
               </a>
             </div>
           </div>
-          <div className="[grid-area:1/1] h-[679px] ml-[1371px] mt-[197px] relative w-[360px]">
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-              <img alt="" className="absolute h-[115.46%] left-[-0.01%] max-w-none top-0 w-[100.03%]" src={imgGroup12461} />
-            </div>
-          </div>
-          <div className="[grid-area:1/1] grid-cols-[max-content] grid-rows-[max-content] inline-grid ml-[1130px] mt-[116px] place-items-start relative">
-            <div className="[grid-area:1/1] h-[701px] ml-0 mt-0 relative rounded-[64px] w-[321.257px]" style={{ backgroundImage: 'linear-gradient(90deg, rgb(244, 246, 255) 0%, rgb(244, 246, 255) 100%), linear-gradient(90deg, rgb(255, 255, 255) 0%, rgb(255, 255, 255) 100%)' }} />
-            <div className="[grid-area:1/1] h-[219.07px] ml-[5.77px] mt-[23.89px] relative w-[310.611px]">
-              <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgFrame2131} />
-            </div>
-            <div className="[grid-area:1/1] h-[350.835px] ml-[8.24px] mt-[244.65px] relative w-[308.145px]">
-              <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgFrame1021} />
-            </div>
-            <div className="[grid-area:1/1] h-[84.021px] ml-[8.24px] mt-[597.21px] relative w-[304.783px]">
-              <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <img alt="" className="absolute h-[258.46%] left-[-0.02%] max-w-none top-[0.49%] w-[100.05%]" src={imgFrame1022} />
+          {/* 폰 목업 2개 — CSS 로 직접 그림 (이미지 파일 없이 반응형, 깨진 figma 콜라주 대체) */}
+          <div className="[grid-area:1/1] flex gap-[24px] items-end ml-[1020px] mt-[100px] relative shrink-0 z-10">
+            {/* 폰 1: 시작 화면 (Villa Talk 스플래시) */}
+            <div className="w-[300px] h-[610px] rounded-[44px] bg-gradient-to-b from-[#dbe6ff] via-[#e9eeff] to-[#d8e2ff] shadow-[0_30px_60px_rgba(15,34,66,0.25)] border-[10px] border-[#1a1d26] overflow-hidden relative">
+              {/* notch */}
+              <div className="absolute top-[10px] left-1/2 -translate-x-1/2 w-[110px] h-[24px] bg-[#1a1d26] rounded-b-[14px] z-10" />
+              <div className="flex flex-col h-full pt-[50px] pb-[28px] px-[24px]">
+                <div className="flex-1 flex flex-col items-center justify-center">
+                  {/* 빌딩 일러스트 placeholder (CSS) */}
+                  <div className="relative w-[140px] h-[90px] mb-[16px]">
+                    <div className="absolute left-[10px] bottom-0 w-[42px] h-[60px] bg-[#9bb2e5] rounded-t-[6px]" />
+                    <div className="absolute left-[52px] bottom-0 w-[36px] h-[80px] bg-[#b7c6ed] rounded-t-[6px]" />
+                    <div className="absolute left-[88px] bottom-0 w-[42px] h-[55px] bg-[#9bb2e5] rounded-t-[6px]" />
+                    <div className="absolute top-[-12px] right-0 w-[28px] h-[24px] rounded-[10px] bg-[#1f63e9]" />
+                    <div className="absolute top-[6px] right-[8px] w-[8px] h-[8px] rounded-full bg-white" />
+                  </div>
+                  <div className="text-[28px] font-black tracking-tight leading-none mb-[2px]">
+                    <span className="text-[#1a1d26]">Villa</span>{' '}
+                    <span className="text-[#1f63e9]">Talk</span>
+                  </div>
+                  <p className="mt-[14px] text-[12px] text-[#5b6d8f] text-center leading-[18px]">관리자와 입주민 모두를 위한</p>
+                  <p className="text-[13px] font-bold text-[#1a1d26] text-center">스마트 공동 관리 서비스</p>
+                </div>
+                <div className="flex flex-col gap-[8px]">
+                  <button className="w-full h-[42px] rounded-[10px] bg-[#1f63e9] text-white text-[13px] font-bold">관리자로 시작</button>
+                  <button className="w-full h-[42px] rounded-[10px] bg-[#1a1d26] text-white text-[13px] font-bold">입주민으로 시작</button>
+                </div>
               </div>
             </div>
-            <div className="[grid-area:1/1] h-[701px] ml-0 mt-0 relative w-[321.258px]">
-              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup1245} />
+
+            {/* 폰 2: 대시보드 */}
+            <div className="w-[300px] h-[610px] rounded-[44px] bg-white shadow-[0_30px_60px_rgba(15,34,66,0.25)] border-[10px] border-[#1a1d26] overflow-hidden relative">
+              <div className="absolute top-[10px] left-1/2 -translate-x-1/2 w-[110px] h-[24px] bg-[#1a1d26] rounded-b-[14px] z-10" />
+              <div className="flex flex-col h-full pt-[44px] px-[14px] gap-[10px] overflow-hidden">
+                {/* 청색 총액 카드 */}
+                <div className="rounded-[16px] bg-gradient-to-br from-[#3756d4] to-[#1f63e9] text-white px-[16px] py-[18px] text-center">
+                  <div className="text-[11px] opacity-90 mb-[4px]">2026년 3월 총 관리비</div>
+                  <div className="text-[28px] font-black tracking-tight">
+                    877,000<span className="text-[14px] font-bold ml-[2px]">원</span>
+                  </div>
+                  <div className="text-[10px] opacity-80 mt-[4px]">세대당 109,625원 · 8세대</div>
+                  <div className="flex justify-center gap-[6px] mt-[8px]">
+                    <span className="px-[10px] py-[3px] bg-[#22c55e] rounded-full text-[10px] font-bold">납부완료</span>
+                    <span className="px-[10px] py-[3px] bg-[#f87171] rounded-full text-[10px] font-bold">미납</span>
+                  </div>
+                  <div className="mt-[8px] h-[6px] rounded-full bg-white/25 overflow-hidden">
+                    <div className="h-full w-1/2 bg-white" />
+                  </div>
+                  <div className="flex justify-between text-[10px] mt-[4px] opacity-90">
+                    <span>✓ 납부 4세대</span>
+                    <span>⚠ 미납 4세대</span>
+                  </div>
+                </div>
+                <div className="text-[11px] font-bold text-[#1a1d26] mt-[2px]">이번달 관리 현황</div>
+                {/* 미납 카드 */}
+                <div className="rounded-[12px] border border-[#ebebeb] px-[12px] py-[10px]">
+                  <div className="flex items-baseline justify-between mb-[6px]">
+                    <div>
+                      <div className="text-[20px] font-black text-[#ef4444] leading-none">4</div>
+                      <div className="text-[10px] text-[#5b6d8f] mt-[2px]">완납률 50%</div>
+                    </div>
+                    <div className="text-[14px] font-black text-[#1a1d26]">409,625원</div>
+                  </div>
+                  <button className="w-full h-[28px] rounded-[8px] bg-[#f87171] text-white text-[10px] font-bold">미납세대 독촉 보내기</button>
+                </div>
+                {/* 민원 카드 */}
+                <div className="rounded-[12px] border border-[#ebebeb] px-[12px] py-[10px]">
+                  <div className="flex items-baseline justify-between mb-[6px]">
+                    <div>
+                      <div className="text-[20px] font-black text-[#1a1d26] leading-none">1</div>
+                      <div className="text-[10px] text-[#5b6d8f] mt-[2px]">민원 메세지 대기 중</div>
+                    </div>
+                    <span className="text-[9px] px-[8px] py-[2px] rounded-full bg-[#dbe6ff] text-[#1f63e9] font-bold">대기</span>
+                  </div>
+                  <button className="w-full h-[28px] rounded-[8px] bg-[#1f63e9] text-white text-[10px] font-bold">바로 확인</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
