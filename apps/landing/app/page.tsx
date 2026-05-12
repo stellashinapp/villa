@@ -105,7 +105,7 @@ const imgLine3 = '/figma/line3.png';
 
 export default function HomePage() {
   return (
-    <div className="bg-white relative w-full overflow-x-hidden">
+    <div className="bg-white relative w-full overflow-x-clip">
       <div className="figma-page relative w-[1920px] mx-auto flex flex-col items-center">
         {/* Header — sticky 고정, 텍스트 로고 + 텍스트 nav + 앱 다운로드 CTA */}
         <header className="sticky top-0 z-50 w-[1920px] h-[68px] bg-[#0f2242] flex items-center justify-between px-[244px] shrink-0 shadow-[0_2px_12px_rgba(15,34,66,0.18)]">
