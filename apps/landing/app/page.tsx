@@ -181,84 +181,22 @@ export default function HomePage() {
               </a>
             </div>
           </div>
-          {/* 폰 목업 2개 — CSS 로 직접 그림 (이미지 파일 없이 반응형, 깨진 figma 콜라주 대체) */}
+          {/* 폰 목업 2개 — 보내주신 실제 앱 스크린샷 (반응형) */}
           <div className="[grid-area:1/1] flex gap-[24px] items-end ml-[1020px] mt-[100px] relative shrink-0 z-10">
-            {/* 폰 1: 시작 화면 (Villa Talk 스플래시) */}
-            <div className="w-[300px] h-[610px] rounded-[44px] bg-gradient-to-b from-[#dbe6ff] via-[#e9eeff] to-[#d8e2ff] shadow-[0_30px_60px_rgba(15,34,66,0.25)] border-[10px] border-[#1a1d26] overflow-hidden relative">
-              {/* notch */}
-              <div className="absolute top-[10px] left-1/2 -translate-x-1/2 w-[110px] h-[24px] bg-[#1a1d26] rounded-b-[14px] z-10" />
-              <div className="flex flex-col h-full pt-[50px] pb-[28px] px-[24px]">
-                <div className="flex-1 flex flex-col items-center justify-center">
-                  {/* 빌딩 일러스트 placeholder (CSS) */}
-                  <div className="relative w-[140px] h-[90px] mb-[16px]">
-                    <div className="absolute left-[10px] bottom-0 w-[42px] h-[60px] bg-[#9bb2e5] rounded-t-[6px]" />
-                    <div className="absolute left-[52px] bottom-0 w-[36px] h-[80px] bg-[#b7c6ed] rounded-t-[6px]" />
-                    <div className="absolute left-[88px] bottom-0 w-[42px] h-[55px] bg-[#9bb2e5] rounded-t-[6px]" />
-                    <div className="absolute top-[-12px] right-0 w-[28px] h-[24px] rounded-[10px] bg-[#1f63e9]" />
-                    <div className="absolute top-[6px] right-[8px] w-[8px] h-[8px] rounded-full bg-white" />
-                  </div>
-                  <div className="text-[28px] font-black tracking-tight leading-none mb-[2px]">
-                    <span className="text-[#1a1d26]">Villa</span>{' '}
-                    <span className="text-[#1f63e9]">Talk</span>
-                  </div>
-                  <p className="mt-[14px] text-[12px] text-[#5b6d8f] text-center leading-[18px]">관리자와 입주민 모두를 위한</p>
-                  <p className="text-[13px] font-bold text-[#1a1d26] text-center">스마트 공동 관리 서비스</p>
-                </div>
-                <div className="flex flex-col gap-[8px]">
-                  <button className="w-full h-[42px] rounded-[10px] bg-[#1f63e9] text-white text-[13px] font-bold">관리자로 시작</button>
-                  <button className="w-full h-[42px] rounded-[10px] bg-[#1a1d26] text-white text-[13px] font-bold">입주민으로 시작</button>
-                </div>
-              </div>
-            </div>
-
-            {/* 폰 2: 대시보드 */}
-            <div className="w-[300px] h-[610px] rounded-[44px] bg-white shadow-[0_30px_60px_rgba(15,34,66,0.25)] border-[10px] border-[#1a1d26] overflow-hidden relative">
-              <div className="absolute top-[10px] left-1/2 -translate-x-1/2 w-[110px] h-[24px] bg-[#1a1d26] rounded-b-[14px] z-10" />
-              <div className="flex flex-col h-full pt-[44px] px-[14px] gap-[10px] overflow-hidden">
-                {/* 청색 총액 카드 */}
-                <div className="rounded-[16px] bg-gradient-to-br from-[#3756d4] to-[#1f63e9] text-white px-[16px] py-[18px] text-center">
-                  <div className="text-[11px] opacity-90 mb-[4px]">2026년 3월 총 관리비</div>
-                  <div className="text-[28px] font-black tracking-tight">
-                    877,000<span className="text-[14px] font-bold ml-[2px]">원</span>
-                  </div>
-                  <div className="text-[10px] opacity-80 mt-[4px]">세대당 109,625원 · 8세대</div>
-                  <div className="flex justify-center gap-[6px] mt-[8px]">
-                    <span className="px-[10px] py-[3px] bg-[#22c55e] rounded-full text-[10px] font-bold">납부완료</span>
-                    <span className="px-[10px] py-[3px] bg-[#f87171] rounded-full text-[10px] font-bold">미납</span>
-                  </div>
-                  <div className="mt-[8px] h-[6px] rounded-full bg-white/25 overflow-hidden">
-                    <div className="h-full w-1/2 bg-white" />
-                  </div>
-                  <div className="flex justify-between text-[10px] mt-[4px] opacity-90">
-                    <span>✓ 납부 4세대</span>
-                    <span>⚠ 미납 4세대</span>
-                  </div>
-                </div>
-                <div className="text-[11px] font-bold text-[#1a1d26] mt-[2px]">이번달 관리 현황</div>
-                {/* 미납 카드 */}
-                <div className="rounded-[12px] border border-[#ebebeb] px-[12px] py-[10px]">
-                  <div className="flex items-baseline justify-between mb-[6px]">
-                    <div>
-                      <div className="text-[20px] font-black text-[#ef4444] leading-none">4</div>
-                      <div className="text-[10px] text-[#5b6d8f] mt-[2px]">완납률 50%</div>
-                    </div>
-                    <div className="text-[14px] font-black text-[#1a1d26]">409,625원</div>
-                  </div>
-                  <button className="w-full h-[28px] rounded-[8px] bg-[#f87171] text-white text-[10px] font-bold">미납세대 독촉 보내기</button>
-                </div>
-                {/* 민원 카드 */}
-                <div className="rounded-[12px] border border-[#ebebeb] px-[12px] py-[10px]">
-                  <div className="flex items-baseline justify-between mb-[6px]">
-                    <div>
-                      <div className="text-[20px] font-black text-[#1a1d26] leading-none">1</div>
-                      <div className="text-[10px] text-[#5b6d8f] mt-[2px]">민원 메세지 대기 중</div>
-                    </div>
-                    <span className="text-[9px] px-[8px] py-[2px] rounded-full bg-[#dbe6ff] text-[#1f63e9] font-bold">대기</span>
-                  </div>
-                  <button className="w-full h-[28px] rounded-[8px] bg-[#1f63e9] text-white text-[10px] font-bold">바로 확인</button>
-                </div>
-              </div>
-            </div>
+            <img
+              src="/figma/app-splash.png"
+              alt="빌라톡 앱 시작 화면 (Villa Talk)"
+              width={300}
+              height={610}
+              className="w-[300px] h-auto max-h-[640px] object-contain drop-shadow-[0_30px_60px_rgba(15,34,66,0.25)]"
+            />
+            <img
+              src="/figma/app-dashboard.png"
+              alt="빌라톡 앱 관리 대시보드 화면"
+              width={300}
+              height={610}
+              className="w-[300px] h-auto max-h-[640px] object-contain drop-shadow-[0_30px_60px_rgba(15,34,66,0.25)]"
+            />
           </div>
         </div>
 
