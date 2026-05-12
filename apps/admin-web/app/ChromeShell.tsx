@@ -6,6 +6,8 @@ const NAV_ITEMS = [
   { href: '/admins', icon: '👤', label: '관리자 관리', group: 'MANAGEMENT' },
   { href: '/villas', icon: '🏘️', label: '빌라 관리', group: 'MANAGEMENT' },
   { href: '/residents', icon: '👥', label: '입주민', group: 'MANAGEMENT' },
+  { href: '/cs', icon: '🛟', label: '고객지원 (CS)', group: 'SUPPORT' },
+  { href: '/inquiries', icon: '📩', label: '민원 모니터링', group: 'SUPPORT' },
   { href: '/subscriptions', icon: '📈', label: '구독·매출', group: 'REVENUE' },
   { href: '/payments', icon: '💳', label: '결제 내역', group: 'REVENUE' },
   { href: '/schema', icon: '🗄️', label: 'DB / API', group: 'SYSTEM' },
