@@ -33,7 +33,7 @@ export default function HomePage() {
   return (
     <div className="bg-white relative w-full overflow-x-hidden">
       <div className="figma-page relative w-[1920px] mx-auto flex flex-col items-center">
-        {/* Header — 텍스트 로고 + 텍스트 nav (이미지 nav 교체) */}
+        {/* Header — 텍스트 로고 + 텍스트 nav + 앱 다운로드 CTA */}
         <header className="w-[1920px] h-[68px] bg-[#0f2242] flex items-center justify-between px-[244px] shrink-0">
           <Link
             href="/"
@@ -41,7 +41,7 @@ export default function HomePage() {
           >
             Villatolk
           </Link>
-          <nav className="flex items-center gap-[56px]">
+          <nav className="flex items-center gap-[48px]">
             <Link href="/#features" className="text-[16px] font-semibold text-white hover:text-[#3d54ff] transition-colors">
               기능
             </Link>
@@ -50,6 +50,12 @@ export default function HomePage() {
             </Link>
             <Link href="/faq" className="text-[16px] font-semibold text-white hover:text-[#3d54ff] transition-colors">
               FAQ
+            </Link>
+            <Link
+              href="/download"
+              className="ml-[8px] px-[20px] py-[10px] bg-[#1f63e9] text-[16px] font-bold text-white rounded-[10px] hover:bg-[#3d54ff] transition-colors"
+            >
+              앱 다운로드
             </Link>
           </nav>
         </header>
@@ -79,16 +85,22 @@ export default function HomePage() {
               </p>
             </div>
             <div className="content-stretch flex gap-[27px] items-center relative shrink-0">
-              <div className="bg-[#1f63e9] content-stretch flex h-[86px] items-center justify-center p-[10px] relative rounded-[15px] shrink-0 w-[295px]">
+              <Link
+                href="/download"
+                className="bg-[#1f63e9] content-stretch flex h-[86px] items-center justify-center p-[10px] relative rounded-[15px] shrink-0 w-[295px] hover:bg-[#3d54ff] transition-colors"
+              >
                 <p className="font-semibold leading-[25px] not-italic relative shrink-0 text-[20px] text-center text-white whitespace-nowrap">
                   무료로 시작하기
                 </p>
-              </div>
-              <div className="bg-[rgba(255,255,255,0.2)] border border-[rgba(235,235,235,0.5)] border-solid content-stretch flex h-[86px] items-center justify-center p-[10px] relative rounded-[15px] shrink-0 w-[295px]">
+              </Link>
+              <Link
+                href="/pricing"
+                className="bg-[rgba(255,255,255,0.2)] border border-[rgba(235,235,235,0.5)] border-solid content-stretch flex h-[86px] items-center justify-center p-[10px] relative rounded-[15px] shrink-0 w-[295px] hover:bg-[rgba(255,255,255,0.35)] transition-colors"
+              >
                 <p className="font-semibold leading-[25px] not-italic relative shrink-0 text-[20px] text-center text-white whitespace-nowrap">
                   요금제 보기
                 </p>
-              </div>
+              </Link>
             </div>
           </div>
           <div className="[grid-area:1/1] h-[679px] ml-[1371px] mt-[197px] relative w-[360px]">
@@ -554,7 +566,11 @@ export default function HomePage() {
                     <span className="leading-[37px]">입주민 결제 수수료는 별도 (토스페이먼츠 표준 요율).</span>
                   </li>
                   <li className="ms-[30px]">
-                    <span className="leading-[37px]">기업 도입 · 맞춤 견적은 villatolk@andnew.kr로 문의해 주세요.</span>
+                    <span className="leading-[37px]">
+                      기업 도입 · 맞춤 견적은{' '}
+                      <a href="mailto:villatolk@andnew.kr" className="text-[#1f63e9] hover:underline">villatolk@andnew.kr</a>
+                      로 문의해 주세요.
+                    </span>
                   </li>
                 </ul>
               </div>
@@ -566,7 +582,11 @@ export default function HomePage() {
         <div className="bg-[#f0f4ff] content-stretch flex flex-col gap-[90px] h-[2046px] items-center pt-[107px] relative shrink-0 w-full">
           <div className="content-stretch flex flex-col gap-[24px] items-center not-italic relative shrink-0 text-center w-[796px]">
             <p className="font-bold leading-[55px] relative shrink-0 text-[#0f2242] text-[45px] tracking-[-0.9px] w-full">자주 묻는 질문</p>
-            <p className="font-medium leading-[50px] relative shrink-0 text-[#5b6d8f] text-[25px] tracking-[-0.25px] w-full">필요한 답이 없으면 villatolk@andnew.kr로 문의해 주세요.</p>
+            <p className="font-medium leading-[50px] relative shrink-0 text-[#5b6d8f] text-[25px] tracking-[-0.25px] w-full">
+              필요한 답이 없으면{' '}
+              <a href="mailto:villatolk@andnew.kr" className="text-[#1f63e9] hover:underline">villatolk@andnew.kr</a>
+              로 문의해 주세요.
+            </p>
           </div>
           <div className="content-stretch flex flex-col gap-[25px] items-start relative shrink-0">
             {/* Q1 expanded */}
