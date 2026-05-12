@@ -1,7 +1,21 @@
 import Link from 'next/link';
 import { createServerClient } from '@/lib/supabase-server';
+import { getViewerEmail, canRevealPII, isSuperAdmin } from '@/lib/auth-context';
+import { logAdminAccess } from '@/lib/access-log';
+import { maskName, maskPhone, maskEmail } from '@/lib/mask';
+import RevealToggle from '../../residents/RevealToggle';
 
 export const dynamic = 'force-dynamic';
+
+function maskAccountNumber(n: string | null | undefined): string {
+  if (!n) return '';
+  const d = String(n).replace(/[^0-9-]/g, '');
+  if (d.length < 6) return d;
+  // 마지막 4자리만 노출
+  const tail = d.slice(-4);
+  const head = d.slice(0, 3);
+  return `${head}${'*'.repeat(Math.max(d.length - 7, 0))}${tail}`;
+}
 
 type Admin = {
   id: string;
@@ -112,8 +126,25 @@ const SEV_DOT: Record<Severity, string> = {
   info: 'bg-pri',
 };
 
-export default async function AdminDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function AdminDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ reveal?: string }>;
+}) {
   const { id } = await params;
+  const sp = await searchParams;
+  const viewer = await getViewerEmail();
+  const reveal = canRevealPII(viewer, sp.reveal);
+  const superAdmin = isSuperAdmin(viewer);
+
+  await logAdminAccess({
+    path: `/admins/${id}`,
+    viewerEmail: viewer,
+    payload: { reveal, target_admin_id: id },
+  });
+
   const supabase = createServerClient();
 
   const { data: adminData, error: adminErr } = await supabase
@@ -378,12 +409,26 @@ export default async function AdminDetailPage({ params }: { params: Promise<{ id
 
   const subStyle = STATUS_STYLE[subStatus];
 
+  const displayName = reveal ? (admin.name ?? '(이름 없음)') : (admin.name ? maskName(admin.name) : '(이름 없음)');
+  const displayEmail = reveal ? admin.email : maskEmail(admin.email);
+  const displayPhone = reveal ? fmtPhone(admin.phone) : maskPhone(admin.phone);
+  const crumbName = reveal ? (admin.name ?? admin.email) : (admin.name ? maskName(admin.name) : maskEmail(admin.email));
+
   return (
     <div>
-      <div className="flex items-center gap-2 text-sm text-t3 mb-5">
-        <Link href="/admins" className="hover:text-t1 transition-colors">관리자 목록</Link>
-        <span>/</span>
-        <span className="text-t1 font-semibold">{admin.name ?? admin.email}</span>
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-2 text-sm text-t3">
+          <Link href="/admins" className="hover:text-t1 transition-colors">관리자 목록</Link>
+          <span>/</span>
+          <span className="text-t1 font-semibold">{crumbName}</span>
+        </div>
+        <RevealToggle reveal={reveal} canReveal={superAdmin} />
+      </div>
+
+      <div className="bg-priL/40 border border-pri/20 text-priT rounded-[10px] px-4 py-2.5 mb-4 text-xs">
+        {reveal
+          ? '🔓 PII 풀 노출 모드. 모든 열람은 1년 이상 보관되는 접근로그에 기록됩니다.'
+          : '🔒 이름·이메일·연락처·계좌는 마스킹 처리됩니다. 슈퍼관리자는 우측 토글로 풀 노출 가능.'}
       </div>
 
       {/* 프로필 */}
@@ -391,7 +436,7 @@ export default async function AdminDetailPage({ params }: { params: Promise<{ id
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2 flex-wrap">
-              <h2 className="text-xl font-bold">{admin.name ?? '(이름 없음)'}</h2>
+              <h2 className="text-xl font-bold">{displayName}</h2>
               <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${subStyle.cls}`}>
                 {subStyle.label}
               </span>
@@ -399,9 +444,9 @@ export default async function AdminDetailPage({ params }: { params: Promise<{ id
                 <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-warnL text-warn">슈퍼관리자</span>
               )}
             </div>
-            <p className="text-sm text-t3 mb-4">{admin.email}</p>
+            <p className="text-sm text-t3 mb-4">{displayEmail}</p>
             <div className="grid grid-cols-4 gap-4 text-sm">
-              <Info label="연락처" value={fmtPhone(admin.phone)} />
+              <Info label="연락처" value={displayPhone || '-'} />
               <Info label="가입일" value={`${fmtDate(admin.created_at)} (D+${signupDays})`} />
               <Info label="관리 빌라" value={`${activeVillas.length}개`} valueCls="text-pri font-bold" />
               <Info label="총 세대" value={`${totalUnits}세대`} valueCls="text-[#4DA6FF] font-bold" />
@@ -569,7 +614,8 @@ export default async function AdminDetailPage({ params }: { params: Promise<{ id
                   const planKey = item?.plan ?? null;
                   const planLabel = planKey ? (PLAN_KO[planKey] ?? planKey) : '미설정';
                   const price = item?.price ?? (planKey ? PLAN_PRICE[planKey] : 0);
-                  const account = [v.account_bank, v.account_number].filter(Boolean).join(' ');
+                  const accountNumber = reveal ? v.account_number : maskAccountNumber(v.account_number);
+                  const account = [v.account_bank, accountNumber].filter(Boolean).join(' ');
                   return (
                     <tr key={v.id} className="border-b border-border last:border-0 hover:bg-priL transition-colors">
                       <td className="px-5 py-3.5 font-semibold text-t1">{v.name}</td>
@@ -758,7 +804,7 @@ export default async function AdminDetailPage({ params }: { params: Promise<{ id
           <div>admin.id: {admin.id}</div>
           <div>admin.auth_id: {admin.auth_id ?? '(없음)'}</div>
           <div>admin.role: {admin.role}</div>
-          <div>admin.email: {admin.email}</div>
+          <div>admin.email: {reveal ? admin.email : maskEmail(admin.email)}</div>
           <div>auth.last_sign_in_at: {lastSignInAt ?? '(없음)'}</div>
           <div>auth.email_confirmed_at: {signupConfirmedAt ?? '(없음)'}</div>
           <div>subscription.id: {sub?.id ?? '(없음)'}</div>

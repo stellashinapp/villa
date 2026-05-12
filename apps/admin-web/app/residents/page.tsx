@@ -1,5 +1,9 @@
 import { createServerClient } from '@/lib/supabase-server';
+import { getViewerEmail, canRevealPII, isSuperAdmin } from '@/lib/auth-context';
+import { logAdminAccess } from '@/lib/access-log';
+import { maskName, maskPhone } from '@/lib/mask';
 import ResidentsTable, { type ResidentRow } from './ResidentsTable';
+import RevealToggle from './RevealToggle';
 
 type Row = {
   id: string;
@@ -25,7 +29,6 @@ function formatPhone(p: string) {
   return p;
 }
 
-// '101' 또는 '101호' 가 섞여 들어와도 '101호' 로 통일
 function normalizeHo(raw: string | null | undefined): string {
   if (!raw) return '-';
   const s = String(raw).trim();
@@ -33,7 +36,22 @@ function normalizeHo(raw: string | null | undefined): string {
   return s.endsWith('호') ? s : `${s}호`;
 }
 
-export default async function ResidentsPage() {
+export default async function ResidentsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ reveal?: string }>;
+}) {
+  const sp = await searchParams;
+  const viewer = await getViewerEmail();
+  const reveal = canRevealPII(viewer, sp.reveal);
+  const superAdmin = isSuperAdmin(viewer);
+
+  await logAdminAccess({
+    path: '/residents',
+    viewerEmail: viewer,
+    payload: { reveal },
+  });
+
   const supabase = createServerClient();
 
   const { data: residents, error } = await supabase
@@ -65,7 +83,6 @@ export default async function ResidentsPage() {
 
   const rows = residents ?? [];
 
-  // 납부 상태 계산 (최신 bill_month 기준)
   let paidIds = new Set<string>();
   const ids = rows.map(r => r.id);
   if (ids.length > 0) {
@@ -94,20 +111,22 @@ export default async function ResidentsPage() {
 
   const tableRows: ResidentRow[] = active.map(r => ({
     id: r.id,
-    name: r.name,
-    phone: formatPhone(r.phone),
+    name: reveal ? r.name : maskName(r.name),
+    phone: reveal ? formatPhone(r.phone) : maskPhone(r.phone),
     villaName: r.units?.villas?.name ?? '-',
     adminLabel: r.units?.villas?.admins?.name ?? r.units?.villas?.admins?.email ?? '-',
     ho: normalizeHo(r.units?.ho_number),
     isPaid: paidIds.has(r.id),
   }));
 
-  // 빌라 필터 옵션 (active 거주민 기준, 중복 제거)
   const villaOptions = Array.from(new Set(tableRows.map(r => r.villaName).filter(v => v && v !== '-'))).sort();
 
   return (
     <div>
-      <h2 className="text-lg font-bold mb-5">입주민</h2>
+      <div className="flex items-center justify-between mb-5">
+        <h2 className="text-lg font-bold">입주민</h2>
+        <RevealToggle reveal={reveal} canReveal={superAdmin} />
+      </div>
 
       <div className="grid grid-cols-3 gap-4 mb-6">
         {[
@@ -120,6 +139,12 @@ export default async function ResidentsPage() {
             <div className={`text-2xl font-extrabold ${k.color}`}>{k.value}</div>
           </div>
         ))}
+      </div>
+
+      <div className="bg-priL/40 border border-pri/20 text-priT rounded-[10px] px-4 py-2.5 mb-4 text-xs">
+        {reveal
+          ? '🔓 PII 풀 노출 모드. 모든 열람은 1년 이상 보관되는 접근로그에 기록됩니다.'
+          : '🔒 이름·연락처는 마스킹 처리됩니다. 슈퍼관리자는 우측 토글로 풀 노출 가능.'}
       </div>
 
       <ResidentsTable rows={tableRows} villaOptions={villaOptions} />

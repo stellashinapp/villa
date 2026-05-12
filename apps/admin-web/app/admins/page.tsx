@@ -1,5 +1,9 @@
 import { createServerClient } from '@/lib/supabase-server';
+import { getViewerEmail, canRevealPII, isSuperAdmin } from '@/lib/auth-context';
+import { logAdminAccess } from '@/lib/access-log';
+import { maskName, maskPhone, maskEmail } from '@/lib/mask';
 import AdminsTable, { type AdminRow } from './AdminsTable';
+import RevealToggle from '../residents/RevealToggle';
 
 type RawAdmin = {
   id: string;
@@ -30,7 +34,22 @@ function volumeDiscount(count: number) {
 
 export const dynamic = 'force-dynamic';
 
-export default async function AdminsPage() {
+export default async function AdminsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ reveal?: string }>;
+}) {
+  const sp = await searchParams;
+  const viewer = await getViewerEmail();
+  const reveal = canRevealPII(viewer, sp.reveal);
+  const superAdmin = isSuperAdmin(viewer);
+
+  await logAdminAccess({
+    path: '/admins',
+    viewerEmail: viewer,
+    payload: { reveal },
+  });
+
   const supabase = createServerClient();
 
   const { data: admins, error } = await supabase
@@ -55,7 +74,6 @@ export default async function AdminsPage() {
 
   const rawRows = (admins ?? []) as RawAdmin[];
 
-  // 세대수 합계용 — units 별도 카운트
   const adminIds = rawRows.map(a => a.id);
   let unitsByAdmin = new Map<string, number>();
   if (adminIds.length > 0) {
@@ -76,11 +94,12 @@ export default async function AdminsPage() {
     const baseAmount = items.reduce((s, it) => s + (it.price ?? 0), 0);
     const mrr = Math.round(baseAmount * (1 - volumeDiscount(items.length)));
     const status = sub?.status ?? 'none';
+    const displayName = a.name ?? a.email;
     return {
       id: a.id,
-      name: a.name ?? a.email,
-      email: a.email,
-      phone: formatPhone(a.phone),
+      name: reveal ? displayName : (a.name ? maskName(a.name) : maskEmail(a.email)),
+      email: reveal ? a.email : maskEmail(a.email),
+      phone: reveal ? formatPhone(a.phone) : maskPhone(a.phone),
       villas: villaCount,
       units: unitsCount,
       mrr,
@@ -96,7 +115,10 @@ export default async function AdminsPage() {
 
   return (
     <div>
-      <h2 className="text-lg font-bold mb-5">관리자 관리</h2>
+      <div className="flex items-center justify-between mb-5">
+        <h2 className="text-lg font-bold">관리자 관리</h2>
+        <RevealToggle reveal={reveal} canReveal={superAdmin} />
+      </div>
 
       <div className="grid grid-cols-3 gap-4 mb-6">
         {[
@@ -109,6 +131,12 @@ export default async function AdminsPage() {
             <div className={`text-2xl font-extrabold ${k.color}`}>{k.value}</div>
           </div>
         ))}
+      </div>
+
+      <div className="bg-priL/40 border border-pri/20 text-priT rounded-[10px] px-4 py-2.5 mb-4 text-xs">
+        {reveal
+          ? '🔓 PII 풀 노출 모드. 모든 열람은 1년 이상 보관되는 접근로그에 기록됩니다.'
+          : '🔒 관리자 이름·이메일·연락처는 마스킹 처리됩니다. 슈퍼관리자는 우측 토글로 풀 노출 가능.'}
       </div>
 
       <AdminsTable rows={enriched} />
