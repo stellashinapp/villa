@@ -181,21 +181,21 @@ export default function HomePage() {
               </a>
             </div>
           </div>
-          {/* 폰 목업 2개 — 보내주신 실제 앱 스크린샷 (반응형) */}
-          <div className="[grid-area:1/1] flex gap-[24px] items-end ml-[1020px] mt-[100px] relative shrink-0 z-10">
+          {/* 폰 목업 2개 — 보내주신 실제 앱 스크린샷 (figma 콜라주 원래 위치 유지) */}
+          <div className="[grid-area:1/1] flex gap-[20px] items-center ml-[1080px] mt-[116px] relative shrink-0 z-10">
             <img
               src="/figma/app-splash.png"
               alt="빌라톡 앱 시작 화면 (Villa Talk)"
               width={300}
               height={610}
-              className="w-[300px] h-auto max-h-[640px] object-contain drop-shadow-[0_30px_60px_rgba(15,34,66,0.25)]"
+              className="w-[300px] h-[610px] object-cover rounded-[40px] drop-shadow-[0_30px_60px_rgba(15,34,66,0.25)]"
             />
             <img
               src="/figma/app-dashboard.png"
               alt="빌라톡 앱 관리 대시보드 화면"
               width={300}
               height={610}
-              className="w-[300px] h-auto max-h-[640px] object-contain drop-shadow-[0_30px_60px_rgba(15,34,66,0.25)]"
+              className="w-[300px] h-[610px] object-cover rounded-[40px] drop-shadow-[0_30px_60px_rgba(15,34,66,0.25)]"
             />
           </div>
         </div>
