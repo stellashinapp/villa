@@ -49,12 +49,11 @@ export default function SignupStep1Screen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  // __DEV__ 일 때만 더미 데이터로 자동 채움 (이메일/아이디는 timestamp 로 매번 새로 — 중복 방지)
+  // __DEV__ 일 때만 더미 데이터로 자동 채움 (이메일은 timestamp 로 매번 새로 — 중복 방지)
   const devSuffix = String(Date.now()).slice(-6);
   const [name, setName] = useState(__DEV__ ? '김테스트' : '');
   const [phone, setPhone] = useState(__DEV__ ? '01012345678' : '');
   const [email, setEmail] = useState(__DEV__ ? `admin${devSuffix}@andnew.kr` : '');
-  const [username, setUsername] = useState(__DEV__ ? `admin${devSuffix}` : '');
   const [password, setPassword] = useState(__DEV__ ? 'Villatolk1234!' : '');
   const [passwordConfirm, setPasswordConfirm] = useState(__DEV__ ? 'Villatolk1234!' : '');
 
@@ -149,12 +148,9 @@ export default function SignupStep1Screen() {
     else if (!/^01[0-9]{8,9}$/.test(phone.replace(/-/g, '')))
       e.phone = '올바른 전화번호를 입력해주세요';
 
-    if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+    if (!email.trim()) e.email = '이메일을 입력해주세요 (로그인 ID)';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
       e.email = '올바른 이메일 형식을 입력해주세요';
-
-    if (!username.trim()) e.username = '아이디를 입력해주세요';
-    else if (username.trim().length < 4)
-      e.username = '아이디는 4자 이상이어야 합니다';
 
     if (!password) e.password = '비밀번호를 입력해주세요';
     else if (password.length < 6)
@@ -172,7 +168,6 @@ export default function SignupStep1Screen() {
       name: true,
       phone: true,
       email: true,
-      username: true,
       password: true,
       passwordConfirm: true,
     });
@@ -188,7 +183,7 @@ export default function SignupStep1Screen() {
       await saveSignupData({
         name,
         phone,
-        email: email || `${username}@villatolk.app`,
+        email: email.trim().toLowerCase(),
         password,
       });
       router.push('/(auth)/signup/step2-villa');
@@ -298,13 +293,9 @@ export default function SignupStep1Screen() {
             placeholder: '01012345678',
             keyboardType: 'phone-pad',
           })}
-          {renderInput('이메일', email, setEmail, 'email', {
+          {renderInput('이메일 (로그인 ID)', email, setEmail, 'email', {
             placeholder: 'example@email.com',
             keyboardType: 'email-address',
-            optional: true,
-          })}
-          {renderInput('아이디', username, setUsername, 'username', {
-            placeholder: '4자 이상',
           })}
           {renderInput('비밀번호', password, setPassword, 'password', {
             placeholder: '6자 이상',
