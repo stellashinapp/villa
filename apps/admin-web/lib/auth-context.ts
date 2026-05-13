@@ -8,6 +8,7 @@
  * 슈퍼만 ?reveal=1 으로 PII 풀 노출 가능. 외엔 항상 마스킹.
  */
 import { cookies } from 'next/headers';
+import { createServerClient } from './supabase-server';
 
 const VIEWER_COOKIE = 'villatolk_viewer_email';
 
@@ -16,6 +17,10 @@ export async function getViewerEmail(): Promise<string | null> {
   return c.get(VIEWER_COOKIE)?.value ?? null;
 }
 
+/**
+ * 동기 판정 — SUPER_ADMIN_EMAILS env 화이트리스트만 검사.
+ * DB 호출 없이 빠르게 확인할 때 사용 (RevealToggle 등).
+ */
 export function isSuperAdmin(email: string | null | undefined): boolean {
   if (!email) return false;
   const list = (process.env.SUPER_ADMIN_EMAILS ?? '')
@@ -23,6 +28,26 @@ export function isSuperAdmin(email: string | null | undefined): boolean {
     .map(s => s.trim().toLowerCase())
     .filter(Boolean);
   return list.includes(email.toLowerCase());
+}
+
+/**
+ * 비동기 판정 — env 화이트리스트 ∪ admins.role='super' DB 조회.
+ * 로그인 게이트 등 정확한 판정이 필요한 곳에서 사용. SUPER_ADMIN_EMAILS env 없어도 작동.
+ */
+export async function isSuperAdminAsync(email: string | null | undefined): Promise<boolean> {
+  if (!email) return false;
+  if (isSuperAdmin(email)) return true;
+  try {
+    const supabase = createServerClient();
+    const { data } = await supabase
+      .from('admins')
+      .select('role')
+      .eq('email', email.toLowerCase())
+      .maybeSingle();
+    return data?.role === 'super';
+  } catch {
+    return false;
+  }
 }
 
 /** ?reveal=1 + 슈퍼관리자 인 경우만 PII 마스킹 해제 */

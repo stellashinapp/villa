@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
-import { isSuperAdmin } from '@/lib/auth-context';
+import { isSuperAdminAsync } from '@/lib/auth-context';
 import { logAdminAccess } from '@/lib/access-log';
 import { createServerClient } from '@/lib/supabase-server';
 
@@ -50,7 +50,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: '이메일·비밀번호를 입력해 주세요' }, { status: 400 });
   }
 
-  if (!isSuperAdmin(email)) {
+  if (!(await isSuperAdminAsync(email))) {
     return NextResponse.json(
       { error: '본사 콘솔 접근 권한이 없는 계정입니다' },
       { status: 403 },
