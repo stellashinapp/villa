@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 type Resident = {
   id: string;
@@ -120,6 +121,13 @@ export default function ResidentBillsShell() {
             💳 입금 계좌: <span className="font-bold">{villa.account_bank} {villa.account_number}</span>
           </div>
         )}
+
+        <Link
+          href="/resident/moveout"
+          className="block mt-5 bg-white border border-border rounded-2xl px-4 py-3 text-center text-xs text-t2 hover:bg-warnL hover:text-warn hover:border-warn/30 transition-colors"
+        >
+          📦 이사 가시나요? — 이주 신청
+        </Link>
       </div>
     </div>
   );

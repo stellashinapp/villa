@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 
 type Profile = { id: string; name: string | null; email: string };
@@ -13,6 +14,7 @@ export default function AdminHomeShell() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [villas, setVillas] = useState<Villa[]>([]);
   const [sub, setSub] = useState<Subscription | null>(null);
+  const [pendingCount, setPendingCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -44,6 +46,18 @@ export default function AdminHomeShell() {
       ]);
       setVillas((villasData ?? []) as Villa[]);
       setSub(subData as Subscription | null);
+
+      // 신청 대기 카운트 (pending + pending_moveout)
+      const villaIds = ((villasData ?? []) as Villa[]).map(v => v.id);
+      if (villaIds.length > 0) {
+        const { count } = await supabase
+          .from('residents')
+          .select('id, units!inner(villa_id)', { count: 'exact', head: true })
+          .in('units.villa_id', villaIds)
+          .in('status', ['pending', 'pending_moveout']);
+        setPendingCount(count ?? 0);
+      }
+
       setLoading(false);
     })();
   }, [router]);
@@ -84,6 +98,22 @@ export default function AdminHomeShell() {
           <div className="text-xs opacity-80">{sub.card_brand} ····{sub.card_last4 ?? ''}</div>
         )}
       </div>
+
+      {/* 신청 대기 — 있을 때만 표시 */}
+      {pendingCount > 0 && (
+        <Link
+          href="/admin/applications"
+          className="block bg-warn text-white rounded-2xl p-4 mb-5 active:scale-[.98] transition-transform"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-xs font-bold opacity-80 tracking-widest">📮 신청 대기</div>
+              <div className="text-lg font-extrabold mt-0.5">{pendingCount}건 처리 필요</div>
+            </div>
+            <span className="text-2xl">›</span>
+          </div>
+        </Link>
+      )}
 
       {/* 빌라 목록 */}
       <h2 className="text-xs font-bold text-t3 tracking-widest mb-3">내 빌라 ({villas.length})</h2>

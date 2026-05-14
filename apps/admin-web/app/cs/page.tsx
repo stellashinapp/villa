@@ -88,10 +88,21 @@ export default async function CSPage({
 
   const supabase = createServerClient();
 
+  type PendingResident = {
+    id: string;
+    name: string;
+    phone: string;
+    status: 'pending' | 'pending_moveout';
+    applied_at: string | null;
+    move_out_date: string | null;
+    units: { ho_number: string; villas: { name: string; admins: { name: string | null; email: string } | null } } | null;
+  };
+
   const [
     { data: messages },
     { data: admins },
     { data: accessLogs },
+    { data: pendingResidents },
   ] = await Promise.all([
     supabase
       .from('messages')
@@ -119,11 +130,24 @@ export default async function CSPage({
       .order('created_at', { ascending: false })
       .limit(30)
       .returns<AccessLogRow[]>(),
+    supabase
+      .from('residents')
+      .select(`
+        id, name, phone, status, applied_at, move_out_date,
+        units:unit_id ( ho_number, villas:villa_id ( name, admins:admin_id ( name, email ) ) )
+      `)
+      .in('status', ['pending', 'pending_moveout'])
+      .order('applied_at', { ascending: true })
+      .returns<PendingResident[]>(),
   ]);
 
   const msgRows = messages ?? [];
   const adminRows = admins ?? [];
   const logRows = accessLogs ?? [];
+
+  // ===== 0. 입주민 신청·이주 대기 =====
+  const pendingApps = (pendingResidents ?? []).filter(r => r.status === 'pending');
+  const pendingMoveouts = (pendingResidents ?? []).filter(r => r.status === 'pending_moveout');
 
   // ===== 1. 답변 지연 민원 =====
   const pendingMessages = msgRows.filter(m => (m.message_replies?.length ?? 0) === 0);
@@ -314,6 +338,62 @@ export default async function CSPage({
           hint={`전체 ${msgRows.length}건 중`}
         />
       </div>
+
+      {/* 0. 입주민 신청·이주 대기 */}
+      <Section
+        title="입주·이주 신청 대기"
+        countLabel={`신청 ${pendingApps.length} / 이주 ${pendingMoveouts.length}`}
+        accent={(pendingApps.length + pendingMoveouts.length) > 0 ? 'warn' : 'ok'}
+        hint="PWA 에서 입주민이 보낸 신청. 관리자(앱·PWA)가 승인·거부 처리. 본사는 모니터링용."
+      >
+        {pendingApps.length + pendingMoveouts.length === 0 ? (
+          <EmptyRow>현재 대기 중인 신청 없음 👍</EmptyRow>
+        ) : (
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border text-t3 text-xs">
+                <th className="text-left px-5 py-3 font-medium">종류</th>
+                <th className="text-left px-5 py-3 font-medium">빌라 / 호실</th>
+                <th className="text-left px-5 py-3 font-medium">신청자</th>
+                <th className="text-left px-5 py-3 font-medium">담당 관리자</th>
+                <th className="text-left px-5 py-3 font-medium">신청일</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[...pendingApps, ...pendingMoveouts].slice(0, 20).map(r => {
+                const isMoveout = r.status === 'pending_moveout';
+                const adminObj = r.units?.villas?.admins;
+                return (
+                  <tr key={r.id} className="border-b border-border last:border-0 hover:bg-priL transition-colors">
+                    <td className="px-5 py-3.5">
+                      <span className={`px-2 py-0.5 rounded text-xs font-bold ${isMoveout ? 'bg-warnL text-warn' : 'bg-priL text-priT'}`}>
+                        {isMoveout ? '📦 이주' : '📮 입주'}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3.5 text-t2">
+                      <div className="font-semibold">{r.units?.villas?.name ?? '-'}</div>
+                      <div className="text-[11px] text-t3">{r.units?.ho_number ?? '-'}호</div>
+                    </td>
+                    <td className="px-5 py-3.5 text-t2">
+                      <div className="font-semibold text-t1">{reveal ? r.name : maskName(r.name)}</div>
+                      <div className="text-[11px] text-t3">{reveal ? r.phone : maskPhone(r.phone)}</div>
+                    </td>
+                    <td className="px-5 py-3.5 text-t2 text-xs">
+                      {adminObj ? (reveal ? (adminObj.name ?? adminObj.email) : (adminObj.name ? maskName(adminObj.name) : maskEmail(adminObj.email))) : '-'}
+                    </td>
+                    <td className="px-5 py-3.5 text-t3 text-xs whitespace-nowrap">
+                      {fmtRelative(r.applied_at)}
+                      {isMoveout && r.move_out_date && (
+                        <div className="text-[11px] text-warn mt-0.5">예정 {r.move_out_date}</div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </Section>
 
       {/* 1. 답변 지연 민원 */}
       <Section
