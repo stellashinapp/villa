@@ -19,8 +19,15 @@ export default function ResidentLoginPage() {
         <div className="w-full max-w-sm mx-auto">
           <ResidentLoginForm />
 
-          <div className="mt-8 bg-priL/40 border border-pri/15 rounded-xl px-4 py-3 text-xs text-t2 leading-relaxed">
-            💡 입주민은 이메일 가입이 필요 없습니다. 관리자가 입주민 정보를 등록한 후 본인인증을 거쳐 로그인하시면 됩니다.
+          <div className="text-center mt-6 text-sm">
+            <span className="text-t3">아직 등록 안 됐나요? </span>
+            <Link href="/resident/signup" className="text-pri font-semibold hover:underline">
+              입주 신청
+            </Link>
+          </div>
+
+          <div className="mt-6 bg-priL/40 border border-pri/15 rounded-xl px-4 py-3 text-xs text-t2 leading-relaxed">
+            💡 입주민은 이메일 가입이 필요 없습니다. 빌라명·호실·이름·전화로 신청 → 관리자 승인 → 로그인.
           </div>
         </div>
       </div>
