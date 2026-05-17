@@ -44,9 +44,9 @@ jobs:
           else
             echo "ℹ️ apps/web/public 없음 — 스킵 (manifest 는 app/manifest.ts 가 동적 생성)"
           fi
-          # tar.gz 압축 — content of standalone only (no leading dir)
-          tar -czf /tmp/villatolk-pwa.tar.gz -C "$STANDALONE_DIR" .
-          ls -lh /tmp/villatolk-pwa.tar.gz
+          # tar.gz 를 workspace 루트에 저장 (appleboy/scp-action 이 Docker 라 /tmp 접근 불가)
+          tar -czf villatolk-pwa.tar.gz -C "$STANDALONE_DIR" .
+          ls -lh villatolk-pwa.tar.gz
 
       - name: Copy artifact to VM
         uses: appleboy/scp-action@v0.1.7
@@ -54,9 +54,8 @@ jobs:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
-          source: /tmp/villatolk-pwa.tar.gz
+          source: villatolk-pwa.tar.gz
           target: /tmp/
-          strip_components: 1
 
       - name: Deploy & restart on VM
         uses: appleboy/ssh-action@v1.0.3
