@@ -36,9 +36,14 @@ jobs:
         run: |
           set -e
           STANDALONE_DIR=apps/web/.next/standalone
-          # standalone 폴더에 public 과 static 을 같이 묶음 (Next.js 표준)
-          cp -r apps/web/public "$STANDALONE_DIR/apps/web/public"
+          # standalone 폴더에 static 을 같이 묶음 (Next.js 표준)
           cp -r apps/web/.next/static "$STANDALONE_DIR/apps/web/.next/static"
+          # public 은 PWA 가 manifest.ts 동적 생성이라 보통 없음 — 있을 때만 복사
+          if [ -d apps/web/public ]; then
+            cp -r apps/web/public "$STANDALONE_DIR/apps/web/public"
+          else
+            echo "ℹ️ apps/web/public 없음 — 스킵 (manifest 는 app/manifest.ts 가 동적 생성)"
+          fi
           # tar.gz 압축 — content of standalone only (no leading dir)
           tar -czf /tmp/villatolk-pwa.tar.gz -C "$STANDALONE_DIR" .
           ls -lh /tmp/villatolk-pwa.tar.gz
