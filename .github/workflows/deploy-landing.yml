@@ -1,23 +1,17 @@
-name: Deploy landing to Vercel
+name: Deploy Landing to KakaoCloud VM
 
 on:
   push:
     branches: [main]
     paths:
       - 'apps/landing/**'
-      - 'packages/**'
       - '.github/workflows/deploy-landing.yml'
   workflow_dispatch:
 
 jobs:
   deploy:
-    name: Production deploy (landing)
+    name: Build & Deploy Landing (VM)
     runs-on: ubuntu-latest
-    env:
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      # Landing 프로젝트 ID 는 admin-web 과 다름 — 직접 명시
-      # (project ID 자체는 비밀이 아님, dashboard URL 에 노출)
-      VERCEL_PROJECT_ID: prj_F8T8y3hxDaYtSpCgsYvEXKz6vDDY
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,28 +19,78 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '20'
+          cache: 'npm'
 
-      - name: Install Vercel CLI
-        run: npm install -g vercel@latest
+      - name: Install dependencies (monorepo root)
+        run: npm ci --no-audit --no-fund
 
-      - name: Vercel whoami (sanity check)
-        run: vercel whoami --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Build Landing (standalone)
+        run: npm run build:landing
 
-      - name: Deploy to production (apps/landing)
-        id: deploy
-        working-directory: apps/landing
+      - name: Package deploy artifact
         run: |
           set -e
-          OUT=$(vercel deploy --prod --yes --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tee /dev/stderr | tail -1)
-          echo "url=$OUT" >> $GITHUB_OUTPUT
-          echo "Deployed: $OUT"
+          STANDALONE_DIR=apps/landing/.next/standalone
+          cp -r apps/landing/.next/static "$STANDALONE_DIR/apps/landing/.next/static"
+          if [ -d apps/landing/public ]; then
+            cp -r apps/landing/public "$STANDALONE_DIR/apps/landing/public"
+          fi
+          tar -czf villatolk-landing.tar.gz -C "$STANDALONE_DIR" .
+          ls -lh villatolk-landing.tar.gz
+
+      - name: Copy artifact to VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          source: villatolk-landing.tar.gz
+          target: /tmp/
+
+      - name: Deploy & restart on VM
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            set -e
+            DEPLOY_ROOT=/home/ubuntu/villatolk-landing
+            CURRENT=$DEPLOY_ROOT/current
+            PREV=$DEPLOY_ROOT/prev
+            STAGING=$DEPLOY_ROOT/staging
+
+            mkdir -p $DEPLOY_ROOT
+
+            rm -rf $STAGING
+            mkdir -p $STAGING
+            tar -xzf /tmp/villatolk-landing.tar.gz -C $STAGING
+            rm -f /tmp/villatolk-landing.tar.gz
+
+            if [ -d "$CURRENT" ]; then
+              rm -rf $PREV
+              mv $CURRENT $PREV
+            fi
+            mv $STAGING $CURRENT
+
+            cd $CURRENT/apps/landing
+            if pm2 describe villatolk-landing > /dev/null 2>&1; then
+              PORT=3301 HOSTNAME=0.0.0.0 NODE_ENV=production pm2 restart villatolk-landing --update-env
+            else
+              PORT=3301 HOSTNAME=0.0.0.0 NODE_ENV=production pm2 start server.js --name villatolk-landing
+            fi
+            pm2 save
+
+            sleep 2
+            curl -sf http://127.0.0.1:3301 -o /dev/null && echo "healthy" || (echo "unhealthy"; pm2 logs villatolk-landing --lines 30 --nostream; exit 1)
 
       - name: Summary
         if: always()
         run: |
-          echo "### Landing deploy" >> $GITHUB_STEP_SUMMARY
-          echo "- Result: ${{ steps.deploy.outcome }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Deployment URL: ${{ steps.deploy.outputs.url }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Production alias: https://villatolk.vercel.app" >> $GITHUB_STEP_SUMMARY
+          echo "### Landing deploy (KakaoCloud VM)" >> $GITHUB_STEP_SUMMARY
+          echo "- Result: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- VM: 210.109.15.149 (kr-central-2-a)" >> $GITHUB_STEP_SUMMARY
+          echo "- Internal port: 3301" >> $GITHUB_STEP_SUMMARY
+          echo "- Public URLs (after DNS): https://villtalk.store" >> $GITHUB_STEP_SUMMARY
           echo "- Commit: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
