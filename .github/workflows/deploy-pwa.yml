@@ -1,4 +1,4 @@
-name: Deploy PWA to Vercel
+name: Deploy PWA to KakaoCloud VM
 
 on:
   push:
@@ -11,12 +11,8 @@ on:
 
 jobs:
   deploy:
-    name: Production deploy (PWA)
+    name: Build & Deploy PWA (VM)
     runs-on: ubuntu-latest
-    env:
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      # PWA 프로젝트 ID — admin-web/landing 과 다름
-      VERCEL_PROJECT_ID: prj_7o8cpBNMY7gB5zcK0g8LL1SnU1y9
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,28 +20,86 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '20'
+          cache: 'npm'
 
-      - name: Install Vercel CLI
-        run: npm install -g vercel@latest
+      - name: Install dependencies (monorepo root)
+        run: npm ci --no-audit --no-fund
 
-      - name: Vercel whoami (sanity check)
-        run: vercel whoami --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Build PWA (standalone)
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: npm run build:pwa
 
-      - name: Deploy to production (apps/web)
-        id: deploy
-        working-directory: apps/web
+      - name: Package deploy artifact
         run: |
           set -e
-          OUT=$(vercel deploy --prod --yes --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tee /dev/stderr | tail -1)
-          echo "url=$OUT" >> $GITHUB_OUTPUT
-          echo "Deployed: $OUT"
+          STANDALONE_DIR=apps/web/.next/standalone
+          # standalone 폴더에 public 과 static 을 같이 묶음 (Next.js 표준)
+          cp -r apps/web/public "$STANDALONE_DIR/apps/web/public"
+          cp -r apps/web/.next/static "$STANDALONE_DIR/apps/web/.next/static"
+          # tar.gz 압축 — content of standalone only (no leading dir)
+          tar -czf /tmp/villatolk-pwa.tar.gz -C "$STANDALONE_DIR" .
+          ls -lh /tmp/villatolk-pwa.tar.gz
+
+      - name: Copy artifact to VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          source: /tmp/villatolk-pwa.tar.gz
+          target: /tmp/
+          strip_components: 1
+
+      - name: Deploy & restart on VM
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            set -e
+            DEPLOY_ROOT=/home/ubuntu/villatolk-pwa
+            CURRENT=$DEPLOY_ROOT/current
+            PREV=$DEPLOY_ROOT/prev
+            STAGING=$DEPLOY_ROOT/staging
+
+            mkdir -p $DEPLOY_ROOT
+
+            # 신규 버전을 staging 에 풀어둠
+            rm -rf $STAGING
+            mkdir -p $STAGING
+            tar -xzf /tmp/villatolk-pwa.tar.gz -C $STAGING
+            rm -f /tmp/villatolk-pwa.tar.gz
+
+            # 원자적 교체: prev <- current <- staging
+            if [ -d "$CURRENT" ]; then
+              rm -rf $PREV
+              mv $CURRENT $PREV
+            fi
+            mv $STAGING $CURRENT
+
+            # PM2 재시작 (없으면 신규 등록)
+            cd $CURRENT/apps/web
+            if pm2 describe villatolk-pwa > /dev/null 2>&1; then
+              PORT=3300 HOSTNAME=0.0.0.0 NODE_ENV=production pm2 restart villatolk-pwa --update-env
+            else
+              PORT=3300 HOSTNAME=0.0.0.0 NODE_ENV=production pm2 start server.js --name villatolk-pwa
+            fi
+            pm2 save
+
+            # 헬스체크
+            sleep 2
+            curl -sf http://127.0.0.1:3300 -o /dev/null && echo "healthy" || (echo "unhealthy"; pm2 logs villatolk-pwa --lines 30 --nostream; exit 1)
 
       - name: Summary
         if: always()
         run: |
-          echo "### PWA deploy" >> $GITHUB_STEP_SUMMARY
-          echo "- Result: ${{ steps.deploy.outcome }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Deployment URL: ${{ steps.deploy.outputs.url }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Production alias: https://villatolk-pwa.vercel.app" >> $GITHUB_STEP_SUMMARY
+          echo "### PWA deploy (KakaoCloud VM)" >> $GITHUB_STEP_SUMMARY
+          echo "- Result: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- VM: 210.109.15.149 (kr-central-2-a)" >> $GITHUB_STEP_SUMMARY
+          echo "- Internal port: 3300" >> $GITHUB_STEP_SUMMARY
+          echo "- Public URLs (after DNS): https://villatolk.app" >> $GITHUB_STEP_SUMMARY
           echo "- Commit: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY

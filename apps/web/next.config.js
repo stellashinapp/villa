@@ -1,7 +1,10 @@
+const path = require('path');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
+  outputFileTracingRoot: path.join(__dirname, '../../'),
   transpilePackages: ['@villatolk/shared'],
-  // PWA용 — service worker 캐싱 헤더 안전 처리
   async headers() {
     return [
       {
