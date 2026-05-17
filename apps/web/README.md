@@ -1,4 +1,4 @@
-# @villatolk/web — PWA
+# @villatolk/web — PWA (사용자용)
 
 빌라톡 사용자(관리자·입주민)용 PWA. Next.js 16 + Supabase + PWA manifest.
 
