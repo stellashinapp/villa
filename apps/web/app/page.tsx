@@ -45,9 +45,9 @@ export default function HomePage() {
         {/* Footer */}
         <div className="text-center space-y-2 text-xs text-t3">
           <p className="space-x-2">
-            <Link href="/legal/terms" className="hover:text-t2">이용약관</Link>
+            <a href="https://villtalk.store/legal/terms" target="_blank" rel="noreferrer" className="hover:text-t2">이용약관</a>
             <span className="text-t3/40">·</span>
-            <Link href="/legal/privacy" className="hover:text-t2">개인정보처리방침</Link>
+            <a href="https://villtalk.store/legal/privacy" target="_blank" rel="noreferrer" className="hover:text-t2">개인정보처리방침</a>
           </p>
           <p>© 앤뉴 (ANDNEW)</p>
         </div>
