@@ -6,11 +6,11 @@ import { supabase } from '@/lib/supabase';
 
 // ⚠️ TEMP — REMOVE BEFORE PRODUCTION
 // 테스트 편의용 빠른 로그인. 운영 전 TEST_RESIDENTS 상수와 빠른입력 버튼 영역 모두 제거할 것.
-// 실 DB 에 등록된 입주민만 작동함 (없으면 '등록 안 됨' 에러)
+// 실 DB 에 active 상태로 등록된 unique 입주민만 사용 (resident-login 함수로 검증됨)
 const TEST_RESIDENTS: { label: string; name: string; phone: string }[] = [
-  { label: '김민수', name: '김민수', phone: '01012345678' },
-  { label: '박지영', name: '박지영', phone: '01098765432' },
-  { label: '이수연', name: '이수연', phone: '01055551111' },
+  { label: '신경아(해피)', name: '신경아', phone: '01093367669' },     // 해피빌라 101호
+  { label: '김순자(강남)', name: '김순자', phone: '01010142014' },     // 강남힐스테이트 1002호
+  { label: '박철수(성북)', name: '박철수', phone: '01010202020' },     // 성북아트빌 202호
 ];
 
 type ResidentResult = {
