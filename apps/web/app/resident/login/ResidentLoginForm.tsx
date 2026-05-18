@@ -5,8 +5,13 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 
 // ⚠️ TEMP — REMOVE BEFORE PRODUCTION
-// 테스트 편의용 빠른 로그인. 실제 DB 에 등록된 테스트 입주민으로 교체해서 사용.
-const TEST_RESIDENT = { name: '김민수', phone: '01012345678' };
+// 테스트 편의용 빠른 로그인. 운영 전 TEST_RESIDENTS 상수와 빠른입력 버튼 영역 모두 제거할 것.
+// 실 DB 에 등록된 입주민만 작동함 (없으면 '등록 안 됨' 에러)
+const TEST_RESIDENTS: { label: string; name: string; phone: string }[] = [
+  { label: '김민수', name: '김민수', phone: '01012345678' },
+  { label: '박지영', name: '박지영', phone: '01098765432' },
+  { label: '이수연', name: '이수연', phone: '01055551111' },
+];
 
 type ResidentResult = {
   resident: {
@@ -27,9 +32,10 @@ export default function ResidentLoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  function fillTestCredentials() {
-    setName(TEST_RESIDENT.name);
-    setPhone(TEST_RESIDENT.phone);
+  function fillTestCredentials(idx: number) {
+    const t = TEST_RESIDENTS[idx];
+    setName(t.name);
+    setPhone(t.phone);
     setError(null);
   }
 
@@ -107,14 +113,22 @@ export default function ResidentLoginForm() {
         {loading ? '확인 중…' : '로그인'}
       </button>
 
-      {/* ⚠️ TEMP — REMOVE BEFORE PRODUCTION (테스트용 빠른 로그인 버튼) */}
-      <button
-        type="button"
-        onClick={fillTestCredentials}
-        className="w-full bg-amber-50 text-amber-700 border-2 border-dashed border-amber-300 rounded-xl py-2.5 text-xs font-bold hover:bg-amber-100 transition-colors"
-      >
-        🧪 테스트 입주민 자동입력 ({TEST_RESIDENT.name})
-      </button>
+      {/* ⚠️ TEMP — REMOVE BEFORE PRODUCTION (테스트용 빠른입력) */}
+      <div className="border-t-2 border-dashed border-amber-200 pt-3">
+        <p className="text-[10px] text-amber-700 font-bold mb-1.5">🧪 테스트 빠른입력 (운영 전 삭제)</p>
+        <div className="grid grid-cols-3 gap-2">
+          {TEST_RESIDENTS.map((t, i) => (
+            <button
+              key={t.phone}
+              type="button"
+              onClick={() => fillTestCredentials(i)}
+              className="bg-amber-50 text-amber-700 border border-amber-300 rounded-lg py-2 text-xs font-bold hover:bg-amber-100 transition-colors"
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
     </form>
   );
 }

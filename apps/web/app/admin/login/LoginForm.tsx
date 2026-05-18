@@ -5,8 +5,13 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 
 // ⚠️ TEMP — REMOVE BEFORE PRODUCTION
-// 테스트 편의용 빠른 로그인. 운영 전 fillTestCredentials 함수와 호출 버튼 모두 제거할 것.
-const TEST_ADMIN = { email: 'skathezoom@gmail.com', password: 'gogo707070^^' };
+// 테스트 편의용 빠른 로그인. 운영 전 TEST_ADMINS 상수와 빠른입력 버튼 영역 모두 제거할 것.
+// 실 DB 에 존재하는 계정만 작동함 (없는 계정 클릭하면 401)
+const TEST_ADMINS: { label: string; email: string; password: string }[] = [
+  { label: '대표', email: 'skathezoom@gmail.com', password: 'gogo707070^^' },
+  { label: '관리자A', email: 'admin1@villatolk.test', password: 'test1234!' },
+  { label: '관리자B', email: 'admin2@villatolk.test', password: 'test1234!' },
+];
 
 export default function LoginForm({ next }: { next: string }) {
   const router = useRouter();
@@ -15,9 +20,10 @@ export default function LoginForm({ next }: { next: string }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  function fillTestCredentials() {
-    setEmail(TEST_ADMIN.email);
-    setPassword(TEST_ADMIN.password);
+  function fillTestCredentials(idx: number) {
+    const t = TEST_ADMINS[idx];
+    setEmail(t.email);
+    setPassword(t.password);
     setError(null);
   }
 
@@ -85,14 +91,22 @@ export default function LoginForm({ next }: { next: string }) {
         {loading ? '확인 중…' : '로그인'}
       </button>
 
-      {/* ⚠️ TEMP — REMOVE BEFORE PRODUCTION (테스트용 빠른 로그인 버튼) */}
-      <button
-        type="button"
-        onClick={fillTestCredentials}
-        className="w-full bg-amber-50 text-amber-700 border-2 border-dashed border-amber-300 rounded-xl py-2.5 text-xs font-bold hover:bg-amber-100 transition-colors"
-      >
-        🧪 테스트 관리자 계정 자동입력
-      </button>
+      {/* ⚠️ TEMP — REMOVE BEFORE PRODUCTION (테스트용 빠른입력) */}
+      <div className="border-t-2 border-dashed border-amber-200 pt-3">
+        <p className="text-[10px] text-amber-700 font-bold mb-1.5">🧪 테스트 빠른입력 (운영 전 삭제)</p>
+        <div className="grid grid-cols-3 gap-2">
+          {TEST_ADMINS.map((t, i) => (
+            <button
+              key={t.email}
+              type="button"
+              onClick={() => fillTestCredentials(i)}
+              className="bg-amber-50 text-amber-700 border border-amber-300 rounded-lg py-2 text-xs font-bold hover:bg-amber-100 transition-colors"
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
     </form>
   );
 }
