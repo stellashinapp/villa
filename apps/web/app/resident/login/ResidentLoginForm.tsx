@@ -4,6 +4,10 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 
+// ⚠️ TEMP — REMOVE BEFORE PRODUCTION
+// 테스트 편의용 빠른 로그인. 실제 DB 에 등록된 테스트 입주민으로 교체해서 사용.
+const TEST_RESIDENT = { name: '김민수', phone: '01012345678' };
+
 type ResidentResult = {
   resident: {
     id: string;
@@ -22,6 +26,12 @@ export default function ResidentLoginForm() {
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  function fillTestCredentials() {
+    setName(TEST_RESIDENT.name);
+    setPhone(TEST_RESIDENT.phone);
+    setError(null);
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -95,6 +105,15 @@ export default function ResidentLoginForm() {
         className="w-full bg-pri text-white rounded-xl py-3.5 text-base font-bold hover:bg-pri/90 disabled:opacity-50 transition-colors"
       >
         {loading ? '확인 중…' : '로그인'}
+      </button>
+
+      {/* ⚠️ TEMP — REMOVE BEFORE PRODUCTION (테스트용 빠른 로그인 버튼) */}
+      <button
+        type="button"
+        onClick={fillTestCredentials}
+        className="w-full bg-amber-50 text-amber-700 border-2 border-dashed border-amber-300 rounded-xl py-2.5 text-xs font-bold hover:bg-amber-100 transition-colors"
+      >
+        🧪 테스트 입주민 자동입력 ({TEST_RESIDENT.name})
       </button>
     </form>
   );

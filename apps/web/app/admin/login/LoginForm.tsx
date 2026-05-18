@@ -4,12 +4,22 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 
+// ⚠️ TEMP — REMOVE BEFORE PRODUCTION
+// 테스트 편의용 빠른 로그인. 운영 전 fillTestCredentials 함수와 호출 버튼 모두 제거할 것.
+const TEST_ADMIN = { email: 'skathezoom@gmail.com', password: 'gogo707070^^' };
+
 export default function LoginForm({ next }: { next: string }) {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  function fillTestCredentials() {
+    setEmail(TEST_ADMIN.email);
+    setPassword(TEST_ADMIN.password);
+    setError(null);
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -73,6 +83,15 @@ export default function LoginForm({ next }: { next: string }) {
         className="w-full bg-pri text-white rounded-xl py-3.5 text-base font-bold hover:bg-pri/90 disabled:opacity-50 transition-colors"
       >
         {loading ? '확인 중…' : '로그인'}
+      </button>
+
+      {/* ⚠️ TEMP — REMOVE BEFORE PRODUCTION (테스트용 빠른 로그인 버튼) */}
+      <button
+        type="button"
+        onClick={fillTestCredentials}
+        className="w-full bg-amber-50 text-amber-700 border-2 border-dashed border-amber-300 rounded-xl py-2.5 text-xs font-bold hover:bg-amber-100 transition-colors"
+      >
+        🧪 테스트 관리자 계정 자동입력
       </button>
     </form>
   );
