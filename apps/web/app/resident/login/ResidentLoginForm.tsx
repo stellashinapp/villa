@@ -4,16 +4,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 
-// ⚠️ TEMP — REMOVE BEFORE PRODUCTION
-// 테스트 편의용 빠른 로그인. 운영 전 TEST_RESIDENTS 상수와 빠른입력 버튼 영역 모두 제거할 것.
-// admin1 (admin1@villatolk.test) 가 관리하는 '빌라톡 테스트빌라' 의 입주민 3명.
-// 이 입주민으로 로그인하면 admin1 ↔ resident 간 공지·메시지 흐름 테스트 가능.
-const TEST_RESIDENTS: { label: string; name: string; phone: string }[] = [
-  { label: '김테스트1(101)', name: '김테스트1', phone: '01099991111' },
-  { label: '이테스트2(102)', name: '이테스트2', phone: '01099992222' },
-  { label: '박테스트3(103)', name: '박테스트3', phone: '01099993333' },
-];
-
 type ResidentResult = {
   resident: {
     id: string;
@@ -32,13 +22,6 @@ export default function ResidentLoginForm() {
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  function fillTestCredentials(idx: number) {
-    const t = TEST_RESIDENTS[idx];
-    setName(t.name);
-    setPhone(t.phone);
-    setError(null);
-  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -59,7 +42,6 @@ export default function ResidentLoginForm() {
         return;
       }
       const payload = data as ResidentResult;
-      // 세션 저장 — 브라우저 sessionStorage (탭 닫으면 풀림). 운영 시 localStorage + 만료 처리 권장.
       sessionStorage.setItem('villatolk:resident', JSON.stringify({
         id: payload.resident.id,
         name: payload.resident.name,
@@ -80,56 +62,39 @@ export default function ResidentLoginForm() {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <div>
-        <label className="block text-xs font-semibold text-t3 mb-1.5">이름</label>
+        <label className="block text-[13px] font-bold text-[#0F2242] mb-1.5">이름</label>
         <input
           required
           autoFocus
           value={name}
           onChange={e => setName(e.target.value)}
           placeholder="예: 김민수"
-          className="w-full bg-white border border-border rounded-xl px-4 py-3 text-base text-t1 outline-none focus:border-pri"
+          className="w-full bg-white border border-[#E8EBF0] rounded-xl px-4 py-3.5 text-[15px] text-[#0F2242] outline-none focus:border-[#3766EE] focus:ring-2 focus:ring-[#3766EE]/15 transition"
         />
       </div>
       <div>
-        <label className="block text-xs font-semibold text-t3 mb-1.5">전화번호</label>
+        <label className="block text-[13px] font-bold text-[#0F2242] mb-1.5">전화번호</label>
         <input
           required
           inputMode="tel"
           value={phone}
           onChange={e => setPhone(e.target.value)}
           placeholder="01012345678"
-          className="w-full bg-white border border-border rounded-xl px-4 py-3 text-base text-t1 outline-none focus:border-pri"
+          className="w-full bg-white border border-[#E8EBF0] rounded-xl px-4 py-3.5 text-[15px] text-[#0F2242] outline-none focus:border-[#3766EE] focus:ring-2 focus:ring-[#3766EE]/15 transition"
         />
       </div>
       {error && (
-        <div className="bg-errL text-err border border-err/30 rounded-xl px-3 py-2 text-sm">
+        <div className="bg-[#FEE8E7] text-[#FF3B30] border border-[#FF3B30]/20 rounded-xl px-3 py-2.5 text-[13px]">
           {error}
         </div>
       )}
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-pri text-white rounded-xl py-3.5 text-base font-bold hover:bg-pri/90 disabled:opacity-50 transition-colors"
+        className="w-full bg-[#3766EE] text-white rounded-xl py-3.5 text-[15px] font-bold hover:bg-[#1F3DC2] disabled:opacity-50 transition-colors"
       >
         {loading ? '확인 중…' : '로그인'}
       </button>
-
-      {/* ⚠️ TEMP — REMOVE BEFORE PRODUCTION (테스트용 빠른입력) */}
-      <div className="border-t-2 border-dashed border-amber-200 pt-3">
-        <p className="text-[12px] text-amber-700 font-bold mb-1.5">🧪 테스트 빠른입력 (운영 전 삭제)</p>
-        <div className="grid grid-cols-3 gap-2">
-          {TEST_RESIDENTS.map((t, i) => (
-            <button
-              key={t.phone}
-              type="button"
-              onClick={() => fillTestCredentials(i)}
-              className="bg-amber-50 text-amber-700 border border-amber-300 rounded-xl py-2 text-xs font-bold hover:bg-amber-100 transition-colors"
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-      </div>
     </form>
   );
 }

@@ -5,32 +5,45 @@ export const dynamic = 'force-dynamic';
 
 export default function ResidentLoginPage() {
   return (
-    <div className="min-h-screen flex flex-col">
-      <div className="bg-navy text-white px-5 pt-12 pb-10">
-        <Link href="/" className="text-xs text-white/60 hover:text-white">← 처음으로</Link>
-        <p className="text-xs text-white/40 tracking-widest font-bold mt-6 mb-1">입주민 로그인</p>
-        <h1 className="text-2xl font-extrabold leading-tight">{'이름과 전화번호로\n로그인하세요'}</h1>
-        <p className="text-xs text-white/50 mt-3 leading-relaxed">
-          관리자가 등록한 정보와 일치하면 자동으로 빌라·호실이 매칭됩니다
-        </p>
+    <div className="min-h-screen bg-[#F5F6FA] flex flex-col">
+      <div className="px-5 pt-4">
+        <Link href="/" className="text-[14px] text-[#6B7280] hover:text-[#0F2242]">
+          ← 돌아가기
+        </Link>
       </div>
 
-      <div className="flex-1 px-5 pt-6 pb-10">
+      <div className="flex-1 flex flex-col justify-center px-5 pb-10">
         <div className="w-full max-w-sm mx-auto">
-          <ResidentLoginForm />
-
-          <div className="text-center mt-6 text-sm">
-            <span className="text-t3">아직 등록 안 됐나요? </span>
-            <Link href="/resident/signup" className="text-pri font-semibold hover:underline">
-              입주 신청
-            </Link>
+          <div className="text-center mb-7">
+            <h1 className="text-[26px] font-black text-[#0F2242]">입주민 로그인</h1>
+            <p className="text-[15px] font-bold text-[#0F2242] mt-3">이름과 전화번호로 로그인하세요</p>
+            <p className="text-[13px] text-[#6B7280] mt-1.5 leading-relaxed">
+              관리자가 등록한 정보와 일치하면 자동으로<br />
+              빌라·호수가 매칭됩니다.
+            </p>
           </div>
 
-          <div className="mt-6 bg-priL/40 border border-pri/15 rounded-xl px-4 py-3 text-xs text-t2 leading-relaxed">
-            💡 입주민은 이메일 가입이 필요 없습니다. 빌라명·호실·이름·전화로 신청 → 관리자 승인 → 로그인.
+          <ResidentLoginForm />
+
+          <Link
+            href="/resident/signup"
+            className="block mt-3 bg-white border border-[#E8EBF0] text-[#0F2242] rounded-xl py-3.5 text-center text-[15px] font-bold hover:bg-[#F9FAFB] transition"
+          >
+            입주 신청 (신규 입주민)
+          </Link>
+
+          <div className="mt-6 bg-[#EEF2FF] border border-[#3766EE]/15 rounded-xl px-4 py-3 text-center">
+            <p className="text-[12px] text-[#6B7280] mb-1">데모 계정</p>
+            <p className="text-[13px] text-[#0F2242] font-bold">
+              아이디: <span className="text-[#3766EE]">김테스트1</span>
+              {' / '}
+              비밀번호: <span className="text-[#3766EE]">010-9999-1111</span>
+            </p>
           </div>
         </div>
       </div>
+
+      <p className="text-center text-[11px] text-[#9CA3AF] pb-5">ANDNEW · TheZoomWorks · 2026</p>
     </div>
   );
 }

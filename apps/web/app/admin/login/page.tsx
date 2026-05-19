@@ -10,29 +10,41 @@ export default async function AdminLoginPage({
 }) {
   const sp = await searchParams;
   return (
-    <div className="min-h-screen flex flex-col px-5">
-      <div className="pt-12 pb-8">
-        <Link href="/" className="text-sm text-t3 hover:text-t2">← 처음으로</Link>
+    <div className="min-h-screen bg-[#F5F6FA] flex flex-col">
+      <div className="px-5 pt-4">
+        <Link href="/" className="text-[14px] text-[#6B7280] hover:text-[#0F2242]">
+          ← 돌아가기
+        </Link>
       </div>
 
-      <div className="flex-1 flex flex-col justify-center pb-16">
+      <div className="flex-1 flex flex-col justify-center px-5 pb-10">
         <div className="w-full max-w-sm mx-auto">
-          <div className="mb-8">
-            <p className="text-xs text-pri tracking-widest font-bold mb-1">VILLATOLK ADMIN</p>
-            <h1 className="text-2xl font-extrabold text-t1">관리자 로그인</h1>
-            <p className="text-sm text-t3 mt-2">이메일과 비밀번호로 로그인하세요</p>
+          <div className="text-center mb-7">
+            <h1 className="text-[26px] font-black text-[#0F2242]">관리자 로그인</h1>
+            <p className="text-[14px] text-[#6B7280] mt-2">빌라 관리자 계정으로 로그인하세요</p>
           </div>
 
           <LoginForm next={sp.next ?? '/admin'} />
 
-          <div className="text-center mt-6 text-sm">
-            <span className="text-t3">아직 계정이 없으신가요? </span>
-            <Link href="/admin/signup" className="text-pri font-semibold hover:underline">
-              가입하기
-            </Link>
+          <Link
+            href="/admin/signup"
+            className="block mt-3 bg-white border border-[#E8EBF0] text-[#0F2242] rounded-xl py-3.5 text-center text-[15px] font-bold hover:bg-[#F9FAFB] transition"
+          >
+            회원가입 (관리자 전용)
+          </Link>
+
+          <div className="mt-6 bg-[#EEF2FF] border border-[#3766EE]/15 rounded-xl px-4 py-3 text-center">
+            <p className="text-[12px] text-[#6B7280] mb-1">데모 계정</p>
+            <p className="text-[13px] text-[#0F2242] font-bold">
+              아이디: <span className="text-[#3766EE]">admin1@villatolk.test</span>
+              {' / '}
+              비밀번호: <span className="text-[#3766EE]">test1234!</span>
+            </p>
           </div>
         </div>
       </div>
+
+      <p className="text-center text-[11px] text-[#9CA3AF] pb-5">ANDNEW · TheZoomWorks · 2026</p>
     </div>
   );
 }
