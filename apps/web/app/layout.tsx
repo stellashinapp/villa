@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Noto_Sans_KR } from 'next/font/google';
+import PwaRegister from '@/components/PwaRegister';
 import './globals.css';
 
 const noto = Noto_Sans_KR({
@@ -18,6 +19,14 @@ export const metadata: Metadata = {
     statusBarStyle: 'default',
     title: '빌라톡',
   },
+  icons: {
+    icon: [
+      { url: '/icons/favicon-32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: '/icons/apple-touch-icon.png',
+  },
   formatDetection: { telephone: false },
 };
 
@@ -35,6 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ko">
       <body className={`${noto.variable} font-sans bg-bg text-t1 min-h-screen`}>
         {children}
+        <PwaRegister />
       </body>
     </html>
   );
