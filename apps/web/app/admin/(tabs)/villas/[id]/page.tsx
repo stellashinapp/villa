@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import Icon, { type IconName } from '@/components/Icon';
 
 type Villa = {
   id: string;
@@ -105,11 +106,11 @@ export default function AdminVillaDetailPage() {
       {/* 서브 메뉴 */}
       <h2 className="text-[13px] font-bold text-[#6B7280] mt-6 mb-2.5 tracking-wider">관리 메뉴</h2>
       <div className="space-y-2">
-        <SubMenu href={`/admin/villas/${villa.id}/bills`} icon="₩" label="관리비" hint={`${stats.bill_months}회차 등록`} />
-        <SubMenu href={`/admin/villas/${villa.id}/notices`} icon="📢" label="공지사항" hint={`${stats.notices}건 등록`} />
-        <SubMenu href={`/admin/villas/${villa.id}/residents`} icon="👥" label="입주민" hint={`활성 ${stats.residents}명`} />
-        <SubMenu href={`/admin/villas/${villa.id}/parking`} icon="🅿" label="주차" hint="등록 차량 관리" />
-        <SubMenu href={`/admin/villas/${villa.id}/messages`} icon="✉" label="메시지" hint={`미읽음 ${stats.messages_unread}건`} />
+        <SubMenu href={`/admin/villas/${villa.id}/bills`} icon="bills" label="관리비" hint={`${stats.bill_months}회차 등록`} />
+        <SubMenu href={`/admin/villas/${villa.id}/notices`} icon="notice" label="공지사항" hint={`${stats.notices}건 등록`} />
+        <SubMenu href={`/admin/villas/${villa.id}/residents`} icon="residents" label="입주민" hint={`활성 ${stats.residents}명`} />
+        <SubMenu href={`/admin/villas/${villa.id}/parking`} icon="parking" label="주차" hint="등록 차량 관리" />
+        <SubMenu href={`/admin/villas/${villa.id}/messages`} icon="message" label="메시지" hint={`미읽음 ${stats.messages_unread}건`} />
       </div>
 
       <p className="text-[11px] text-[#9CA3AF] text-center mt-8">
@@ -129,13 +130,15 @@ function StatCard({ label, value, accent }: { label: string; value: number; acce
   );
 }
 
-function SubMenu({ href, icon, label, hint }: { href: string; icon: string; label: string; hint: string }) {
+function SubMenu({ href, icon, label, hint }: { href: string; icon: IconName; label: string; hint: string }) {
   return (
     <Link
       href={href}
       className="flex items-center bg-white border border-[#E8EBF0] rounded-2xl p-4 shadow-sm active:scale-[0.99] transition"
     >
-      <span className="text-2xl mr-3" aria-hidden="true">{icon}</span>
+      <span className="mr-3 flex-shrink-0 w-9 h-9 rounded-xl bg-[#EEF1FB] flex items-center justify-center">
+        <Icon name={icon} size={20} color="#4263E8" filled />
+      </span>
       <div className="flex-1">
         <p className="text-[14px] font-extrabold text-[#0F2242]">{label}</p>
         <p className="text-[11px] text-[#6B7280] mt-0.5">{hint}</p>

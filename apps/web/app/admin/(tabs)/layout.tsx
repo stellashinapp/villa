@@ -4,12 +4,14 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import Icon, { type IconName } from '@/components/Icon';
 
-const TABS = [
-  { href: '/admin', label: '홈', icon: '🏠' },
-  { href: '/admin/inbox', label: '메시지', icon: '✉' },
-  { href: '/admin/villas', label: '빌라', icon: '🏘' },
-  { href: '/admin/settings', label: '설정', icon: '⚙' },
+// 모바일 (admin)/_layout.tsx 와 동일한 순서·아이콘
+const TABS: { href: string; label: string; icon: IconName }[] = [
+  { href: '/admin', label: '홈', icon: 'home' },
+  { href: '/admin/inbox', label: '메시지', icon: 'message' },
+  { href: '/admin/villas', label: '빌라', icon: 'villa' },
+  { href: '/admin/settings', label: '설정', icon: 'settings' },
 ];
 
 export default function AdminTabsLayout({ children }: { children: React.ReactNode }) {
@@ -17,7 +19,6 @@ export default function AdminTabsLayout({ children }: { children: React.ReactNod
   const router = useRouter();
   const [authChecked, setAuthChecked] = useState(false);
 
-  // auth 가드 — 미로그인 시 /admin/login 으로
   useEffect(() => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -38,14 +39,12 @@ export default function AdminTabsLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F6FA] pb-[72px]">
+    <div className="min-h-screen bg-[#F5F6FA] pb-[80px]">
       {children}
 
-      {/* 하단 탭바 — 모바일 admin 동일 */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#E8EBF0] z-50">
-        <div className="max-w-screen-sm mx-auto flex">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#E8EBF0] z-50 h-[65px] pt-1.5 pb-2">
+        <div className="max-w-screen-sm mx-auto h-full flex">
           {TABS.map(tab => {
-            // /admin 은 정확 매칭, 나머지는 prefix
             const active =
               tab.href === '/admin'
                 ? pathname === '/admin'
@@ -54,22 +53,15 @@ export default function AdminTabsLayout({ children }: { children: React.ReactNod
               <Link
                 key={tab.href}
                 href={tab.href}
-                className="flex-1 flex flex-col items-center justify-center gap-1 py-2.5"
+                className="flex-1 flex flex-col items-center justify-center gap-1"
               >
-                <span
-                  className={`text-xl leading-none ${active ? 'text-[#4263E8]' : 'text-[#9CA3AF]'}`}
-                  aria-hidden="true"
-                >
-                  {tab.icon}
-                </span>
+                <Icon name={tab.icon} size={22} color={active ? '#4263E8' : '#9CA3AF'} filled={active} />
                 <span
                   className={`text-[10px] font-bold ${active ? 'text-[#4263E8]' : 'text-[#9CA3AF]'}`}
                 >
                   {tab.label}
                 </span>
-                {active && (
-                  <span className="w-1 h-1 rounded-full bg-[#4263E8] -mt-1" aria-hidden="true" />
-                )}
+                {active && <span className="w-1 h-1 rounded-full bg-[#4263E8]" aria-hidden="true" />}
               </Link>
             );
           })}
