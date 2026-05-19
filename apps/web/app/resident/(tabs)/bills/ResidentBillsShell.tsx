@@ -97,13 +97,9 @@ export default function ResidentBillsShell() {
   return (
     <div className="bg-[#F5F6FA] min-h-screen">
       {/* 상단 */}
-      <header className="bg-white px-5 pt-3 pb-3 sticky top-0 z-30 border-b border-[#F0F2F5]">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-[10px] font-bold text-[#9CA3AF] tracking-widest">{resident.villaName}</p>
-            <h1 className="text-[16px] font-extrabold text-[#0F2242]">{resident.ho} · {resident.name}님</h1>
-          </div>
-        </div>
+      <header className="bg-white px-5 pt-4 pb-3 sticky top-0 z-30 border-b border-[#F0F2F5]">
+        <p className="text-[11px] font-bold text-[#9CA3AF] tracking-[0.14em]">{resident.villaName} · {resident.ho}</p>
+        <h1 className="text-[18px] font-extrabold text-[#0F2242] mt-1">관리비</h1>
       </header>
 
       <div className="px-5 pb-8 max-w-screen-sm mx-auto pt-4">
