@@ -95,16 +95,6 @@ export default function AdminSettingsPage() {
         </p>
       </div>
 
-      {/* 빠른 이동 */}
-      <h2 className="text-[13px] font-bold text-[#6B7280] mt-5 mb-2.5 tracking-wider">빠른 이동</h2>
-      <div className="bg-white border border-[#E8EBF0] rounded-2xl p-4 shadow-sm">
-        <LinkRow href="/admin/applications" label="가입 신청 확인" />
-        <Divider />
-        <LinkRow href="/admin/villas" label="내 빌라 목록" />
-        <Divider />
-        <LinkRow href="/admin/inbox" label="입주민 메시지" />
-      </div>
-
       {/* 약관 */}
       <h2 className="text-[13px] font-bold text-[#6B7280] mt-5 mb-2.5 tracking-wider">약관 및 정책</h2>
       <div className="bg-white border border-[#E8EBF0] rounded-2xl p-4 shadow-sm">
@@ -145,15 +135,6 @@ function Row({ label, value, valueClassName = '' }: { label: string; value: stri
 
 function Divider() {
   return <div className="h-px bg-[#E8EBF0] my-1.5" />;
-}
-
-function LinkRow({ href, label }: { href: string; label: string }) {
-  return (
-    <Link href={href} className="flex justify-between items-center py-2.5">
-      <span className="text-sm font-semibold text-[#0F2242]">{label}</span>
-      <span className="text-xl text-[#9CA3AF]">›</span>
-    </Link>
-  );
 }
 
 function ExternalRow({ href, label }: { href: string; label: string }) {

@@ -77,17 +77,19 @@ export default function ResidentSettingsPage() {
         <LegalRow href="https://villtalk.store/legal/privacy" label="개인정보 처리방침" />
       </div>
 
-      {/* 이사 신청 */}
-      <h2 className="text-[13px] font-bold text-[#6B7280] mt-5 mb-2.5 tracking-wider">이사 관리</h2>
-      <div className="bg-white border border-[#E8EBF0] rounded-2xl p-4 shadow-sm">
-        <Link
-          href="/resident/moveout"
-          className="flex justify-between items-center py-2.5"
-        >
-          <span className="text-sm font-semibold text-[#0F2242]">이사 신청</span>
-          <span className="text-xl text-[#9CA3AF]">›</span>
-        </Link>
-      </div>
+      {/* 이사하기 — 단독 액션 카드 (더 눈에 띄게) */}
+      <h2 className="text-[13px] font-bold text-[#6B7280] mt-5 mb-2.5 tracking-wider">이사하기</h2>
+      <Link
+        href="/resident/moveout"
+        className="flex items-center bg-white border border-[#E8EBF0] rounded-2xl p-4 shadow-sm hover:border-[#FF6B35]/40 active:scale-[0.99] transition"
+      >
+        <span className="mr-3 flex-shrink-0 w-10 h-10 rounded-xl bg-[rgba(255,107,53,0.1)] flex items-center justify-center text-xl" aria-hidden="true">📦</span>
+        <div className="flex-1">
+          <p className="text-[14px] font-extrabold text-[#0F2242]">이사 신청</p>
+          <p className="text-[11px] text-[#6B7280] mt-0.5">이사 예정일과 정산 정보를 관리자에게 전송합니다</p>
+        </div>
+        <span className="text-xl text-[#9CA3AF]">›</span>
+      </Link>
 
       {/* 앱 정보 */}
       <h2 className="text-[13px] font-bold text-[#6B7280] mt-5 mb-2.5 tracking-wider">앱 정보</h2>
