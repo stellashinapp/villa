@@ -34,42 +34,78 @@ export default function AdminVillaDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // 계좌 편집 상태
+  const [editingAccount, setEditingAccount] = useState(false);
+  const [bank, setBank] = useState('');
+  const [number, setNumber] = useState('');
+  const [holder, setHolder] = useState('');
+  const [savingAccount, setSavingAccount] = useState(false);
+
   useEffect(() => {
     if (!villaId) return;
-    (async () => {
-      setLoading(true);
-      const [
-        { data: v, error: vErr },
-        { count: unitCount },
-        { count: residentCount },
-        { count: billCount },
-        { count: noticeCount },
-        { count: msgUnread },
-      ] = await Promise.all([
-        supabase.from('villas').select('id, name, address, total_units, units_per_floor, account_bank, account_number, account_holder, status').eq('id', villaId).maybeSingle(),
-        supabase.from('units').select('*', { count: 'exact', head: true }).eq('villa_id', villaId),
-        supabase.from('residents').select('id, units!inner(villa_id)', { count: 'exact', head: true }).eq('units.villa_id', villaId).eq('status', 'active'),
-        supabase.from('bill_months').select('*', { count: 'exact', head: true }).eq('villa_id', villaId),
-        supabase.from('notices').select('*', { count: 'exact', head: true }).eq('villa_id', villaId),
-        supabase.from('messages').select('*', { count: 'exact', head: true }).eq('villa_id', villaId).eq('is_read', false),
-      ]);
-
-      if (vErr) setError(vErr.message);
-      setVilla(v as Villa | null);
-      setStats({
-        units: unitCount ?? 0,
-        residents: residentCount ?? 0,
-        bill_months: billCount ?? 0,
-        notices: noticeCount ?? 0,
-        messages_unread: msgUnread ?? 0,
-      });
-      setLoading(false);
-    })();
+    load();
   }, [villaId]);
+
+  async function load() {
+    setLoading(true);
+    const [
+      { data: v, error: vErr },
+      { count: unitCount },
+      { count: residentCount },
+      { count: billCount },
+      { count: noticeCount },
+      { count: msgUnread },
+    ] = await Promise.all([
+      supabase.from('villas').select('id, name, address, total_units, units_per_floor, account_bank, account_number, account_holder, status').eq('id', villaId).maybeSingle(),
+      supabase.from('units').select('*', { count: 'exact', head: true }).eq('villa_id', villaId),
+      supabase.from('residents').select('id, units!inner(villa_id)', { count: 'exact', head: true }).eq('units.villa_id', villaId).eq('status', 'active'),
+      supabase.from('bill_months').select('*', { count: 'exact', head: true }).eq('villa_id', villaId),
+      supabase.from('notices').select('*', { count: 'exact', head: true }).eq('villa_id', villaId),
+      supabase.from('messages').select('*', { count: 'exact', head: true }).eq('villa_id', villaId).eq('is_read', false),
+    ]);
+
+    if (vErr) setError(vErr.message);
+    setVilla(v as Villa | null);
+    setStats({
+      units: unitCount ?? 0,
+      residents: residentCount ?? 0,
+      bill_months: billCount ?? 0,
+      notices: noticeCount ?? 0,
+      messages_unread: msgUnread ?? 0,
+    });
+    setLoading(false);
+  }
+
+  function startEdit() {
+    if (!villa) return;
+    setBank(villa.account_bank ?? '');
+    setNumber(villa.account_number ?? '');
+    setHolder(villa.account_holder ?? '');
+    setEditingAccount(true);
+  }
+
+  async function saveAccount() {
+    if (!villa) return;
+    setSavingAccount(true);
+    const { error: upErr } = await supabase.from('villas').update({
+      account_bank: bank.trim() || null,
+      account_number: number.trim() || null,
+      account_holder: holder.trim() || null,
+    }).eq('id', villa.id);
+    setSavingAccount(false);
+    if (upErr) {
+      alert('저장 실패: ' + upErr.message);
+      return;
+    }
+    setEditingAccount(false);
+    await load();
+  }
 
   if (loading) return <div className="px-5 pt-6 text-center text-sm text-[#9CA3AF]">불러오는 중…</div>;
   if (error) return <div className="px-5 pt-6 text-center text-sm text-[#E74C3C]">오류: {error}</div>;
   if (!villa) return <div className="px-5 pt-6 text-center text-sm text-[#9CA3AF]">빌라를 찾을 수 없습니다</div>;
+
+  const hasAccount = villa.account_bank || villa.account_number;
 
   return (
     <div className="px-5 pt-6 pb-8 max-w-screen-sm mx-auto">
@@ -88,19 +124,87 @@ export default function AdminVillaDetailPage() {
         <StatCard label="미읽음 메시지" value={stats.messages_unread} accent={stats.messages_unread > 0 ? '#E74C3C' : '#9CA3AF'} />
       </div>
 
-      {/* 입금 계좌 */}
-      {(villa.account_bank || villa.account_number) && (
-        <>
-          <h2 className="text-[13px] font-bold text-[#6B7280] mt-6 mb-2.5 tracking-wider">관리비 입금 계좌</h2>
-          <div className="bg-white border border-[#E8EBF0] rounded-2xl p-4 shadow-sm">
-            <p className="text-[14px] font-bold text-[#0F2242]">
-              {villa.account_bank} {villa.account_number}
-            </p>
-            {villa.account_holder && (
-              <p className="text-[12px] text-[#6B7280] mt-1">예금주: {villa.account_holder}</p>
-            )}
+      {/* 입금 계좌 — 클릭 시 편집 */}
+      <div className="flex items-center justify-between mt-6 mb-2.5">
+        <h2 className="text-[13px] font-bold text-[#6B7280] tracking-wider">관리비 입금 계좌</h2>
+        {!editingAccount && (
+          <button
+            onClick={startEdit}
+            className="text-[12px] text-[#4263E8] font-bold hover:underline"
+          >
+            {hasAccount ? '수정' : '＋ 추가'}
+          </button>
+        )}
+      </div>
+
+      {editingAccount ? (
+        <div className="bg-white border border-[#4263E8] border-[1.5px] rounded-2xl p-4 shadow-sm space-y-3">
+          <div className="grid grid-cols-2 gap-2.5">
+            <div>
+              <label className="block text-[12px] font-bold text-[#6B7280] mb-1.5">은행</label>
+              <input
+                value={bank}
+                onChange={e => setBank(e.target.value)}
+                placeholder="예: 신한"
+                maxLength={20}
+                className="w-full bg-white border border-[#E8EBF0] rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#4263E8]"
+              />
+            </div>
+            <div>
+              <label className="block text-[12px] font-bold text-[#6B7280] mb-1.5">예금주</label>
+              <input
+                value={holder}
+                onChange={e => setHolder(e.target.value)}
+                placeholder="예: 홍길동"
+                maxLength={30}
+                className="w-full bg-white border border-[#E8EBF0] rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#4263E8]"
+              />
+            </div>
           </div>
-        </>
+          <div>
+            <label className="block text-[12px] font-bold text-[#6B7280] mb-1.5">계좌번호</label>
+            <input
+              value={number}
+              onChange={e => setNumber(e.target.value)}
+              placeholder="예: 110-123-456789"
+              maxLength={30}
+              className="w-full bg-white border border-[#E8EBF0] rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#4263E8]"
+            />
+          </div>
+          <div className="flex gap-2 pt-1">
+            <button
+              onClick={saveAccount}
+              disabled={savingAccount}
+              className="flex-1 bg-[#4263E8] text-white py-2.5 rounded-lg text-[14px] font-bold disabled:opacity-50"
+            >
+              {savingAccount ? '저장 중…' : '저장'}
+            </button>
+            <button
+              onClick={() => setEditingAccount(false)}
+              disabled={savingAccount}
+              className="px-4 bg-[#F5F6FA] text-[#6B7280] py-2.5 rounded-lg text-[14px] font-bold"
+            >
+              취소
+            </button>
+          </div>
+          <p className="text-[11px] text-[#9CA3AF]">
+            ⓘ 입주민이 관리비 납부 시 보이는 계좌입니다. 빈 칸은 비공개 처리됩니다.
+          </p>
+        </div>
+      ) : hasAccount ? (
+        <div className="bg-white border border-[#E8EBF0] rounded-2xl p-4 shadow-sm">
+          <p className="text-[14px] font-bold text-[#0F2242]">
+            {villa.account_bank} {villa.account_number}
+          </p>
+          {villa.account_holder && (
+            <p className="text-[12px] text-[#6B7280] mt-1">예금주: {villa.account_holder}</p>
+          )}
+        </div>
+      ) : (
+        <div className="bg-white border border-dashed border-[#E8EBF0] rounded-2xl p-4 text-center">
+          <p className="text-[13px] text-[#9CA3AF]">아직 입금 계좌가 등록되지 않았습니다</p>
+          <p className="text-[11px] text-[#9CA3AF] mt-1">우측 상단 "+ 추가" 로 등록하세요</p>
+        </div>
       )}
 
       {/* 서브 메뉴 */}
@@ -112,11 +216,6 @@ export default function AdminVillaDetailPage() {
         <SubMenu href={`/admin/villas/${villa.id}/parking`} icon="parking" label="주차" hint="등록 차량 관리" />
         <SubMenu href={`/admin/villas/${villa.id}/messages`} icon="message" label="메시지" hint={`미읽음 ${stats.messages_unread}건`} />
       </div>
-
-      <p className="text-[11px] text-[#9CA3AF] text-center mt-8">
-        각 메뉴별 상세 화면은 다음 업데이트에서 PWA 도 완성됩니다.<br />
-        지금 즉시 사용은 모바일 앱에서 가능합니다.
-      </p>
     </div>
   );
 }
