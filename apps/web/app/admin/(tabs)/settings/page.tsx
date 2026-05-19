@@ -69,11 +69,11 @@ export default function AdminSettingsPage() {
 
   return (
     <div className="px-5 pt-6 pb-8 max-w-screen-sm mx-auto">
-      <p className="text-[11px] text-[#4263E8] font-bold tracking-[0.16em] mb-1.5">ADMIN</p>
-      <h1 className="text-[22px] font-black text-[#0F2242]">설정</h1>
+      <p className="text-[13px] text-[#4263E8] font-bold tracking-[0.16em] mb-1.5">ADMIN</p>
+      <h1 className="text-[24px] font-black text-[#0F2242]">설정</h1>
 
       {/* 내 정보 */}
-      <h2 className="text-[13px] font-bold text-[#6B7280] mt-6 mb-2.5 tracking-wider">내 정보</h2>
+      <h2 className="text-[15px] font-bold text-[#6B7280] mt-6 mb-2.5 tracking-wider">내 정보</h2>
       <div className="bg-white border border-[#E8EBF0] rounded-2xl p-4 shadow-sm">
         <Row label="이름" value={profile?.name ?? '-'} />
         <Divider />
@@ -85,18 +85,18 @@ export default function AdminSettingsPage() {
       </div>
 
       {/* 구독 */}
-      <h2 className="text-[13px] font-bold text-[#6B7280] mt-5 mb-2.5 tracking-wider">구독</h2>
+      <h2 className="text-[15px] font-bold text-[#6B7280] mt-5 mb-2.5 tracking-wider">구독</h2>
       <div className="bg-white border border-[#E8EBF0] rounded-2xl p-4 shadow-sm">
         <Row label="상태" value={subLabel} valueClassName={sub?.status === 'past_due' ? 'text-[#E74C3C]' : ''} />
         <Divider />
         <Row label="등록 카드" value={sub?.card_last4 ? `${sub.card_brand ?? 'CARD'} •••• ${sub.card_last4}` : '미등록'} />
-        <p className="text-[11px] text-[#9CA3AF] mt-3">
+        <p className="text-[13px] text-[#9CA3AF] mt-3">
           구독·결제 관리는 모바일 앱에서 가능합니다 (다음 업데이트에서 PWA 도 지원)
         </p>
       </div>
 
       {/* 약관 */}
-      <h2 className="text-[13px] font-bold text-[#6B7280] mt-5 mb-2.5 tracking-wider">약관 및 정책</h2>
+      <h2 className="text-[15px] font-bold text-[#6B7280] mt-5 mb-2.5 tracking-wider">약관 및 정책</h2>
       <div className="bg-white border border-[#E8EBF0] rounded-2xl p-4 shadow-sm">
         <ExternalRow href="https://villtalk.store/legal/terms" label="이용약관" />
         <Divider />
@@ -104,7 +104,7 @@ export default function AdminSettingsPage() {
       </div>
 
       {/* 앱 정보 */}
-      <h2 className="text-[13px] font-bold text-[#6B7280] mt-5 mb-2.5 tracking-wider">앱 정보</h2>
+      <h2 className="text-[15px] font-bold text-[#6B7280] mt-5 mb-2.5 tracking-wider">앱 정보</h2>
       <div className="bg-white border border-[#E8EBF0] rounded-2xl p-4 shadow-sm">
         <Row label="앱 버전" value="v1.0.0" />
         <Divider />
@@ -114,12 +114,12 @@ export default function AdminSettingsPage() {
       {/* 로그아웃 */}
       <button
         onClick={logout}
-        className="w-full mt-6 bg-[rgba(231,76,60,0.06)] border border-[rgba(231,76,60,0.12)] rounded-2xl py-4 text-[#E74C3C] text-[15px] font-bold"
+        className="w-full mt-6 bg-[rgba(231,76,60,0.06)] border border-[rgba(231,76,60,0.12)] rounded-2xl py-4 text-[#E74C3C] text-[17px] font-bold"
       >
         로그아웃
       </button>
 
-      <p className="text-center mt-5 text-[11px] text-[#9CA3AF]">ANDNEW 2026</p>
+      <p className="text-center mt-5 text-[13px] text-[#9CA3AF]">ANDNEW 2026</p>
     </div>
   );
 }
@@ -127,8 +127,8 @@ export default function AdminSettingsPage() {
 function Row({ label, value, valueClassName = '' }: { label: string; value: string; valueClassName?: string }) {
   return (
     <div className="flex justify-between py-1.5">
-      <span className="text-[13px] text-[#6B7280]">{label}</span>
-      <span className={`text-[13px] font-semibold text-[#0F2242] ${valueClassName}`}>{value}</span>
+      <span className="text-[15px] text-[#6B7280]">{label}</span>
+      <span className={`text-[15px] font-semibold text-[#0F2242] ${valueClassName}`}>{value}</span>
     </div>
   );
 }

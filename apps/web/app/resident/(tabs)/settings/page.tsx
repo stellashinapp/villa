@@ -44,11 +44,11 @@ export default function ResidentSettingsPage() {
 
   return (
     <div className="px-5 pt-6 pb-8 max-w-screen-sm mx-auto">
-      <p className="text-[11px] text-[#4263E8] font-bold tracking-[0.16em] mb-1.5">RESIDENT</p>
-      <h1 className="text-[22px] font-black text-[#0F2242]">설정</h1>
+      <p className="text-[13px] text-[#4263E8] font-bold tracking-[0.16em] mb-1.5">RESIDENT</p>
+      <h1 className="text-[24px] font-black text-[#0F2242]">설정</h1>
 
       {/* 내 정보 */}
-      <h2 className="text-[13px] font-bold text-[#6B7280] mt-6 mb-2.5 tracking-wider">내 정보</h2>
+      <h2 className="text-[15px] font-bold text-[#6B7280] mt-6 mb-2.5 tracking-wider">내 정보</h2>
       <div className="bg-white border border-[#E8EBF0] rounded-2xl p-4 shadow-sm">
         <Row label="이름" value={session?.name ?? '-'} />
         <Divider />
@@ -62,7 +62,7 @@ export default function ResidentSettingsPage() {
       {/* 관리비 입금 계좌 */}
       {account && (
         <>
-          <h2 className="text-[13px] font-bold text-[#6B7280] mt-5 mb-2.5 tracking-wider">관리비 입금 계좌</h2>
+          <h2 className="text-[15px] font-bold text-[#6B7280] mt-5 mb-2.5 tracking-wider">관리비 입금 계좌</h2>
           <div className="bg-white border border-[#E8EBF0] rounded-2xl p-4 shadow-sm">
             <p className="text-sm font-semibold text-[#0F2242]">{account}</p>
           </div>
@@ -70,7 +70,7 @@ export default function ResidentSettingsPage() {
       )}
 
       {/* 약관 및 정책 */}
-      <h2 className="text-[13px] font-bold text-[#6B7280] mt-5 mb-2.5 tracking-wider">약관 및 정책</h2>
+      <h2 className="text-[15px] font-bold text-[#6B7280] mt-5 mb-2.5 tracking-wider">약관 및 정책</h2>
       <div className="bg-white border border-[#E8EBF0] rounded-2xl p-4 shadow-sm">
         <LegalRow href="https://villtalk.store/legal/terms" label="이용약관" />
         <Divider />
@@ -78,21 +78,21 @@ export default function ResidentSettingsPage() {
       </div>
 
       {/* 이사하기 — 단독 액션 카드 (더 눈에 띄게) */}
-      <h2 className="text-[13px] font-bold text-[#6B7280] mt-5 mb-2.5 tracking-wider">이사하기</h2>
+      <h2 className="text-[15px] font-bold text-[#6B7280] mt-5 mb-2.5 tracking-wider">이사하기</h2>
       <Link
         href="/resident/moveout"
         className="flex items-center bg-white border border-[#E8EBF0] rounded-2xl p-4 shadow-sm hover:border-[#FF6B35]/40 active:scale-[0.99] transition"
       >
         <span className="mr-3 flex-shrink-0 w-10 h-10 rounded-xl bg-[rgba(255,107,53,0.1)] flex items-center justify-center text-xl" aria-hidden="true">📦</span>
         <div className="flex-1">
-          <p className="text-[14px] font-extrabold text-[#0F2242]">이사 신청</p>
-          <p className="text-[11px] text-[#6B7280] mt-0.5">이사 예정일과 정산 정보를 관리자에게 전송합니다</p>
+          <p className="text-[16px] font-extrabold text-[#0F2242]">이사 신청</p>
+          <p className="text-[13px] text-[#6B7280] mt-0.5">이사 예정일과 정산 정보를 관리자에게 전송합니다</p>
         </div>
         <span className="text-xl text-[#9CA3AF]">›</span>
       </Link>
 
       {/* 앱 정보 */}
-      <h2 className="text-[13px] font-bold text-[#6B7280] mt-5 mb-2.5 tracking-wider">앱 정보</h2>
+      <h2 className="text-[15px] font-bold text-[#6B7280] mt-5 mb-2.5 tracking-wider">앱 정보</h2>
       <div className="bg-white border border-[#E8EBF0] rounded-2xl p-4 shadow-sm">
         <Row label="앱 버전" value="v1.0.0" />
         <Divider />
@@ -102,12 +102,12 @@ export default function ResidentSettingsPage() {
       {/* 로그아웃 */}
       <button
         onClick={handleLogout}
-        className="w-full mt-6 bg-[rgba(231,76,60,0.06)] border border-[rgba(231,76,60,0.12)] rounded-2xl py-4 text-[#E74C3C] text-[15px] font-bold"
+        className="w-full mt-6 bg-[rgba(231,76,60,0.06)] border border-[rgba(231,76,60,0.12)] rounded-2xl py-4 text-[#E74C3C] text-[17px] font-bold"
       >
         로그아웃
       </button>
 
-      <p className="text-center mt-5 text-[11px] text-[#9CA3AF]">ANDNEW 2026</p>
+      <p className="text-center mt-5 text-[13px] text-[#9CA3AF]">ANDNEW 2026</p>
     </div>
   );
 }
@@ -115,8 +115,8 @@ export default function ResidentSettingsPage() {
 function Row({ label, value, valueClassName = '' }: { label: string; value: string; valueClassName?: string }) {
   return (
     <div className="flex justify-between py-1.5">
-      <span className="text-[13px] text-[#6B7280]">{label}</span>
-      <span className={`text-[13px] font-semibold text-[#0F2242] ${valueClassName}`}>{value}</span>
+      <span className="text-[15px] text-[#6B7280]">{label}</span>
+      <span className={`text-[15px] font-semibold text-[#0F2242] ${valueClassName}`}>{value}</span>
     </div>
   );
 }

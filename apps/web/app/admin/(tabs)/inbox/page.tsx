@@ -124,9 +124,9 @@ export default function AdminInboxPage() {
 
   return (
     <div className="px-5 pt-6 pb-8 max-w-screen-sm mx-auto">
-      <p className="text-[11px] text-[#4263E8] font-bold tracking-[0.16em] mb-1.5">ADMIN INBOX</p>
-      <h1 className="text-[22px] font-black text-[#0F2242]">메시지</h1>
-      <p className="text-[13px] text-[#6B7280] mt-0.5">
+      <p className="text-[13px] text-[#4263E8] font-bold tracking-[0.16em] mb-1.5">ADMIN INBOX</p>
+      <h1 className="text-[24px] font-black text-[#0F2242]">메시지</h1>
+      <p className="text-[15px] text-[#6B7280] mt-0.5">
         입주민 신고/민원 — 총 {messages.length}건, 미답변 {messages.filter(m => m.message_replies.filter(r => r.author_type === 'admin').length === 0).length}건
       </p>
 
@@ -134,14 +134,14 @@ export default function AdminInboxPage() {
         <p className="text-center text-sm text-[#9CA3AF] mt-20">불러오는 중…</p>
       ) : error ? (
         <div className="text-center mt-20">
-          <p className="text-[15px] font-bold text-[#E74C3C] mb-1">오류</p>
-          <p className="text-[13px] text-[#9CA3AF]">{error}</p>
+          <p className="text-[17px] font-bold text-[#E74C3C] mb-1">오류</p>
+          <p className="text-[15px] text-[#9CA3AF]">{error}</p>
         </div>
       ) : messages.length === 0 ? (
         <div className="text-center mt-20">
           <div className="text-5xl mb-3">✉️</div>
-          <p className="text-[15px] font-bold text-[#0F2242] mb-1">받은 메시지가 없습니다</p>
-          <p className="text-[13px] text-[#9CA3AF]">입주민 신고가 오면 여기에 표시됩니다</p>
+          <p className="text-[17px] font-bold text-[#0F2242] mb-1">받은 메시지가 없습니다</p>
+          <p className="text-[15px] text-[#9CA3AF]">입주민 신고가 오면 여기에 표시됩니다</p>
         </div>
       ) : (
         <div className="mt-4 space-y-2.5">
@@ -152,11 +152,11 @@ export default function AdminInboxPage() {
             return (
               <div key={m.id} className="bg-white rounded-xl p-4 border border-[#E8EBF0] shadow-sm">
                 <div className="flex items-center gap-2 mb-2 flex-wrap">
-                  <span className="text-[12px] font-bold">
+                  <span className="text-[14px] font-bold">
                     {cat.emoji} {cat.label}
                   </span>
                   <span
-                    className={`text-[11px] font-bold px-2 py-0.5 rounded ${
+                    className={`text-[13px] font-bold px-2 py-0.5 rounded ${
                       replied
                         ? 'bg-[rgba(46,204,113,0.12)] text-[#2ECC71]'
                         : 'bg-[rgba(231,76,60,0.12)] text-[#E74C3C]'
@@ -164,30 +164,30 @@ export default function AdminInboxPage() {
                   >
                     {replied ? '답변완료' : '미답변'}
                   </span>
-                  <span className="text-[11px] text-[#6B7280] font-semibold">
+                  <span className="text-[13px] text-[#6B7280] font-semibold">
                     {m.villas?.name ?? '-'}
                     {m.residents?.name && ` · ${m.residents.name}`}
                     {m.residents?.units?.ho_number && ` (${m.residents.units.ho_number})`}
                   </span>
-                  <span className="text-[11px] text-[#9CA3AF] ml-auto">
+                  <span className="text-[13px] text-[#9CA3AF] ml-auto">
                     {new Date(m.created_at).toLocaleDateString('ko-KR')}
                   </span>
                 </div>
-                <p className="text-[13px] text-[#0F2242] leading-[20px] whitespace-pre-wrap">{m.text}</p>
+                <p className="text-[15px] text-[#0F2242] leading-[20px] whitespace-pre-wrap">{m.text}</p>
 
                 {adminReplies.length > 0 && (
                   <div className="mt-3 pt-3 border-t border-[#E8EBF0] space-y-2">
                     {adminReplies.map(r => (
                       <div key={r.id} className="bg-[#F5F6FA] rounded-lg p-3">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-[11px] font-bold text-[#4263E8]">
+                          <span className="text-[13px] font-bold text-[#4263E8]">
                             관리자 {r.author_name && `· ${r.author_name}`}
                           </span>
-                          <span className="text-[11px] text-[#9CA3AF] ml-auto">
+                          <span className="text-[13px] text-[#9CA3AF] ml-auto">
                             {new Date(r.created_at).toLocaleDateString('ko-KR')}
                           </span>
                         </div>
-                        <p className="text-[13px] text-[#0F2242] leading-[20px] whitespace-pre-wrap">{r.text}</p>
+                        <p className="text-[15px] text-[#0F2242] leading-[20px] whitespace-pre-wrap">{r.text}</p>
                       </div>
                     ))}
                   </div>
@@ -206,13 +206,13 @@ export default function AdminInboxPage() {
                       <button
                         onClick={() => submitReply(m.id)}
                         disabled={submitting}
-                        className="flex-1 bg-[#4263E8] text-white py-2 rounded-lg text-[13px] font-bold disabled:opacity-50"
+                        className="flex-1 bg-[#4263E8] text-white py-2 rounded-lg text-[15px] font-bold disabled:opacity-50"
                       >
                         {submitting ? '등록 중…' : '답변 등록'}
                       </button>
                       <button
                         onClick={() => { setReplyingTo(null); setReplyText(''); }}
-                        className="px-3 bg-[#F5F6FA] text-[#6B7280] py-2 rounded-lg text-[13px] font-bold"
+                        className="px-3 bg-[#F5F6FA] text-[#6B7280] py-2 rounded-lg text-[15px] font-bold"
                       >
                         취소
                       </button>
@@ -221,7 +221,7 @@ export default function AdminInboxPage() {
                 ) : (
                   <button
                     onClick={() => { setReplyingTo(m.id); setReplyText(''); }}
-                    className="mt-3 text-[12px] font-bold text-[#4263E8] hover:underline"
+                    className="mt-3 text-[14px] font-bold text-[#4263E8] hover:underline"
                   >
                     {replied ? '추가 답변' : '답변하기'} →
                   </button>

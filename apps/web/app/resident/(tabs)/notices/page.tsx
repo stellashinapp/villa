@@ -53,8 +53,8 @@ export default function ResidentNoticesPage() {
 
   return (
     <div className="px-5 pt-6 pb-8 max-w-screen-sm mx-auto">
-      <h1 className="text-[22px] font-black text-[#0F2242]">공지</h1>
-      <p className="text-[13px] text-[#6B7280] mt-0.5">{villaName}</p>
+      <h1 className="text-[24px] font-black text-[#0F2242]">공지</h1>
+      <p className="text-[15px] text-[#6B7280] mt-0.5">{villaName}</p>
 
       {notices.length > 0 && (
         <div className="mt-4">
@@ -74,12 +74,12 @@ export default function ResidentNoticesPage() {
         <p className="text-center text-sm text-[#E74C3C] mt-20">오류: {error}</p>
       ) : notices.length === 0 ? (
         <div className="text-center mt-20">
-          <p className="text-[15px] font-bold text-[#0F2242] mb-1">공지사항이 없습니다</p>
-          <p className="text-[13px] text-[#9CA3AF]">새로운 공지가 등록되면 여기에 표시됩니다</p>
+          <p className="text-[17px] font-bold text-[#0F2242] mb-1">공지사항이 없습니다</p>
+          <p className="text-[15px] text-[#9CA3AF]">새로운 공지가 등록되면 여기에 표시됩니다</p>
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center mt-20">
-          <p className="text-[15px] font-bold text-[#0F2242]">검색 결과가 없습니다</p>
+          <p className="text-[17px] font-bold text-[#0F2242]">검색 결과가 없습니다</p>
         </div>
       ) : (
         <div className="mt-4 space-y-2.5">
@@ -92,16 +92,16 @@ export default function ResidentNoticesPage() {
             >
               <div className="flex items-center gap-2 mb-2">
                 {notice.is_pinned && (
-                  <span className="bg-[rgba(255,107,53,0.12)] text-[#FF6B35] text-[10px] font-extrabold px-2 py-0.5 rounded">
+                  <span className="bg-[rgba(255,107,53,0.12)] text-[#FF6B35] text-[12px] font-extrabold px-2 py-0.5 rounded">
                     📌 고정
                   </span>
                 )}
-                <span className="text-[12px] text-[#9CA3AF]">
+                <span className="text-[14px] text-[#9CA3AF]">
                   {new Date(notice.created_at).toLocaleDateString('ko-KR')}
                 </span>
               </div>
-              <h3 className="text-[15px] font-extrabold text-[#0F2242] mb-2">{notice.title}</h3>
-              <p className="text-[13px] text-[#6B7280] leading-[20px] whitespace-pre-wrap">{notice.body}</p>
+              <h3 className="text-[17px] font-extrabold text-[#0F2242] mb-2">{notice.title}</h3>
+              <p className="text-[15px] text-[#6B7280] leading-[20px] whitespace-pre-wrap">{notice.body}</p>
             </div>
           ))}
         </div>

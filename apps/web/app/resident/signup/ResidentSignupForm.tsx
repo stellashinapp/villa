@@ -84,7 +84,7 @@ export default function ResidentSignupForm() {
           placeholder="예: 행복빌라, 그린파크"
           className="w-full bg-white border border-border rounded-xl px-4 py-3 text-base outline-none focus:border-pri"
         />
-        <p className="text-[11px] text-t3 mt-1.5">관리자가 등록한 정확한 빌라명을 입력하세요</p>
+        <p className="text-[13px] text-t3 mt-1.5">관리자가 등록한 정확한 빌라명을 입력하세요</p>
       </div>
 
       <div>
@@ -147,7 +147,7 @@ export default function ResidentSignupForm() {
         {loading ? '신청 중…' : '입주 신청'}
       </button>
 
-      <p className="text-[11px] text-t3 text-center leading-relaxed pt-2">
+      <p className="text-[13px] text-t3 text-center leading-relaxed pt-2">
         신청 시 빌라 관리자에게 알림이 전송됩니다.<br />
         승인되면 푸시 알림으로 알려드립니다.
       </p>

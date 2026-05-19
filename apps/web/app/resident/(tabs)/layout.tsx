@@ -82,7 +82,7 @@ export default function ResidentTabsLayout({ children }: { children: React.React
                   filled={active}
                 />
                 <span
-                  className={`text-[10px] font-bold ${active ? 'text-[#4263E8]' : 'text-[#9CA3AF]'}`}
+                  className={`text-[12px] font-bold ${active ? 'text-[#4263E8]' : 'text-[#9CA3AF]'}`}
                 >
                   {tab.label}
                 </span>

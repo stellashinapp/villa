@@ -116,7 +116,7 @@ export default function ResidentLoginForm() {
 
       {/* ⚠️ TEMP — REMOVE BEFORE PRODUCTION (테스트용 빠른입력) */}
       <div className="border-t-2 border-dashed border-amber-200 pt-3">
-        <p className="text-[10px] text-amber-700 font-bold mb-1.5">🧪 테스트 빠른입력 (운영 전 삭제)</p>
+        <p className="text-[12px] text-amber-700 font-bold mb-1.5">🧪 테스트 빠른입력 (운영 전 삭제)</p>
         <div className="grid grid-cols-3 gap-2">
           {TEST_RESIDENTS.map((t, i) => (
             <button

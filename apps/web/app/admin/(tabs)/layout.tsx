@@ -57,7 +57,7 @@ export default function AdminTabsLayout({ children }: { children: React.ReactNod
               >
                 <Icon name={tab.icon} size={22} color={active ? '#4263E8' : '#9CA3AF'} filled={active} />
                 <span
-                  className={`text-[10px] font-bold ${active ? 'text-[#4263E8]' : 'text-[#9CA3AF]'}`}
+                  className={`text-[12px] font-bold ${active ? 'text-[#4263E8]' : 'text-[#9CA3AF]'}`}
                 >
                   {tab.label}
                 </span>

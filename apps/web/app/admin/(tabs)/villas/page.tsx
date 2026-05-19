@@ -100,22 +100,22 @@ export default function AdminVillasPage() {
     <div className="px-5 pt-6 pb-8 max-w-screen-sm mx-auto">
       <div className="flex justify-between items-end">
         <div>
-          <p className="text-[12px] text-[#4263E8] font-bold tracking-[0.16em] mb-1.5">VILLAS</p>
-          <h1 className="text-[24px] font-black text-[#0F2242]">내 빌라</h1>
-          <p className="text-[14px] text-[#6B7280] mt-0.5">총 {cards.length}개 등록</p>
+          <p className="text-[14px] text-[#4263E8] font-bold tracking-[0.16em] mb-1.5">VILLAS</p>
+          <h1 className="text-[26px] font-black text-[#0F2242]">내 빌라</h1>
+          <p className="text-[16px] text-[#6B7280] mt-0.5">총 {cards.length}개 등록</p>
         </div>
-        <Link href="/admin/villas/add" className="bg-[#4263E8] text-white text-[14px] font-bold px-3.5 py-2.5 rounded-lg shadow-sm">
+        <Link href="/admin/villas/add" className="bg-[#4263E8] text-white text-[16px] font-bold px-3.5 py-2.5 rounded-lg shadow-sm">
           ＋ 빌라 추가
         </Link>
       </div>
 
-      {loading ? <p className="text-center text-[14px] text-[#9CA3AF] mt-20">불러오는 중…</p>
-        : error ? <p className="text-center text-[14px] text-[#E74C3C] mt-20">오류: {error}</p>
+      {loading ? <p className="text-center text-[16px] text-[#9CA3AF] mt-20">불러오는 중…</p>
+        : error ? <p className="text-center text-[16px] text-[#E74C3C] mt-20">오류: {error}</p>
         : cards.length === 0 ? (
           <Link href="/admin/villas/add" className="block bg-white border border-dashed border-[#4263E8]/30 rounded-2xl p-8 text-center mt-10 hover:bg-[#EEF1FB]">
             <div className="text-4xl mb-3">🏘️</div>
-            <p className="text-[16px] font-bold text-[#0F2242]">첫 빌라를 등록해주세요</p>
-            <p className="text-[13px] text-[#6B7280] mt-1">+ 빌라 추가 버튼으로 시작</p>
+            <p className="text-[18px] font-bold text-[#0F2242]">첫 빌라를 등록해주세요</p>
+            <p className="text-[15px] text-[#6B7280] mt-1">+ 빌라 추가 버튼으로 시작</p>
           </Link>
         ) : (
           <div className="mt-5 space-y-3">
@@ -128,14 +128,14 @@ export default function AdminVillasPage() {
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <h3 className="text-[17px] font-extrabold text-[#0F2242]">{v.name}</h3>
-                      <span className={`text-[11px] font-bold px-2 py-0.5 rounded ${
+                      <h3 className="text-[19px] font-extrabold text-[#0F2242]">{v.name}</h3>
+                      <span className={`text-[13px] font-bold px-2 py-0.5 rounded ${
                         v.status === 'active' ? 'bg-[rgba(46,204,113,0.12)] text-[#2ECC71]' : 'bg-[#F5F6FA] text-[#6B7280]'
                       }`}>
                         {v.status === 'active' ? '운영중' : v.status}
                       </span>
                     </div>
-                    <p className="text-[13px] text-[#6B7280] mt-0.5">{v.address} · {v.total_units}세대</p>
+                    <p className="text-[15px] text-[#6B7280] mt-0.5">{v.address} · {v.total_units}세대</p>
                   </div>
                   <span className="text-[#9CA3AF] text-xl ml-2">›</span>
                 </div>
@@ -145,29 +145,29 @@ export default function AdminVillasPage() {
                   <div className="bg-[#EEF1FB] border border-[#4263E8]/15 rounded-xl p-3.5 mt-2">
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className="text-[12px] text-[#6B7280] font-bold">{v.current_month_label}</p>
-                        <p className="text-[20px] font-extrabold text-[#0F2242] mt-0.5">
+                        <p className="text-[14px] text-[#6B7280] font-bold">{v.current_month_label}</p>
+                        <p className="text-[22px] font-extrabold text-[#0F2242] mt-0.5">
                           ₩{fmt(v.per_unit_amount)}
                         </p>
-                        <p className="text-[11px] text-[#6B7280] mt-0.5">세대당 · 총 {v.total_units}세대</p>
+                        <p className="text-[13px] text-[#6B7280] mt-0.5">세대당 · 총 {v.total_units}세대</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-[12px] text-[#6B7280] font-bold">납부율</p>
-                        <p className={`text-[24px] font-black ${v.pay_rate >= 80 ? 'text-[#2ECC71]' : v.pay_rate >= 50 ? 'text-[#F39C12]' : 'text-[#E74C3C]'}`}>
+                        <p className="text-[14px] text-[#6B7280] font-bold">납부율</p>
+                        <p className={`text-[26px] font-black ${v.pay_rate >= 80 ? 'text-[#2ECC71]' : v.pay_rate >= 50 ? 'text-[#F39C12]' : 'text-[#E74C3C]'}`}>
                           {v.pay_rate}%
                         </p>
-                        <p className="text-[11px] text-[#6B7280] mt-0.5">{v.paid_count}/{v.total_units}</p>
+                        <p className="text-[13px] text-[#6B7280] mt-0.5">{v.paid_count}/{v.total_units}</p>
                       </div>
                     </div>
                   </div>
                 ) : (
                   <div className="bg-[#F5F6FA] border border-dashed border-[#E8EBF0] rounded-xl p-3 mt-2 text-center">
-                    <p className="text-[12px] text-[#9CA3AF]">이번 달 관리비 미발행</p>
+                    <p className="text-[14px] text-[#9CA3AF]">이번 달 관리비 미발행</p>
                   </div>
                 )}
 
                 {(v.account_bank || v.account_number) && (
-                  <p className="text-[11px] text-[#9CA3AF] mt-2">💳 {v.account_bank} {v.account_number}</p>
+                  <p className="text-[13px] text-[#9CA3AF] mt-2">💳 {v.account_bank} {v.account_number}</p>
                 )}
               </Link>
             ))}

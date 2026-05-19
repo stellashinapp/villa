@@ -101,11 +101,11 @@ export default function ResidentParkingPage() {
     <div className="px-5 pt-6 pb-8 max-w-screen-sm mx-auto">
       <div className="flex justify-between items-end">
         <div>
-          <h1 className="text-[22px] font-black text-[#0F2242]">주차</h1>
-          <p className="text-[13px] text-[#6B7280] mt-0.5">{villaName} · 내 호실: {myHo}</p>
+          <h1 className="text-[24px] font-black text-[#0F2242]">주차</h1>
+          <p className="text-[15px] text-[#6B7280] mt-0.5">{villaName} · 내 호실: {myHo}</p>
         </div>
         <button
-          className="bg-[#4263E8] text-white text-[13px] font-bold px-3.5 py-2 rounded-lg shadow-sm"
+          className="bg-[#4263E8] text-white text-[15px] font-bold px-3.5 py-2 rounded-lg shadow-sm"
           onClick={() => setShowForm(!showForm)}
         >
           {showForm ? '취소' : '＋ 차량 등록'}
@@ -115,7 +115,7 @@ export default function ResidentParkingPage() {
       {showForm && (
         <form onSubmit={submit} className="mt-4 bg-white border border-[#E8EBF0] rounded-2xl p-4 shadow-sm space-y-3">
           <div>
-            <label className="block text-[12px] font-bold text-[#6B7280] mb-1.5">차량 번호 *</label>
+            <label className="block text-[14px] font-bold text-[#6B7280] mb-1.5">차량 번호 *</label>
             <input
               value={plate}
               onChange={e => setPlate(e.target.value)}
@@ -126,20 +126,20 @@ export default function ResidentParkingPage() {
             />
           </div>
           <div>
-            <label className="block text-[12px] font-bold text-[#6B7280] mb-1.5">차량 구분 *</label>
+            <label className="block text-[14px] font-bold text-[#6B7280] mb-1.5">차량 구분 *</label>
             <div className="grid grid-cols-2 gap-2">
               <button type="button" onClick={() => setVehicleType('resident')}
-                className={`py-2.5 rounded-lg text-[13px] font-bold border ${vehicleType === 'resident' ? 'bg-[#4263E8] text-white border-[#4263E8]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'}`}>
+                className={`py-2.5 rounded-lg text-[15px] font-bold border ${vehicleType === 'resident' ? 'bg-[#4263E8] text-white border-[#4263E8]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'}`}>
                 🚗 내 차량 (입주민)
               </button>
               <button type="button" onClick={() => setVehicleType('visitor')}
-                className={`py-2.5 rounded-lg text-[13px] font-bold border ${vehicleType === 'visitor' ? 'bg-[#F39C12] text-white border-[#F39C12]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'}`}>
+                className={`py-2.5 rounded-lg text-[15px] font-bold border ${vehicleType === 'visitor' ? 'bg-[#F39C12] text-white border-[#F39C12]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'}`}>
                 🅿️ 방문 차량
               </button>
             </div>
           </div>
           <div>
-            <label className="block text-[12px] font-bold text-[#6B7280] mb-1.5">메모 (선택)</label>
+            <label className="block text-[14px] font-bold text-[#6B7280] mb-1.5">메모 (선택)</label>
             <input
               value={memo}
               onChange={e => setMemo(e.target.value)}
@@ -150,7 +150,7 @@ export default function ResidentParkingPage() {
           </div>
           {vehicleType === 'visitor' && (
             <div>
-              <label className="block text-[12px] font-bold text-[#6B7280] mb-1.5">방문 종료일 (권장)</label>
+              <label className="block text-[14px] font-bold text-[#6B7280] mb-1.5">방문 종료일 (권장)</label>
               <input
                 type="date"
                 value={expiresAt}
@@ -159,7 +159,7 @@ export default function ResidentParkingPage() {
               />
             </div>
           )}
-          <button type="submit" disabled={submitting} className="w-full bg-[#4263E8] text-white py-2.5 rounded-lg text-[14px] font-bold disabled:opacity-50">
+          <button type="submit" disabled={submitting} className="w-full bg-[#4263E8] text-white py-2.5 rounded-lg text-[16px] font-bold disabled:opacity-50">
             {submitting ? '등록 중…' : '차량 등록'}
           </button>
         </form>
@@ -168,18 +168,18 @@ export default function ResidentParkingPage() {
       {loading ? <p className="text-center text-sm text-[#9CA3AF] mt-10">불러오는 중…</p>
         : error ? (
           <div className="text-center mt-10">
-            <p className="text-[15px] font-bold text-[#E74C3C] mb-1">오류</p>
-            <p className="text-[13px] text-[#9CA3AF]">{error}</p>
+            <p className="text-[17px] font-bold text-[#E74C3C] mb-1">오류</p>
+            <p className="text-[15px] text-[#9CA3AF]">{error}</p>
           </div>
         ) : (
           <>
             {/* 내 차량 */}
-            <h2 className="text-[13px] font-bold text-[#6B7280] mt-5 mb-2.5 tracking-wider">내 차량 ({myVehicles.length})</h2>
+            <h2 className="text-[15px] font-bold text-[#6B7280] mt-5 mb-2.5 tracking-wider">내 차량 ({myVehicles.length})</h2>
             {myVehicles.length === 0 ? (
               <div className="bg-white rounded-xl p-6 border border-[#E8EBF0] text-center">
                 <div className="text-3xl mb-2">🚗</div>
-                <p className="text-[13px] text-[#9CA3AF]">등록된 내 차량이 없습니다</p>
-                <p className="text-[11px] text-[#9CA3AF] mt-1">＋ 차량 등록 버튼으로 추가</p>
+                <p className="text-[15px] text-[#9CA3AF]">등록된 내 차량이 없습니다</p>
+                <p className="text-[13px] text-[#9CA3AF] mt-1">＋ 차량 등록 버튼으로 추가</p>
               </div>
             ) : (
               <div className="space-y-2.5">
@@ -188,12 +188,12 @@ export default function ResidentParkingPage() {
             )}
 
             {/* 빌라 전체 차량 */}
-            <h2 className="text-[13px] font-bold text-[#6B7280] mt-6 mb-2.5 tracking-wider">
+            <h2 className="text-[15px] font-bold text-[#6B7280] mt-6 mb-2.5 tracking-wider">
               빌라 전체 등록 차량 ({otherVehicles.length}대)
             </h2>
             {otherVehicles.length === 0 ? (
               <div className="bg-white rounded-xl p-6 border border-[#E8EBF0] text-center">
-                <p className="text-[13px] text-[#9CA3AF]">다른 차량이 없습니다</p>
+                <p className="text-[15px] text-[#9CA3AF]">다른 차량이 없습니다</p>
               </div>
             ) : (
               <div className="space-y-2.5">
@@ -211,17 +211,17 @@ function VehicleCard({ v, isMine, onRemove }: { v: ParkingEntry & { units?: { ho
   return (
     <div className={`bg-white rounded-xl p-4 border shadow-sm ${isMine ? 'border-[#4263E8] border-[1.5px]' : 'border-[#E8EBF0]'}`}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[15px] font-extrabold text-[#0F2242]">{v.plate_number}</span>
+        <span className="text-[17px] font-extrabold text-[#0F2242]">{v.plate_number}</span>
         <div className="flex items-center gap-2">
           {isMine && (
-            <span className="bg-[rgba(66,99,232,0.12)] text-[#4263E8] text-[10px] font-extrabold px-2 py-0.5 rounded">내 차량</span>
+            <span className="bg-[rgba(66,99,232,0.12)] text-[#4263E8] text-[12px] font-extrabold px-2 py-0.5 rounded">내 차량</span>
           )}
           {onRemove && (
-            <button onClick={onRemove} className="text-[12px] text-[#E74C3C] font-bold hover:underline">삭제</button>
+            <button onClick={onRemove} className="text-[14px] text-[#E74C3C] font-bold hover:underline">삭제</button>
           )}
         </div>
       </div>
-      <div className="text-[12px] text-[#6B7280] space-y-0.5">
+      <div className="text-[14px] text-[#6B7280] space-y-0.5">
         {v.units?.ho_number && <p>호실: {v.units.ho_number}</p>}
         {v.vehicle_type && (
           <p>

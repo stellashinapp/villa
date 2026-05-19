@@ -121,14 +121,14 @@ export default function ApplicationsShell() {
                 <div className="flex justify-between items-start mb-2">
                   <div>
                     <div className="font-bold text-t1">{r.name}</div>
-                    <div className="text-[11px] text-t3 mt-0.5">{fmtPhone(r.phone)}</div>
+                    <div className="text-[13px] text-t3 mt-0.5">{fmtPhone(r.phone)}</div>
                   </div>
                   <div className="text-right">
                     <div className="text-xs font-semibold text-pri">{r.units?.villas.name ?? '-'}</div>
-                    <div className="text-[11px] text-t3 mt-0.5">{r.units?.ho_number ?? '-'}호</div>
+                    <div className="text-[13px] text-t3 mt-0.5">{r.units?.ho_number ?? '-'}호</div>
                   </div>
                 </div>
-                <div className="text-[11px] text-t3 mb-3">신청 {relTime(r.applied_at)}</div>
+                <div className="text-[13px] text-t3 mb-3">신청 {relTime(r.applied_at)}</div>
                 <div className="flex gap-2">
                   <button
                     disabled={busy === r.id}
@@ -163,15 +163,15 @@ export default function ApplicationsShell() {
                 <div className="flex justify-between items-start mb-2">
                   <div>
                     <div className="font-bold text-t1">{r.name}</div>
-                    <div className="text-[11px] text-t3 mt-0.5">{fmtPhone(r.phone)}</div>
+                    <div className="text-[13px] text-t3 mt-0.5">{fmtPhone(r.phone)}</div>
                   </div>
                   <div className="text-right">
                     <div className="text-xs font-semibold text-warn">{r.units?.villas.name ?? '-'}</div>
-                    <div className="text-[11px] text-t3 mt-0.5">{r.units?.ho_number ?? '-'}호</div>
+                    <div className="text-[13px] text-t3 mt-0.5">{r.units?.ho_number ?? '-'}호</div>
                   </div>
                 </div>
                 {r.move_out_date && (
-                  <div className="text-[11px] text-t3 mb-3">이사 예정일 {r.move_out_date}</div>
+                  <div className="text-[13px] text-t3 mb-3">이사 예정일 {r.move_out_date}</div>
                 )}
                 <button
                   disabled={busy === r.id}
