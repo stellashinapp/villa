@@ -111,9 +111,10 @@ export default function HomePage() {
         <div className="h-[68px] flex items-center justify-between max-w-[1920px] mx-auto px-6 lg:px-[244px]">
           <Link
             href="/"
-            className="text-[24px] lg:text-[28px] font-black tracking-tight text-white hover:text-[#3d54ff] transition-colors"
+            className="text-[24px] lg:text-[28px] font-black tracking-tight transition-colors"
           >
-            Villatolk
+            <span className="text-white">Villa</span>
+            <span className="text-[#3d54ff] ml-1">Talk</span>
           </Link>
           <nav className="flex items-center gap-[20px] lg:gap-[48px]">
             <a href="#features" className="text-[14px] lg:text-[16px] font-semibold text-white hover:text-[#3d54ff] transition-colors">

@@ -9,7 +9,8 @@ html {
 }
 
 html, body {
-  background: #FFFFFF;
+  /* 배경 다크 네이비 — 1920px 컨테이너 밖 영역도 같은 톤 (QA full background) */
+  background: #0f2242;
   color: #1A1D26;
   -webkit-font-smoothing: antialiased;
 }

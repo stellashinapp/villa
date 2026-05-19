@@ -11,7 +11,10 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto px-6 py-12">
         <div className="grid md:grid-cols-4 gap-8 mb-10">
           <div>
-            <div className="text-xl font-black text-primary mb-3 tracking-tight">Villatolk</div>
+            <div className="text-xl font-black mb-3 tracking-tight">
+              <span className="text-[#0f2242]">Villa</span>
+              <span className="text-[#3d54ff] ml-1">Talk</span>
+            </div>
             <p className="text-xs text-gray-500 leading-relaxed">
               빌라·다세대 공동관리의 모든 것.<br />
               관리비부터 입주민 소통까지.

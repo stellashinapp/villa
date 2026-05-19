@@ -37,11 +37,21 @@ export default function AdminVillaResidentsPage() {
 
   // 직접 입주민 추가 폼
   const [showAdd, setShowAdd] = useState(false);
+  const [addMode, setAddMode] = useState<'direct' | 'invite'>('invite');
   const [addName, setAddName] = useState('');
   const [addPhone, setAddPhone] = useState('');
   const [addUnitId, setAddUnitId] = useState('');
   const [addIsOwner, setAddIsOwner] = useState(false);
   const [addSubmitting, setAddSubmitting] = useState(false);
+  const [inviteUrl, setInviteUrl] = useState<string | null>(null);
+  const [inviteName, setInviteName] = useState('');
+
+  function randToken(): string {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let s = '';
+    for (let i = 0; i < 24; i++) s += chars[Math.floor(Math.random() * chars.length)];
+    return s;
+  }
 
   async function submitAdd(e: React.FormEvent) {
     e.preventDefault();
@@ -50,23 +60,72 @@ export default function AdminVillaResidentsPage() {
       return;
     }
     setAddSubmitting(true);
-    const { error } = await supabase.from('residents').insert({
-      unit_id: addUnitId,
-      name: addName.trim(),
-      phone: addPhone.replace(/\D/g, ''),
-      status: 'active', // 관리자 직접 추가 → 바로 활성
-      is_owner: addIsOwner,
-      applied_at: new Date().toISOString(),
-      approved_at: new Date().toISOString(),
-    });
-    setAddSubmitting(false);
-    if (error) {
-      alert('추가 실패: ' + error.message);
-      return;
+
+    if (addMode === 'direct') {
+      // 즉시 등록 — 입주민 행 바로 active
+      const { error } = await supabase.from('residents').insert({
+        unit_id: addUnitId,
+        name: addName.trim(),
+        phone: addPhone.replace(/\D/g, ''),
+        status: 'active',
+        is_owner: addIsOwner,
+        applied_at: new Date().toISOString(),
+        approved_at: new Date().toISOString(),
+      });
+      setAddSubmitting(false);
+      if (error) { alert('추가 실패: ' + error.message); return; }
+      setAddName(''); setAddPhone(''); setAddUnitId(''); setAddIsOwner(false);
+      setShowAdd(false);
+      await load();
+    } else {
+      // 초대링크 발급
+      const { data: { user } } = await supabase.auth.getUser();
+      const { data: adminRow } = await supabase.from('admins').select('id').eq('auth_id', user?.id).maybeSingle();
+      const adminId = (adminRow as { id: string } | null)?.id ?? null;
+      const token = randToken();
+      const { error } = await supabase.from('resident_invitations').insert({
+        villa_id: villaId,
+        unit_id: addUnitId,
+        name: addName.trim(),
+        phone: addPhone.replace(/\D/g, ''),
+        token,
+        is_owner: addIsOwner,
+        invited_by: adminId,
+      });
+      setAddSubmitting(false);
+      if (error) { alert('초대 발급 실패: ' + error.message); return; }
+      const url = `${window.location.origin}/invite/${token}`;
+      setInviteUrl(url);
+      setInviteName(addName.trim());
     }
+  }
+
+  async function copyInvite() {
+    if (!inviteUrl) return;
+    try {
+      await navigator.clipboard.writeText(inviteUrl);
+      alert('초대 링크 복사됨. 카카오톡·문자로 보내세요.');
+    } catch {
+      prompt('아래 링크를 복사하세요:', inviteUrl);
+    }
+  }
+
+  function shareViaKakao() {
+    if (!inviteUrl) return;
+    const text = `[빌라톡 가입 초대]\n${inviteName}님, 아래 링크로 가입해주세요:\n${inviteUrl}\n\n(링크는 14일간 유효합니다)`;
+    if (navigator.share) {
+      navigator.share({ title: '빌라톡 가입 초대', text, url: inviteUrl }).catch(() => {});
+    } else {
+      copyInvite();
+    }
+  }
+
+  function resetInvite() {
+    setInviteUrl(null);
+    setInviteName('');
     setAddName(''); setAddPhone(''); setAddUnitId(''); setAddIsOwner(false);
     setShowAdd(false);
-    await load();
+    load();
   }
 
   useEffect(() => { load(); }, [villaId]);
@@ -136,9 +195,27 @@ export default function AdminVillaResidentsPage() {
         </button>
       </div>
 
-      {/* 직접 추가 폼 (QA Page 5) */}
-      {showAdd && (
+      {/* 직접 추가 폼 (QA Page 5) + 초대링크 (QA Page 11) */}
+      {showAdd && !inviteUrl && (
         <form onSubmit={submitAdd} className="mb-4 bg-white border border-[#E8EBF0] rounded-2xl p-4 shadow-sm space-y-3">
+          <div>
+            <label className="block text-[15px] font-bold text-[#6B7280] mb-1.5">추가 방식</label>
+            <div className="grid grid-cols-2 gap-2">
+              <button type="button" onClick={() => setAddMode('invite')}
+                className={`py-2.5 rounded-lg text-[14px] font-bold border ${addMode === 'invite' ? 'bg-[#4263E8] text-white border-[#4263E8]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'}`}>
+                💌 초대링크 (권장)
+              </button>
+              <button type="button" onClick={() => setAddMode('direct')}
+                className={`py-2.5 rounded-lg text-[14px] font-bold border ${addMode === 'direct' ? 'bg-[#4263E8] text-white border-[#4263E8]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'}`}>
+                ⚡ 즉시 등록
+              </button>
+            </div>
+            <p className="text-[12px] text-[#9CA3AF] mt-1.5">
+              {addMode === 'invite'
+                ? '입주민이 카카오톡 링크로 가입 — 본인이 정보 확인 후 활성'
+                : '관리자가 정보 입력 → 즉시 활성 (입주민 가입 안 함)'}
+            </p>
+          </div>
           <div className="grid grid-cols-2 gap-2.5">
             <div>
               <label className="block text-[15px] font-bold text-[#6B7280] mb-1.5">이름 *</label>
@@ -164,12 +241,34 @@ export default function AdminVillaResidentsPage() {
             소유주 (건물주)
           </label>
           <button type="submit" disabled={addSubmitting} className="w-full bg-[#4263E8] text-white py-2.5 rounded-lg text-[16px] font-bold disabled:opacity-50">
-            {addSubmitting ? '추가 중…' : '활성 입주민으로 추가'}
+            {addSubmitting ? '처리 중…' : addMode === 'invite' ? '초대링크 발급' : '즉시 등록'}
           </button>
-          <p className="text-[13px] text-[#9CA3AF] text-center">
-            관리자가 직접 추가하므로 승인 단계 없이 즉시 활성됩니다
-          </p>
         </form>
+      )}
+
+      {/* 초대링크 발급 결과 */}
+      {inviteUrl && (
+        <div className="mb-4 bg-[#EEF1FB] border border-[#4263E8]/30 rounded-2xl p-4 shadow-sm space-y-3">
+          <div className="text-center">
+            <div className="text-3xl mb-1">💌</div>
+            <p className="text-[15px] font-bold text-[#0F2242]">{inviteName}님 초대링크 발급 완료</p>
+            <p className="text-[13px] text-[#6B7280] mt-1">14일간 유효합니다</p>
+          </div>
+          <div className="bg-white border border-[#E8EBF0] rounded-lg p-3 break-all text-[12px] text-[#4263E8] font-mono">
+            {inviteUrl}
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <button onClick={shareViaKakao} className="bg-[#FEE500] text-[#000000] py-3 rounded-lg text-[14px] font-bold">
+              💬 카카오톡 공유
+            </button>
+            <button onClick={copyInvite} className="bg-white border border-[#E8EBF0] text-[#0F2242] py-3 rounded-lg text-[14px] font-bold">
+              📋 링크 복사
+            </button>
+          </div>
+          <button onClick={resetInvite} className="w-full text-[13px] text-[#6B7280] font-bold py-2">
+            완료
+          </button>
+        </div>
       )}
 
       {/* 상태 필터 */}
