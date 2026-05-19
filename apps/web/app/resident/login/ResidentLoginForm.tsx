@@ -6,11 +6,12 @@ import { supabase } from '@/lib/supabase';
 
 // ⚠️ TEMP — REMOVE BEFORE PRODUCTION
 // 테스트 편의용 빠른 로그인. 운영 전 TEST_RESIDENTS 상수와 빠른입력 버튼 영역 모두 제거할 것.
-// 실 DB 에 active 상태로 등록된 unique 입주민만 사용 (resident-login 함수로 검증됨)
+// admin1 (admin1@villatolk.test) 가 관리하는 '빌라톡 테스트빌라' 의 입주민 3명.
+// 이 입주민으로 로그인하면 admin1 ↔ resident 간 공지·메시지 흐름 테스트 가능.
 const TEST_RESIDENTS: { label: string; name: string; phone: string }[] = [
-  { label: '신경아(해피)', name: '신경아', phone: '01093367669' },     // 해피빌라 101호
-  { label: '김순자(강남)', name: '김순자', phone: '01010142014' },     // 강남힐스테이트 1002호
-  { label: '박철수(성북)', name: '박철수', phone: '01010202020' },     // 성북아트빌 202호
+  { label: '김테스트1(101)', name: '김테스트1', phone: '01099991111' },
+  { label: '이테스트2(102)', name: '이테스트2', phone: '01099992222' },
+  { label: '박테스트3(103)', name: '박테스트3', phone: '01099993333' },
 ];
 
 type ResidentResult = {

@@ -146,7 +146,14 @@ function VehicleCard({
       </div>
       <div className="text-[12px] text-[#6B7280] space-y-0.5">
         {v.units?.ho_number && <p>호실: {v.units.ho_number}</p>}
-        {v.vehicle_type && <p>차종: {v.vehicle_type}</p>}
+        {v.vehicle_type && (
+          <p>
+            구분:{' '}
+            <span className={v.vehicle_type === 'visitor' ? 'text-[#F39C12] font-semibold' : 'text-[#2ECC71] font-semibold'}>
+              {v.vehicle_type === 'resident' ? '입주민 차량' : v.vehicle_type === 'visitor' ? '방문 차량' : v.vehicle_type}
+            </span>
+          </p>
+        )}
         {v.memo && <p>메모: {v.memo}</p>}
         {v.expires_at && (
           <p>유효기간: {new Date(v.expires_at).toLocaleDateString('ko-KR')}</p>
