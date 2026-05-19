@@ -55,7 +55,7 @@ export default function AdminVillaBillsPage() {
 
   async function createMonth(e: React.FormEvent) {
     e.preventDefault();
-    if (!newYM.match(/^\d{4}-\d{2}$/)) { alert('YYYY-MM 형식 (예: 2026-05)'); return; }
+    if (!newYM.match(/^\d{4}-\d{2}$/)) { alert('YYYY-MM 형식으로 입력해주세요 (예: 2026-05)'); return; }
     setSubmitting(true);
     const { error } = await supabase.from('bill_months').insert({
       villa_id: villaId,
@@ -66,7 +66,15 @@ export default function AdminVillaBillsPage() {
       billing_mode: 'equal',
     });
     setSubmitting(false);
-    if (error) { alert('생성 실패: ' + error.message); return; }
+    if (error) {
+      // 중복 회차 — UNIQUE 제약 위반
+      if (error.message.toLowerCase().includes('duplicate') || error.code === '23505') {
+        alert(`${newYM} 회차가 이미 존재합니다.\n\n같은 월을 두 번 만들 수 없습니다. 기존 회차에 항목을 추가하거나, 기존 회차를 삭제 후 다시 만드세요.`);
+      } else {
+        alert('생성 실패: ' + error.message);
+      }
+      return;
+    }
     setNewYM(''); setNewLabel(''); setNewDue('');
     setShowNew(false);
     await load();

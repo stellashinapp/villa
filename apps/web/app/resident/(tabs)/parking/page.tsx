@@ -23,6 +23,14 @@ export default function ResidentParkingPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // 폼 상태
+  const [showForm, setShowForm] = useState(false);
+  const [plate, setPlate] = useState('');
+  const [vehicleType, setVehicleType] = useState<'resident' | 'visitor'>('resident');
+  const [memo, setMemo] = useState('');
+  const [expiresAt, setExpiresAt] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
   useEffect(() => {
     const raw = sessionStorage.getItem('villatolk:resident');
     if (!raw) return;
@@ -30,119 +38,188 @@ export default function ResidentParkingPage() {
     setVillaId(s.villaId);
     setVillaName(s.villaName);
     setMyHo(s.ho);
-
-    // unit_id 는 -data 에서 가져옴
-    const dataRaw = sessionStorage.getItem('villatolk:resident-data');
-    if (dataRaw) {
-      try {
-        const sessRaw = JSON.parse(raw) as { villaId: string };
-        // resident 객체 자체에서 unit_id 추출
-        const residentRaw = sessionStorage.getItem('villatolk:resident-full');
-        if (residentRaw) {
-          const r = JSON.parse(residentRaw) as { unit_id?: string };
-          if (r.unit_id) setUnitId(r.unit_id);
-        }
-        void sessRaw;
-      } catch {}
-    }
+    // unit_id 찾기
+    supabase.from('units').select('id').eq('villa_id', s.villaId).eq('ho_number', s.ho).maybeSingle()
+      .then(({ data }) => { if (data) setUnitId((data as { id: string }).id); });
   }, []);
 
   useEffect(() => {
     if (!villaId) return;
-    (async () => {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('parking')
-        .select('id, unit_id, plate_number, vehicle_type, memo, expires_at, units!inner(ho_number, villa_id)')
-        .eq('units.villa_id', villaId)
-        .order('created_at', { ascending: false });
+    load();
+  }, [villaId, myHo]);
 
-      if (error) {
-        setError(error.message);
-        setMyVehicles([]);
-        setOtherVehicles([]);
-      } else {
-        const all = (data ?? []) as unknown as (ParkingEntry & { units: { ho_number: string } })[];
-        const mine = all.filter(p => p.units?.ho_number === myHo);
-        const others = all.filter(p => p.units?.ho_number !== myHo);
-        setMyVehicles(mine);
-        setOtherVehicles(others);
-      }
-      setLoading(false);
-    })();
-  }, [villaId, myHo, unitId]);
+  async function load() {
+    if (!villaId) return;
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('parking')
+      .select('id, unit_id, plate_number, vehicle_type, memo, expires_at, units!inner(ho_number, villa_id)')
+      .eq('units.villa_id', villaId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      setError(error.message);
+      setMyVehicles([]); setOtherVehicles([]);
+    } else {
+      const all = (data ?? []) as unknown as (ParkingEntry & { units: { ho_number: string } })[];
+      const mine = all.filter(p => p.units?.ho_number === myHo);
+      const others = all.filter(p => p.units?.ho_number !== myHo);
+      setMyVehicles(mine);
+      setOtherVehicles(others);
+    }
+    setLoading(false);
+  }
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!plate.trim()) { alert('차량 번호를 입력하세요'); return; }
+    if (!villaId || !unitId) { alert('호실 정보를 가져올 수 없습니다'); return; }
+    setSubmitting(true);
+    const { error } = await supabase.from('parking').insert({
+      villa_id: villaId,
+      unit_id: unitId,
+      plate_number: plate.trim(),
+      vehicle_type: vehicleType,
+      memo: memo.trim() || null,
+      expires_at: expiresAt || null,
+    });
+    setSubmitting(false);
+    if (error) { alert('등록 실패: ' + error.message); return; }
+    setPlate(''); setVehicleType('resident'); setMemo(''); setExpiresAt('');
+    setShowForm(false);
+    await load();
+  }
+
+  async function remove(p: ParkingEntry) {
+    if (!confirm(`${p.plate_number} 차량을 삭제할까요?`)) return;
+    const { error } = await supabase.from('parking').delete().eq('id', p.id);
+    if (error) { alert('삭제 실패: ' + error.message); return; }
+    await load();
+  }
 
   return (
     <div className="px-5 pt-6 pb-8 max-w-screen-sm mx-auto">
-      <h1 className="text-[22px] font-black text-[#0F2242]">주차</h1>
-      <p className="text-[13px] text-[#6B7280] mt-0.5">{villaName} · 내 호실: {myHo}</p>
-
-      {loading ? (
-        <p className="text-center text-sm text-[#9CA3AF] mt-20">불러오는 중…</p>
-      ) : error ? (
-        <div className="text-center mt-20">
-          <p className="text-[15px] font-bold text-[#E74C3C] mb-1">오류</p>
-          <p className="text-[13px] text-[#9CA3AF]">{error}</p>
+      <div className="flex justify-between items-end">
+        <div>
+          <h1 className="text-[22px] font-black text-[#0F2242]">주차</h1>
+          <p className="text-[13px] text-[#6B7280] mt-0.5">{villaName} · 내 호실: {myHo}</p>
         </div>
-      ) : (
-        <>
-          {/* 내 차량 */}
-          <h2 className="text-[13px] font-bold text-[#6B7280] mt-5 mb-2.5 tracking-wider">내 차량</h2>
-          {myVehicles.length === 0 ? (
-            <div className="bg-white rounded-xl p-6 border border-[#E8EBF0] text-center">
-              <div className="text-3xl mb-2">🚗</div>
-              <p className="text-[13px] text-[#9CA3AF]">등록된 내 차량이 없습니다</p>
-              <p className="text-[11px] text-[#9CA3AF] mt-1">관리자에게 등록을 요청하세요</p>
-            </div>
-          ) : (
-            <div className="space-y-2.5">
-              {myVehicles.map(v => (
-                <VehicleCard key={v.id} v={v} isMine />
-              ))}
-            </div>
-          )}
+        <button
+          className="bg-[#4263E8] text-white text-[13px] font-bold px-3.5 py-2 rounded-lg shadow-sm"
+          onClick={() => setShowForm(!showForm)}
+        >
+          {showForm ? '취소' : '＋ 차량 등록'}
+        </button>
+      </div>
 
-          {/* 빌라 전체 차량 */}
-          <h2 className="text-[13px] font-bold text-[#6B7280] mt-6 mb-2.5 tracking-wider">
-            빌라 전체 등록 차량 ({otherVehicles.length}대)
-          </h2>
-          {otherVehicles.length === 0 ? (
-            <div className="bg-white rounded-xl p-6 border border-[#E8EBF0] text-center">
-              <p className="text-[13px] text-[#9CA3AF]">다른 차량이 없습니다</p>
+      {showForm && (
+        <form onSubmit={submit} className="mt-4 bg-white border border-[#E8EBF0] rounded-2xl p-4 shadow-sm space-y-3">
+          <div>
+            <label className="block text-[12px] font-bold text-[#6B7280] mb-1.5">차량 번호 *</label>
+            <input
+              value={plate}
+              onChange={e => setPlate(e.target.value)}
+              placeholder="예: 12가 3456"
+              maxLength={15}
+              className="w-full bg-white border border-[#E8EBF0] rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#4263E8]"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-[12px] font-bold text-[#6B7280] mb-1.5">차량 구분 *</label>
+            <div className="grid grid-cols-2 gap-2">
+              <button type="button" onClick={() => setVehicleType('resident')}
+                className={`py-2.5 rounded-lg text-[13px] font-bold border ${vehicleType === 'resident' ? 'bg-[#4263E8] text-white border-[#4263E8]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'}`}>
+                🚗 내 차량 (입주민)
+              </button>
+              <button type="button" onClick={() => setVehicleType('visitor')}
+                className={`py-2.5 rounded-lg text-[13px] font-bold border ${vehicleType === 'visitor' ? 'bg-[#F39C12] text-white border-[#F39C12]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'}`}>
+                🅿️ 방문 차량
+              </button>
             </div>
-          ) : (
-            <div className="space-y-2.5">
-              {otherVehicles.map(v => (
-                <VehicleCard key={v.id} v={v} isMine={false} />
-              ))}
+          </div>
+          <div>
+            <label className="block text-[12px] font-bold text-[#6B7280] mb-1.5">메모 (선택)</label>
+            <input
+              value={memo}
+              onChange={e => setMemo(e.target.value)}
+              placeholder="예: 소나타 흰색"
+              maxLength={100}
+              className="w-full bg-white border border-[#E8EBF0] rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#4263E8]"
+            />
+          </div>
+          {vehicleType === 'visitor' && (
+            <div>
+              <label className="block text-[12px] font-bold text-[#6B7280] mb-1.5">방문 종료일 (권장)</label>
+              <input
+                type="date"
+                value={expiresAt}
+                onChange={e => setExpiresAt(e.target.value)}
+                className="w-full bg-white border border-[#E8EBF0] rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#4263E8]"
+              />
             </div>
           )}
-        </>
+          <button type="submit" disabled={submitting} className="w-full bg-[#4263E8] text-white py-2.5 rounded-lg text-[14px] font-bold disabled:opacity-50">
+            {submitting ? '등록 중…' : '차량 등록'}
+          </button>
+        </form>
       )}
+
+      {loading ? <p className="text-center text-sm text-[#9CA3AF] mt-10">불러오는 중…</p>
+        : error ? (
+          <div className="text-center mt-10">
+            <p className="text-[15px] font-bold text-[#E74C3C] mb-1">오류</p>
+            <p className="text-[13px] text-[#9CA3AF]">{error}</p>
+          </div>
+        ) : (
+          <>
+            {/* 내 차량 */}
+            <h2 className="text-[13px] font-bold text-[#6B7280] mt-5 mb-2.5 tracking-wider">내 차량 ({myVehicles.length})</h2>
+            {myVehicles.length === 0 ? (
+              <div className="bg-white rounded-xl p-6 border border-[#E8EBF0] text-center">
+                <div className="text-3xl mb-2">🚗</div>
+                <p className="text-[13px] text-[#9CA3AF]">등록된 내 차량이 없습니다</p>
+                <p className="text-[11px] text-[#9CA3AF] mt-1">＋ 차량 등록 버튼으로 추가</p>
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {myVehicles.map(v => <VehicleCard key={v.id} v={v} isMine onRemove={() => remove(v)} />)}
+              </div>
+            )}
+
+            {/* 빌라 전체 차량 */}
+            <h2 className="text-[13px] font-bold text-[#6B7280] mt-6 mb-2.5 tracking-wider">
+              빌라 전체 등록 차량 ({otherVehicles.length}대)
+            </h2>
+            {otherVehicles.length === 0 ? (
+              <div className="bg-white rounded-xl p-6 border border-[#E8EBF0] text-center">
+                <p className="text-[13px] text-[#9CA3AF]">다른 차량이 없습니다</p>
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {otherVehicles.map(v => <VehicleCard key={v.id} v={v} isMine={false} />)}
+              </div>
+            )}
+          </>
+        )
+      }
     </div>
   );
 }
 
-function VehicleCard({
-  v,
-  isMine,
-}: {
-  v: ParkingEntry & { units?: { ho_number: string } | null };
-  isMine: boolean;
-}) {
+function VehicleCard({ v, isMine, onRemove }: { v: ParkingEntry & { units?: { ho_number: string } | null }; isMine: boolean; onRemove?: () => void }) {
   return (
-    <div
-      className={`bg-white rounded-xl p-4 border shadow-sm ${
-        isMine ? 'border-[#4263E8] border-[1.5px]' : 'border-[#E8EBF0]'
-      }`}
-    >
+    <div className={`bg-white rounded-xl p-4 border shadow-sm ${isMine ? 'border-[#4263E8] border-[1.5px]' : 'border-[#E8EBF0]'}`}>
       <div className="flex items-center justify-between mb-1.5">
         <span className="text-[15px] font-extrabold text-[#0F2242]">{v.plate_number}</span>
-        {isMine && (
-          <span className="bg-[rgba(66,99,232,0.12)] text-[#4263E8] text-[10px] font-extrabold px-2 py-0.5 rounded">
-            내 차량
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {isMine && (
+            <span className="bg-[rgba(66,99,232,0.12)] text-[#4263E8] text-[10px] font-extrabold px-2 py-0.5 rounded">내 차량</span>
+          )}
+          {onRemove && (
+            <button onClick={onRemove} className="text-[12px] text-[#E74C3C] font-bold hover:underline">삭제</button>
+          )}
+        </div>
       </div>
       <div className="text-[12px] text-[#6B7280] space-y-0.5">
         {v.units?.ho_number && <p>호실: {v.units.ho_number}</p>}
@@ -155,9 +232,7 @@ function VehicleCard({
           </p>
         )}
         {v.memo && <p>메모: {v.memo}</p>}
-        {v.expires_at && (
-          <p>유효기간: {new Date(v.expires_at).toLocaleDateString('ko-KR')}</p>
-        )}
+        {v.expires_at && <p>방문 종료: {new Date(v.expires_at).toLocaleDateString('ko-KR')}</p>}
       </div>
     </div>
   );
