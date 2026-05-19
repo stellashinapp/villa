@@ -1,0 +1,102 @@
+name: Deploy admin-web to KakaoCloud VM
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/admin-web/**'
+      - 'packages/**'
+      - '.github/workflows/deploy-admin.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Build & Deploy admin-web (VM)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies (monorepo root)
+        run: npm ci --no-audit --no-fund
+
+      - name: Build admin-web (standalone)
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: npm run build --workspace=apps/admin-web
+
+      - name: Package deploy artifact
+        run: |
+          set -e
+          STANDALONE_DIR=apps/admin-web/.next/standalone
+          cp -r apps/admin-web/.next/static "$STANDALONE_DIR/apps/admin-web/.next/static"
+          if [ -d apps/admin-web/public ]; then
+            cp -r apps/admin-web/public "$STANDALONE_DIR/apps/admin-web/public"
+          else
+            echo "ℹ️ apps/admin-web/public 없음 — 스킵"
+          fi
+          tar -czf villatolk-admin.tar.gz -C "$STANDALONE_DIR" .
+          ls -lh villatolk-admin.tar.gz
+
+      - name: Copy artifact to VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          source: villatolk-admin.tar.gz
+          target: /tmp/
+
+      - name: Deploy & restart on VM
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            set -e
+            DEPLOY_ROOT=/home/ubuntu/villatolk-admin
+            CURRENT=$DEPLOY_ROOT/current
+            PREV=$DEPLOY_ROOT/prev
+            STAGING=$DEPLOY_ROOT/staging
+
+            mkdir -p $DEPLOY_ROOT
+
+            rm -rf $STAGING
+            mkdir -p $STAGING
+            tar -xzf /tmp/villatolk-admin.tar.gz -C $STAGING
+            rm -f /tmp/villatolk-admin.tar.gz
+
+            if [ -d "$CURRENT" ]; then
+              rm -rf $PREV
+              mv $CURRENT $PREV
+            fi
+            mv $STAGING $CURRENT
+
+            cd $CURRENT/apps/admin-web
+            if pm2 describe villatolk-admin > /dev/null 2>&1; then
+              PORT=3302 HOSTNAME=0.0.0.0 NODE_ENV=production pm2 restart villatolk-admin --update-env
+            else
+              PORT=3302 HOSTNAME=0.0.0.0 NODE_ENV=production pm2 start server.js --name villatolk-admin
+            fi
+            pm2 save
+
+            sleep 2
+            curl -sf http://127.0.0.1:3302 -o /dev/null && echo "healthy" || (echo "unhealthy"; pm2 logs villatolk-admin --lines 30 --nostream; exit 1)
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "### admin-web deploy (KakaoCloud VM)" >> $GITHUB_STEP_SUMMARY
+          echo "- Result: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- VM: 210.109.15.149 (kr-central-2-a)" >> $GITHUB_STEP_SUMMARY
+          echo "- Internal port: 3302" >> $GITHUB_STEP_SUMMARY
+          echo "- Public URL (after DNS): https://admin.villtalk.store" >> $GITHUB_STEP_SUMMARY
+          echo "- Commit: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
