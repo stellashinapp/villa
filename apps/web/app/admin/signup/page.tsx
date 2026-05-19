@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 export default function AdminSignupPage() {
   return (
-    <div className="min-h-screen flex flex-col px-6">
+    <div className="min-h-screen flex flex-col px-5">
       <div className="pt-12 pb-6">
         <Link href="/admin/login" className="text-sm text-t3 hover:text-t2">← 로그인으로</Link>
       </div>

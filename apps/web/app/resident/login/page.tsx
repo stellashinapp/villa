@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 export default function ResidentLoginPage() {
   return (
     <div className="min-h-screen flex flex-col">
-      <div className="bg-navy text-white px-6 pt-12 pb-10">
+      <div className="bg-navy text-white px-5 pt-12 pb-10">
         <Link href="/" className="text-xs text-white/60 hover:text-white">← 처음으로</Link>
         <p className="text-xs text-white/40 tracking-widest font-bold mt-6 mb-1">입주민 로그인</p>
         <h1 className="text-2xl font-extrabold leading-tight">{'이름과 전화번호로\n로그인하세요'}</h1>
@@ -15,7 +15,7 @@ export default function ResidentLoginPage() {
         </p>
       </div>
 
-      <div className="flex-1 px-6 pt-6 pb-10">
+      <div className="flex-1 px-5 pt-6 pb-10">
         <div className="w-full max-w-sm mx-auto">
           <ResidentLoginForm />
 

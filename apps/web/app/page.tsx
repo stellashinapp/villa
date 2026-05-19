@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen flex flex-col px-6 py-10 sm:py-16">
+    <div className="min-h-screen flex flex-col px-5 py-10 sm:py-16">
       <div className="flex-1 flex flex-col justify-center w-full max-w-sm mx-auto">
         {/* Hero */}
         <div className="text-center mb-12">

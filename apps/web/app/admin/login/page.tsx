@@ -10,7 +10,7 @@ export default async function AdminLoginPage({
 }) {
   const sp = await searchParams;
   return (
-    <div className="min-h-screen flex flex-col px-6">
+    <div className="min-h-screen flex flex-col px-5">
       <div className="pt-12 pb-8">
         <Link href="/" className="text-sm text-t3 hover:text-t2">← 처음으로</Link>
       </div>

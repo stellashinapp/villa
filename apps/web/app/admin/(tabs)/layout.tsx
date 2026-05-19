@@ -6,11 +6,11 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import Icon, { type IconName } from '@/components/Icon';
 
-// 모바일 (admin)/_layout.tsx 와 동일한 순서·아이콘
+// 탭 순서: 홈 / 빌라 / 메시지 / 설정 (빌라가 메시지보다 자주 쓰임 — 모바일 동일 의도)
 const TABS: { href: string; label: string; icon: IconName }[] = [
   { href: '/admin', label: '홈', icon: 'home' },
-  { href: '/admin/inbox', label: '메시지', icon: 'message' },
   { href: '/admin/villas', label: '빌라', icon: 'villa' },
+  { href: '/admin/inbox', label: '메시지', icon: 'message' },
   { href: '/admin/settings', label: '설정', icon: 'settings' },
 ];
 

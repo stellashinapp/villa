@@ -56,7 +56,7 @@ export default function MoveoutShell() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen px-6 py-12 flex flex-col items-center justify-center">
+      <div className="min-h-screen px-5 py-12 flex flex-col items-center justify-center">
         <div className="text-6xl mb-5">📦</div>
         <h2 className="text-xl font-extrabold mb-3">이주 신청 완료</h2>
         <p className="text-sm text-t2 text-center leading-relaxed mb-8">
@@ -70,7 +70,7 @@ export default function MoveoutShell() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <div className="bg-navy text-white px-6 pt-12 pb-8">
+      <div className="bg-navy text-white px-5 pt-12 pb-8">
         <Link href="/resident/bills" className="text-xs text-white/60">← 청구서</Link>
         <h1 className="text-xl font-extrabold mt-6">이주 신청</h1>
         <p className="text-xs text-white/60 mt-2">
@@ -78,7 +78,7 @@ export default function MoveoutShell() {
         </p>
       </div>
 
-      <div className="flex-1 px-6 pt-6 pb-12">
+      <div className="flex-1 px-5 pt-6 pb-12">
         <div className="w-full max-w-sm mx-auto">
           <form onSubmit={onSubmit} className="space-y-4">
             <div>
