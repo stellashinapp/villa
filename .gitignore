@@ -67,3 +67,5 @@ check-db-state.mjs
 # Local-only artifacts (emulator screenshots, test bundles)
 .emu-current.png
 .test-bundle.txt
+*.keystore
+keystore-info.txt
