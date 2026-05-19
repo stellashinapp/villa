@@ -83,12 +83,12 @@ export default function AdminVillasPage() {
           <h1 className="text-[22px] font-black text-[#0F2242]">내 빌라</h1>
           <p className="text-[13px] text-[#6B7280] mt-0.5">총 {villas.length}개 등록</p>
         </div>
-        <button
+        <Link
+          href="/admin/villas/add"
           className="bg-[#4263E8] text-white text-[13px] font-bold px-3.5 py-2 rounded-lg shadow-sm"
-          onClick={() => alert('빌라 추가 화면 준비중 (모바일 앱에서 사용 가능)')}
         >
           ＋ 빌라 추가
-        </button>
+        </Link>
       </div>
 
       {loading ? (
