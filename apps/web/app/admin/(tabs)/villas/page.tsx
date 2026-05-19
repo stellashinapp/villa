@@ -4,74 +4,95 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 
-type Villa = {
+type VillaRow = {
   id: string;
   name: string;
   address: string;
   total_units: number;
-  units_per_floor: number | null;
   account_bank: string | null;
   account_number: string | null;
   status: string;
-  created_at: string;
 };
 
+type Card = VillaRow & {
+  current_month_label: string | null;
+  per_unit_amount: number;
+  paid_count: number;
+  pay_rate: number;
+};
+
+function fmt(n: number) { return n.toLocaleString('ko-KR'); }
+
 export default function AdminVillasPage() {
-  const [villas, setVillas] = useState<Villa[]>([]);
+  const [cards, setCards] = useState<Card[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [unitStats, setUnitStats] = useState<Record<string, { occupied: number; vacant: number }>>({});
 
-  useEffect(() => {
-    load();
-  }, []);
+  useEffect(() => { load(); }, []);
 
   async function load() {
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-
-    const { data: adminRow } = await supabase
-      .from('admins')
-      .select('id')
-      .eq('auth_id', user.id)
-      .maybeSingle();
+    const { data: adminRow } = await supabase.from('admins').select('id').eq('auth_id', user.id).maybeSingle();
     if (!adminRow) return;
+    const adminId = (adminRow as { id: string }).id;
 
-    const { data, error } = await supabase
+    const { data: vs, error: vErr } = await supabase
       .from('villas')
-      .select('id, name, address, total_units, units_per_floor, account_bank, account_number, status, created_at')
-      .eq('admin_id', (adminRow as { id: string }).id)
+      .select('id, name, address, total_units, account_bank, account_number, status')
+      .eq('admin_id', adminId)
       .order('created_at', { ascending: false });
+    if (vErr) { setError(vErr.message); setLoading(false); return; }
+    const villas = (vs ?? []) as VillaRow[];
 
-    if (error) {
-      setError(error.message);
-      setVillas([]);
-    } else {
-      const vs = (data ?? []) as Villa[];
-      setVillas(vs);
-
-      // 각 빌라의 활성 입주민 수 (호실 중 거주자 있는 갯수)
-      const villaIds = vs.map(v => v.id);
-      if (villaIds.length > 0) {
-        const { data: resData } = await supabase
-          .from('residents')
-          .select('unit_id, status, units!inner(villa_id)')
-          .in('units.villa_id', villaIds)
-          .eq('status', 'active');
-        const occupiedPerVilla: Record<string, Set<string>> = {};
-        ((resData ?? []) as unknown as { unit_id: string; units: { villa_id: string } }[]).forEach(r => {
-          if (!occupiedPerVilla[r.units.villa_id]) occupiedPerVilla[r.units.villa_id] = new Set();
-          occupiedPerVilla[r.units.villa_id].add(r.unit_id);
-        });
-        const stats: Record<string, { occupied: number; vacant: number }> = {};
-        vs.forEach(v => {
-          const occ = occupiedPerVilla[v.id]?.size ?? 0;
-          stats[v.id] = { occupied: occ, vacant: Math.max(0, v.total_units - occ) };
-        });
-        setUnitStats(stats);
-      }
+    if (villas.length === 0) {
+      setCards([]); setLoading(false); return;
     }
+
+    const villaIds = villas.map(v => v.id);
+    const thisYM = new Date().toISOString().slice(0, 7);
+
+    const { data: thisMonthBills } = await supabase
+      .from('bill_months')
+      .select('id, villa_id, year_month, label, bill_items(amount)')
+      .in('villa_id', villaIds)
+      .eq('year_month', thisYM)
+      .eq('status', 'published');
+
+    const billByVilla: Record<string, { label: string; itemTotal: number; bmId: string }> = {};
+    ((thisMonthBills ?? []) as unknown as { id: string; villa_id: string; label: string | null; year_month: string; bill_items: { amount: number }[] }[])
+      .forEach(bm => {
+        billByVilla[bm.villa_id] = {
+          label: bm.label ?? `${bm.year_month} 관리비`,
+          itemTotal: (bm.bill_items ?? []).reduce((s, i) => s + i.amount, 0),
+          bmId: bm.id,
+        };
+      });
+
+    const bmIds = Object.values(billByVilla).map(b => b.bmId);
+    const paidByBm: Record<string, number> = {};
+    if (bmIds.length > 0) {
+      const { data: payData } = await supabase
+        .from('payments').select('bill_month_id, is_paid')
+        .in('bill_month_id', bmIds).eq('is_paid', true);
+      ((payData ?? []) as { bill_month_id: string }[]).forEach(p => {
+        paidByBm[p.bill_month_id] = (paidByBm[p.bill_month_id] || 0) + 1;
+      });
+    }
+
+    setCards(villas.map(v => {
+      const bill = billByVilla[v.id];
+      const perUnit = bill && v.total_units > 0 ? Math.round(bill.itemTotal / v.total_units) : 0;
+      const paid = bill ? paidByBm[bill.bmId] ?? 0 : 0;
+      return {
+        ...v,
+        current_month_label: bill?.label ?? null,
+        per_unit_amount: perUnit,
+        paid_count: paid,
+        pay_rate: bill && v.total_units > 0 ? Math.round((paid / v.total_units) * 100) : 0,
+      };
+    }));
     setLoading(false);
   }
 
@@ -79,84 +100,80 @@ export default function AdminVillasPage() {
     <div className="px-5 pt-6 pb-8 max-w-screen-sm mx-auto">
       <div className="flex justify-between items-end">
         <div>
-          <p className="text-[11px] text-[#4263E8] font-bold tracking-[0.16em] mb-1.5">VILLAS</p>
-          <h1 className="text-[22px] font-black text-[#0F2242]">내 빌라</h1>
-          <p className="text-[13px] text-[#6B7280] mt-0.5">총 {villas.length}개 등록</p>
+          <p className="text-[12px] text-[#4263E8] font-bold tracking-[0.16em] mb-1.5">VILLAS</p>
+          <h1 className="text-[24px] font-black text-[#0F2242]">내 빌라</h1>
+          <p className="text-[14px] text-[#6B7280] mt-0.5">총 {cards.length}개 등록</p>
         </div>
-        <Link
-          href="/admin/villas/add"
-          className="bg-[#4263E8] text-white text-[13px] font-bold px-3.5 py-2 rounded-lg shadow-sm"
-        >
+        <Link href="/admin/villas/add" className="bg-[#4263E8] text-white text-[14px] font-bold px-3.5 py-2.5 rounded-lg shadow-sm">
           ＋ 빌라 추가
         </Link>
       </div>
 
-      {loading ? (
-        <p className="text-center text-sm text-[#9CA3AF] mt-20">불러오는 중…</p>
-      ) : error ? (
-        <div className="text-center mt-20">
-          <p className="text-[15px] font-bold text-[#E74C3C] mb-1">오류</p>
-          <p className="text-[13px] text-[#9CA3AF]">{error}</p>
-        </div>
-      ) : villas.length === 0 ? (
-        <div className="text-center mt-20">
-          <div className="text-5xl mb-3">🏘️</div>
-          <p className="text-[15px] font-bold text-[#0F2242] mb-1">등록된 빌라가 없습니다</p>
-          <p className="text-[13px] text-[#9CA3AF]">+ 빌라 추가 버튼으로 시작하세요</p>
-        </div>
-      ) : (
-        <div className="mt-4 space-y-2.5">
-          {villas.map(v => {
-            const stat = unitStats[v.id] ?? { occupied: 0, vacant: v.total_units };
-            return (
+      {loading ? <p className="text-center text-[14px] text-[#9CA3AF] mt-20">불러오는 중…</p>
+        : error ? <p className="text-center text-[14px] text-[#E74C3C] mt-20">오류: {error}</p>
+        : cards.length === 0 ? (
+          <Link href="/admin/villas/add" className="block bg-white border border-dashed border-[#4263E8]/30 rounded-2xl p-8 text-center mt-10 hover:bg-[#EEF1FB]">
+            <div className="text-4xl mb-3">🏘️</div>
+            <p className="text-[16px] font-bold text-[#0F2242]">첫 빌라를 등록해주세요</p>
+            <p className="text-[13px] text-[#6B7280] mt-1">+ 빌라 추가 버튼으로 시작</p>
+          </Link>
+        ) : (
+          <div className="mt-5 space-y-3">
+            {cards.map(v => (
               <Link
                 key={v.id}
                 href={`/admin/villas/${v.id}`}
-                className="block bg-white rounded-xl p-4 border border-[#E8EBF0] shadow-sm active:scale-[0.99] transition"
+                className="block bg-white rounded-2xl p-4 border border-[#E8EBF0] shadow-sm active:scale-[0.99] transition"
               >
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-[16px] font-extrabold text-[#0F2242]">{v.name}</h3>
-                  <span
-                    className={`text-[11px] font-bold px-2 py-0.5 rounded ${
-                      v.status === 'active'
-                        ? 'bg-[rgba(46,204,113,0.12)] text-[#2ECC71]'
-                        : 'bg-[#F5F6FA] text-[#6B7280]'
-                    }`}
-                  >
-                    {v.status === 'active' ? '운영중' : v.status}
-                  </span>
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-[17px] font-extrabold text-[#0F2242]">{v.name}</h3>
+                      <span className={`text-[11px] font-bold px-2 py-0.5 rounded ${
+                        v.status === 'active' ? 'bg-[rgba(46,204,113,0.12)] text-[#2ECC71]' : 'bg-[#F5F6FA] text-[#6B7280]'
+                      }`}>
+                        {v.status === 'active' ? '운영중' : v.status}
+                      </span>
+                    </div>
+                    <p className="text-[13px] text-[#6B7280] mt-0.5">{v.address} · {v.total_units}세대</p>
+                  </div>
+                  <span className="text-[#9CA3AF] text-xl ml-2">›</span>
                 </div>
-                <p className="text-[12px] text-[#6B7280] mb-3">{v.address}</p>
-                <div className="grid grid-cols-3 gap-2 text-center">
-                  <Stat label="총 호실" value={v.total_units} />
-                  <Stat label="입주중" value={stat.occupied} highlight />
-                  <Stat label="공실" value={stat.vacant} muted />
-                </div>
+
+                {/* 이번달 관리비 + 납부율 */}
+                {v.current_month_label ? (
+                  <div className="bg-[#EEF1FB] border border-[#4263E8]/15 rounded-xl p-3.5 mt-2">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-[12px] text-[#6B7280] font-bold">{v.current_month_label}</p>
+                        <p className="text-[20px] font-extrabold text-[#0F2242] mt-0.5">
+                          ₩{fmt(v.per_unit_amount)}
+                        </p>
+                        <p className="text-[11px] text-[#6B7280] mt-0.5">세대당 · 총 {v.total_units}세대</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[12px] text-[#6B7280] font-bold">납부율</p>
+                        <p className={`text-[24px] font-black ${v.pay_rate >= 80 ? 'text-[#2ECC71]' : v.pay_rate >= 50 ? 'text-[#F39C12]' : 'text-[#E74C3C]'}`}>
+                          {v.pay_rate}%
+                        </p>
+                        <p className="text-[11px] text-[#6B7280] mt-0.5">{v.paid_count}/{v.total_units}</p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-[#F5F6FA] border border-dashed border-[#E8EBF0] rounded-xl p-3 mt-2 text-center">
+                    <p className="text-[12px] text-[#9CA3AF]">이번 달 관리비 미발행</p>
+                  </div>
+                )}
+
                 {(v.account_bank || v.account_number) && (
-                  <p className="text-[11px] text-[#9CA3AF] mt-3">
-                    💳 {v.account_bank} {v.account_number}
-                  </p>
+                  <p className="text-[11px] text-[#9CA3AF] mt-2">💳 {v.account_bank} {v.account_number}</p>
                 )}
               </Link>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function Stat({ label, value, highlight, muted }: { label: string; value: number; highlight?: boolean; muted?: boolean }) {
-  return (
-    <div className="bg-[#F5F6FA] rounded-lg py-2">
-      <p
-        className={`text-[18px] font-extrabold ${
-          highlight ? 'text-[#4263E8]' : muted ? 'text-[#9CA3AF]' : 'text-[#0F2242]'
-        }`}
-      >
-        {value}
-      </p>
-      <p className="text-[10px] text-[#6B7280] mt-0.5">{label}</p>
+            ))}
+          </div>
+        )
+      }
     </div>
   );
 }
