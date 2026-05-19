@@ -45,3 +45,5 @@ Let's Encrypt 인증서는 `certbot --nginx -d villatolk.app -d www.villatolk.ap
 같은 VM 에 dduktak-portal / marketflow-engine / marketflow-web 이 PM2 로 운영 중.
 빌라톡 PWA 도입 시 RAM 사용량 합계가 4GiB 한계에 근접할 수 있음 (현재 약 2.4GiB 사용).
 트래픽 증가 시 인스턴스 타입 업그레이드 (`t1i.medium` → `t1i.large`) 또는 별도 VM 분리 검토.
+
+Last deploy trigger: 2026-05-19T03:28:00Z
