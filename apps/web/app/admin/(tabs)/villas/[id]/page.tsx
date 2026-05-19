@@ -157,22 +157,22 @@ export default function AdminVillaDetailPage() {
       {/* 이름/주소 + 편집 */}
       <div className="mt-3 mb-5">
         {editingBasic ? (
-          <div className="bg-white border border-[#4263E8] border-[1.5px] rounded-2xl p-4 shadow-sm space-y-3">
+          <div className="bg-white border border-[#3766EE] border-[1.5px] rounded-2xl p-4 shadow-sm space-y-3">
             <div>
               <label className="block text-[15px] font-bold text-[#6B7280] mb-1.5">빌라 이름</label>
               <input value={editName} onChange={e => setEditName(e.target.value)} maxLength={50}
-                className="w-full bg-white border border-[#E8EBF0] rounded-lg px-3 py-2.5 text-[16px] outline-none focus:border-[#4263E8]" />
+                className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-[16px] outline-none focus:border-[#3766EE]" />
             </div>
             <div>
               <label className="block text-[15px] font-bold text-[#6B7280] mb-1.5">주소</label>
               <input value={editAddress} onChange={e => setEditAddress(e.target.value)} maxLength={200}
-                className="w-full bg-white border border-[#E8EBF0] rounded-lg px-3 py-2.5 text-[16px] outline-none focus:border-[#4263E8]" />
+                className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-[16px] outline-none focus:border-[#3766EE]" />
             </div>
             <div className="flex gap-2">
-              <button onClick={saveBasic} disabled={savingBasic} className="flex-1 bg-[#4263E8] text-white py-2.5 rounded-lg text-[16px] font-bold disabled:opacity-50">
+              <button onClick={saveBasic} disabled={savingBasic} className="flex-1 bg-[#3766EE] text-white py-2.5 rounded-xl text-[16px] font-bold disabled:opacity-50">
                 {savingBasic ? '저장 중…' : '저장'}
               </button>
-              <button onClick={() => setEditingBasic(false)} className="px-4 bg-[#F5F6FA] text-[#6B7280] py-2.5 rounded-lg text-[16px] font-bold">취소</button>
+              <button onClick={() => setEditingBasic(false)} className="px-4 bg-[#F5F6FA] text-[#6B7280] py-2.5 rounded-xl text-[16px] font-bold">취소</button>
             </div>
           </div>
         ) : (
@@ -181,7 +181,7 @@ export default function AdminVillaDetailPage() {
               <h1 className="text-[26px] font-black text-[#0F2242]">{villa.name}</h1>
               <p className="text-[16px] text-[#6B7280] mt-0.5">{villa.address}</p>
             </div>
-            <button onClick={startEditBasic} className="text-[15px] text-[#4263E8] font-bold ml-3 flex-shrink-0 mt-1">✏️ 편집</button>
+            <button onClick={startEditBasic} className="text-[15px] text-[#3766EE] font-bold ml-3 flex-shrink-0 mt-1">✏️ 편집</button>
           </div>
         )}
       </div>
@@ -189,7 +189,7 @@ export default function AdminVillaDetailPage() {
       {/* 이번달 관리 현황 (큰 카드 — QA 페이지 2) */}
       <p className="text-[14px] text-[#6B7280] font-bold tracking-widest mb-2">이번달 관리 현황</p>
       {status.current_bm_id ? (
-        <div className="bg-gradient-to-br from-[#EEF1FB] to-[#F8FAFF] border border-[#4263E8]/20 rounded-2xl p-4 shadow-sm">
+        <div className="bg-gradient-to-br from-[#EEF1FB] to-[#F8FAFF] border border-[#3766EE]/20 rounded-2xl p-4 shadow-sm">
           <div className="flex items-end justify-between mb-1">
             <p className="text-[15px] text-[#6B7280] font-bold">{status.current_label}</p>
             {unpaidCount > 0 && (
@@ -211,12 +211,12 @@ export default function AdminVillaDetailPage() {
           {unpaidCount > 0 && (
             <button
               onClick={() => alert('미납세대 독촉 발송 기능 준비중\n다음 업데이트에서 카카오 알림톡 또는 푸시 알림으로 자동 발송됩니다.')}
-              className="w-full bg-[#FF6B35] text-white py-2.5 rounded-lg text-[15px] font-bold mb-2"
+              className="w-full bg-[#FF6B35] text-white py-2.5 rounded-xl text-[15px] font-bold mb-2"
             >
               📢 미납세대 독촉 보내기
             </button>
           )}
-          <Link href={`/admin/villas/${villa.id}/bills`} className="block w-full bg-white border border-[#E8EBF0] text-[#4263E8] py-2.5 rounded-lg text-[15px] font-bold text-center">
+          <Link href={`/admin/villas/${villa.id}/bills`} className="block w-full bg-white border border-[#E8EBF0] text-[#3766EE] py-2.5 rounded-xl text-[15px] font-bold text-center">
             세대별 납부 현황 상세 →
           </Link>
         </div>
@@ -224,7 +224,7 @@ export default function AdminVillaDetailPage() {
         <div className="bg-[#F5F6FA] border border-dashed border-[#E8EBF0] rounded-2xl p-5 text-center">
           <p className="text-[16px] font-bold text-[#0F2242] mb-1">이번 달 관리비 미발행</p>
           <p className="text-[14px] text-[#9CA3AF] mb-3">관리비 메뉴에서 회차 생성 + 항목 추가 → 청구 시작</p>
-          <Link href={`/admin/villas/${villa.id}/bills`} className="inline-block bg-[#4263E8] text-white px-4 py-2 rounded-lg text-[15px] font-bold">
+          <Link href={`/admin/villas/${villa.id}/bills`} className="inline-block bg-[#3766EE] text-white px-4 py-2 rounded-xl text-[15px] font-bold">
             관리비 메뉴로 →
           </Link>
         </div>
@@ -240,7 +240,7 @@ export default function AdminVillaDetailPage() {
                 <p className="text-[15px] font-bold text-[#E74C3C]">민원 메시지 대기 중</p>
                 <p className="text-[24px] font-extrabold text-[#E74C3C] mt-0.5">{status.messages_unread}건</p>
               </div>
-              <button className="bg-[#4263E8] text-white px-4 py-2.5 rounded-lg text-[15px] font-bold">바로 확인</button>
+              <button className="bg-[#3766EE] text-white px-4 py-2.5 rounded-xl text-[15px] font-bold">바로 확인</button>
             </div>
           </Link>
         </div>
@@ -260,32 +260,32 @@ export default function AdminVillaDetailPage() {
       <div className="flex items-center justify-between mt-6 mb-2">
         <h2 className="text-[14px] font-bold text-[#6B7280] tracking-widest">관리비 입금 계좌</h2>
         {!editingAccount && (
-          <button onClick={startEdit} className="text-[14px] text-[#4263E8] font-bold">
+          <button onClick={startEdit} className="text-[14px] text-[#3766EE] font-bold">
             {(villa.account_bank || villa.account_number) ? '수정' : '＋ 추가'}
           </button>
         )}
       </div>
       {editingAccount ? (
-        <div className="bg-white border border-[#4263E8] border-[1.5px] rounded-2xl p-4 shadow-sm space-y-3">
+        <div className="bg-white border border-[#3766EE] border-[1.5px] rounded-2xl p-4 shadow-sm space-y-3">
           <div className="grid grid-cols-2 gap-2.5">
             <div>
               <label className="block text-[14px] font-bold text-[#6B7280] mb-1.5">은행</label>
-              <input value={bank} onChange={e => setBank(e.target.value)} maxLength={20} className="w-full bg-white border border-[#E8EBF0] rounded-lg px-3 py-2.5 text-[16px] outline-none focus:border-[#4263E8]" />
+              <input value={bank} onChange={e => setBank(e.target.value)} maxLength={20} className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-[16px] outline-none focus:border-[#3766EE]" />
             </div>
             <div>
               <label className="block text-[14px] font-bold text-[#6B7280] mb-1.5">예금주</label>
-              <input value={holder} onChange={e => setHolder(e.target.value)} maxLength={30} className="w-full bg-white border border-[#E8EBF0] rounded-lg px-3 py-2.5 text-[16px] outline-none focus:border-[#4263E8]" />
+              <input value={holder} onChange={e => setHolder(e.target.value)} maxLength={30} className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-[16px] outline-none focus:border-[#3766EE]" />
             </div>
           </div>
           <div>
             <label className="block text-[14px] font-bold text-[#6B7280] mb-1.5">계좌번호</label>
-            <input value={number} onChange={e => setNumber(e.target.value)} maxLength={30} className="w-full bg-white border border-[#E8EBF0] rounded-lg px-3 py-2.5 text-[16px] outline-none focus:border-[#4263E8]" />
+            <input value={number} onChange={e => setNumber(e.target.value)} maxLength={30} className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-[16px] outline-none focus:border-[#3766EE]" />
           </div>
           <div className="flex gap-2">
-            <button onClick={saveAccount} disabled={savingAccount} className="flex-1 bg-[#4263E8] text-white py-2.5 rounded-lg text-[16px] font-bold disabled:opacity-50">
+            <button onClick={saveAccount} disabled={savingAccount} className="flex-1 bg-[#3766EE] text-white py-2.5 rounded-xl text-[16px] font-bold disabled:opacity-50">
               {savingAccount ? '저장 중…' : '저장'}
             </button>
-            <button onClick={() => setEditingAccount(false)} className="px-4 bg-[#F5F6FA] text-[#6B7280] py-2.5 rounded-lg text-[16px] font-bold">취소</button>
+            <button onClick={() => setEditingAccount(false)} className="px-4 bg-[#F5F6FA] text-[#6B7280] py-2.5 rounded-xl text-[16px] font-bold">취소</button>
           </div>
         </div>
       ) : (villa.account_bank || villa.account_number) ? (
@@ -306,7 +306,7 @@ function SubMenu({ href, icon, label, hint }: { href: string; icon: IconName; la
   return (
     <Link href={href} className="flex items-center bg-white border border-[#E8EBF0] rounded-2xl p-4 shadow-sm active:scale-[0.99] transition">
       <span className="mr-3 flex-shrink-0 w-10 h-10 rounded-xl bg-[#EEF1FB] flex items-center justify-center">
-        <Icon name={icon} size={22} color="#4263E8" filled />
+        <Icon name={icon} size={22} color="#3766EE" filled />
       </span>
       <div className="flex-1">
         <p className="text-[17px] font-extrabold text-[#0F2242]">{label}</p>

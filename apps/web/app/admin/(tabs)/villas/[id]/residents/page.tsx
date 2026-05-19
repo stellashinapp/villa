@@ -190,7 +190,7 @@ export default function AdminVillaResidentsPage() {
           <h1 className="text-[26px] font-black text-[#0F2242]">입주민</h1>
           <p className="text-[16px] text-[#6B7280] mt-0.5">총 {residents.length}명 (호실 {units.length}개)</p>
         </div>
-        <button onClick={() => setShowAdd(!showAdd)} className="bg-[#4263E8] text-white text-[16px] font-bold px-3.5 py-2.5 rounded-lg">
+        <button onClick={() => setShowAdd(!showAdd)} className="bg-[#3766EE] text-white text-[16px] font-bold px-3.5 py-2.5 rounded-xl">
           {showAdd ? '취소' : '＋ 입주민 추가'}
         </button>
       </div>
@@ -202,11 +202,11 @@ export default function AdminVillaResidentsPage() {
             <label className="block text-[15px] font-bold text-[#6B7280] mb-1.5">추가 방식</label>
             <div className="grid grid-cols-2 gap-2">
               <button type="button" onClick={() => setAddMode('invite')}
-                className={`py-2.5 rounded-lg text-[14px] font-bold border ${addMode === 'invite' ? 'bg-[#4263E8] text-white border-[#4263E8]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'}`}>
+                className={`py-2.5 rounded-xl text-[14px] font-bold border ${addMode === 'invite' ? 'bg-[#3766EE] text-white border-[#3766EE]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'}`}>
                 💌 초대링크 (권장)
               </button>
               <button type="button" onClick={() => setAddMode('direct')}
-                className={`py-2.5 rounded-lg text-[14px] font-bold border ${addMode === 'direct' ? 'bg-[#4263E8] text-white border-[#4263E8]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'}`}>
+                className={`py-2.5 rounded-xl text-[14px] font-bold border ${addMode === 'direct' ? 'bg-[#3766EE] text-white border-[#3766EE]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'}`}>
                 ⚡ 즉시 등록
               </button>
             </div>
@@ -220,12 +220,12 @@ export default function AdminVillaResidentsPage() {
             <div>
               <label className="block text-[15px] font-bold text-[#6B7280] mb-1.5">이름 *</label>
               <input value={addName} onChange={e => setAddName(e.target.value)} placeholder="예: 홍길동" maxLength={20}
-                className="w-full bg-white border border-[#E8EBF0] rounded-lg px-3 py-2.5 text-[16px] outline-none focus:border-[#4263E8]" required />
+                className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-[16px] outline-none focus:border-[#3766EE]" required />
             </div>
             <div>
               <label className="block text-[15px] font-bold text-[#6B7280] mb-1.5">호실 *</label>
               <select value={addUnitId} onChange={e => setAddUnitId(e.target.value)}
-                className="w-full bg-white border border-[#E8EBF0] rounded-lg px-3 py-2.5 text-[16px] outline-none focus:border-[#4263E8]" required>
+                className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-[16px] outline-none focus:border-[#3766EE]" required>
                 <option value="">선택</option>
                 {units.map(u => <option key={u.id} value={u.id}>{u.ho_number}</option>)}
               </select>
@@ -234,13 +234,13 @@ export default function AdminVillaResidentsPage() {
           <div>
             <label className="block text-[15px] font-bold text-[#6B7280] mb-1.5">휴대전화 *</label>
             <input value={addPhone} onChange={e => setAddPhone(e.target.value)} placeholder="01012345678" inputMode="tel"
-              className="w-full bg-white border border-[#E8EBF0] rounded-lg px-3 py-2.5 text-[16px] outline-none focus:border-[#4263E8]" required />
+              className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-[16px] outline-none focus:border-[#3766EE]" required />
           </div>
           <label className="flex items-center gap-2 text-[15px] text-[#0F2242] cursor-pointer">
             <input type="checkbox" checked={addIsOwner} onChange={e => setAddIsOwner(e.target.checked)} className="w-4 h-4" />
             소유주 (건물주)
           </label>
-          <button type="submit" disabled={addSubmitting} className="w-full bg-[#4263E8] text-white py-2.5 rounded-lg text-[16px] font-bold disabled:opacity-50">
+          <button type="submit" disabled={addSubmitting} className="w-full bg-[#3766EE] text-white py-2.5 rounded-xl text-[16px] font-bold disabled:opacity-50">
             {addSubmitting ? '처리 중…' : addMode === 'invite' ? '초대링크 발급' : '즉시 등록'}
           </button>
         </form>
@@ -248,20 +248,20 @@ export default function AdminVillaResidentsPage() {
 
       {/* 초대링크 발급 결과 */}
       {inviteUrl && (
-        <div className="mb-4 bg-[#EEF1FB] border border-[#4263E8]/30 rounded-2xl p-4 shadow-sm space-y-3">
+        <div className="mb-4 bg-[#EEF1FB] border border-[#3766EE]/30 rounded-2xl p-4 shadow-sm space-y-3">
           <div className="text-center">
             <div className="text-3xl mb-1">💌</div>
             <p className="text-[15px] font-bold text-[#0F2242]">{inviteName}님 초대링크 발급 완료</p>
             <p className="text-[13px] text-[#6B7280] mt-1">14일간 유효합니다</p>
           </div>
-          <div className="bg-white border border-[#E8EBF0] rounded-lg p-3 break-all text-[12px] text-[#4263E8] font-mono">
+          <div className="bg-white border border-[#E8EBF0] rounded-xl p-3 break-all text-[12px] text-[#3766EE] font-mono">
             {inviteUrl}
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <button onClick={shareViaKakao} className="bg-[#FEE500] text-[#000000] py-3 rounded-lg text-[14px] font-bold">
+            <button onClick={shareViaKakao} className="bg-[#FEE500] text-[#000000] py-3 rounded-xl text-[14px] font-bold">
               💬 카카오톡 공유
             </button>
-            <button onClick={copyInvite} className="bg-white border border-[#E8EBF0] text-[#0F2242] py-3 rounded-lg text-[14px] font-bold">
+            <button onClick={copyInvite} className="bg-white border border-[#E8EBF0] text-[#0F2242] py-3 rounded-xl text-[14px] font-bold">
               📋 링크 복사
             </button>
           </div>
@@ -283,7 +283,7 @@ export default function AdminVillaResidentsPage() {
         ].map(f => (
           <button key={f.v} onClick={() => setFilter(f.v)}
             className={`px-3 py-1.5 rounded-full text-[14px] font-bold border whitespace-nowrap ${
-              filter === f.v ? 'bg-[#4263E8] text-white border-[#4263E8]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'
+              filter === f.v ? 'bg-[#3766EE] text-white border-[#3766EE]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'
             }`}>
             {f.label} {f.n > 0 && <span className={filter === f.v ? 'text-white/80' : 'text-[#9CA3AF]'}>· {f.n}</span>}
           </button>
@@ -304,7 +304,7 @@ export default function AdminVillaResidentsPage() {
                   <div className="flex items-center gap-2 mb-2">
                     <h3 className="text-[17px] font-extrabold text-[#0F2242]">{r.name}</h3>
                     <span className={`text-[12px] font-bold px-2 py-0.5 rounded ${meta.color}`}>{meta.label}</span>
-                    {r.is_owner && <span className="text-[12px] font-bold px-2 py-0.5 rounded bg-[rgba(66,99,232,0.12)] text-[#4263E8]">소유주</span>}
+                    {r.is_owner && <span className="text-[12px] font-bold px-2 py-0.5 rounded bg-[rgba(55,102,238,0.12)] text-[#3766EE]">소유주</span>}
                     <span className="ml-auto text-[14px] text-[#6B7280]">{r.units?.ho_number ?? '-'}</span>
                   </div>
                   <p className="text-[14px] text-[#6B7280]">{r.phone}</p>
@@ -315,12 +315,12 @@ export default function AdminVillaResidentsPage() {
                   <div className="flex gap-2 mt-3">
                     {r.status === 'pending' && (
                       <>
-                        <button onClick={() => approve(r)} className="flex-1 bg-[#4263E8] text-white py-2 rounded-lg text-[14px] font-bold">승인</button>
-                        <button onClick={() => reject(r)} className="flex-1 bg-white border border-[#E74C3C]/30 text-[#E74C3C] py-2 rounded-lg text-[14px] font-bold">거절</button>
+                        <button onClick={() => approve(r)} className="flex-1 bg-[#3766EE] text-white py-2 rounded-xl text-[14px] font-bold">승인</button>
+                        <button onClick={() => reject(r)} className="flex-1 bg-white border border-[#E74C3C]/30 text-[#E74C3C] py-2 rounded-xl text-[14px] font-bold">거절</button>
                       </>
                     )}
                     {r.status === 'pending_moveout' && (
-                      <button onClick={() => confirmMoveout(r)} className="flex-1 bg-[#4263E8] text-white py-2 rounded-lg text-[14px] font-bold">이사 확정</button>
+                      <button onClick={() => confirmMoveout(r)} className="flex-1 bg-[#3766EE] text-white py-2 rounded-xl text-[14px] font-bold">이사 확정</button>
                     )}
                   </div>
                 </div>

@@ -115,7 +115,7 @@ export default function ResidentReportPage() {
           <p className="text-[15px] text-[#6B7280] mt-0.5">{villaName}</p>
         </div>
         <button
-          className="bg-[#4263E8] text-white text-[15px] font-bold px-3.5 py-2 rounded-lg shadow-sm"
+          className="bg-[#3766EE] text-white text-[15px] font-bold px-3.5 py-2 rounded-xl shadow-sm"
           onClick={() => setShowForm(!showForm)}
         >
           {showForm ? '취소' : '＋ 신고'}
@@ -131,9 +131,9 @@ export default function ResidentReportPage() {
                 key={c.value}
                 type="button"
                 onClick={() => setCategory(c.value)}
-                className={`py-2 rounded-lg text-[13px] font-bold border ${
+                className={`py-2 rounded-xl text-[13px] font-bold border ${
                   category === c.value
-                    ? 'bg-[#4263E8] text-white border-[#4263E8]'
+                    ? 'bg-[#3766EE] text-white border-[#3766EE]'
                     : 'bg-white text-[#6B7280] border-[#E8EBF0]'
                 }`}
               >
@@ -148,12 +148,12 @@ export default function ResidentReportPage() {
             placeholder="언제, 어디서, 무슨 일이 있었는지 적어주세요"
             rows={5}
             maxLength={500}
-            className="w-full bg-white border border-[#E8EBF0] rounded-lg px-3.5 py-2.5 text-sm text-[#0F2242] outline-none focus:border-[#4263E8] mb-3 resize-none"
+            className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3.5 py-2.5 text-sm text-[#0F2242] outline-none focus:border-[#3766EE] mb-3 resize-none"
           />
           <button
             type="submit"
             disabled={submitting}
-            className="w-full bg-[#4263E8] text-white py-3 rounded-lg text-[16px] font-bold disabled:opacity-50"
+            className="w-full bg-[#3766EE] text-white py-3 rounded-xl text-[16px] font-bold disabled:opacity-50"
           >
             {submitting ? '등록 중…' : '신고 등록'}
           </button>
@@ -202,9 +202,9 @@ export default function ResidentReportPage() {
                 {replies.length > 0 && (
                   <div className="mt-3 pt-3 border-t border-[#E8EBF0] space-y-2">
                     {replies.map(r => (
-                      <div key={r.id} className="bg-[#F5F6FA] rounded-lg p-3">
+                      <div key={r.id} className="bg-[#F5F6FA] rounded-xl p-3">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-[13px] font-bold text-[#4263E8]">
+                          <span className="text-[13px] font-bold text-[#3766EE]">
                             {r.author_type === 'admin' ? '관리자' : '시스템'}
                             {r.author_name && ` · ${r.author_name}`}
                           </span>

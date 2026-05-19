@@ -124,7 +124,7 @@ export default function AdminInboxPage() {
 
   return (
     <div className="px-5 pt-6 pb-8 max-w-screen-sm mx-auto">
-      <p className="text-[13px] text-[#4263E8] font-bold tracking-[0.16em] mb-1.5">ADMIN INBOX</p>
+      <p className="text-[13px] text-[#3766EE] font-bold tracking-[0.16em] mb-1.5">ADMIN INBOX</p>
       <h1 className="text-[24px] font-black text-[#0F2242]">메시지</h1>
       <p className="text-[15px] text-[#6B7280] mt-0.5">
         입주민 신고/민원 — 총 {messages.length}건, 미답변 {messages.filter(m => m.message_replies.filter(r => r.author_type === 'admin').length === 0).length}건
@@ -178,9 +178,9 @@ export default function AdminInboxPage() {
                 {adminReplies.length > 0 && (
                   <div className="mt-3 pt-3 border-t border-[#E8EBF0] space-y-2">
                     {adminReplies.map(r => (
-                      <div key={r.id} className="bg-[#F5F6FA] rounded-lg p-3">
+                      <div key={r.id} className="bg-[#F5F6FA] rounded-xl p-3">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-[13px] font-bold text-[#4263E8]">
+                          <span className="text-[13px] font-bold text-[#3766EE]">
                             관리자 {r.author_name && `· ${r.author_name}`}
                           </span>
                           <span className="text-[13px] text-[#9CA3AF] ml-auto">
@@ -200,19 +200,19 @@ export default function AdminInboxPage() {
                       onChange={e => setReplyText(e.target.value)}
                       placeholder="답변 내용을 입력하세요"
                       rows={3}
-                      className="w-full bg-white border border-[#E8EBF0] rounded-lg px-3 py-2 text-sm text-[#0F2242] outline-none focus:border-[#4263E8] resize-none"
+                      className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2 text-sm text-[#0F2242] outline-none focus:border-[#3766EE] resize-none"
                     />
                     <div className="flex gap-2 mt-2">
                       <button
                         onClick={() => submitReply(m.id)}
                         disabled={submitting}
-                        className="flex-1 bg-[#4263E8] text-white py-2 rounded-lg text-[15px] font-bold disabled:opacity-50"
+                        className="flex-1 bg-[#3766EE] text-white py-2 rounded-xl text-[15px] font-bold disabled:opacity-50"
                       >
                         {submitting ? '등록 중…' : '답변 등록'}
                       </button>
                       <button
                         onClick={() => { setReplyingTo(null); setReplyText(''); }}
-                        className="px-3 bg-[#F5F6FA] text-[#6B7280] py-2 rounded-lg text-[15px] font-bold"
+                        className="px-3 bg-[#F5F6FA] text-[#6B7280] py-2 rounded-xl text-[15px] font-bold"
                       >
                         취소
                       </button>
@@ -221,7 +221,7 @@ export default function AdminInboxPage() {
                 ) : (
                   <button
                     onClick={() => { setReplyingTo(m.id); setReplyText(''); }}
-                    className="mt-3 text-[14px] font-bold text-[#4263E8] hover:underline"
+                    className="mt-3 text-[14px] font-bold text-[#3766EE] hover:underline"
                   >
                     {replied ? '추가 답변' : '답변하기'} →
                   </button>

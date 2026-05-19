@@ -86,7 +86,7 @@ export default function MoveoutShell() {
           </p>
         </div>
 
-        <Link href="/resident/bills" className="w-full bg-[#4263E8] text-white rounded-xl py-3.5 font-bold text-center text-[17px]">
+        <Link href="/resident/bills" className="w-full bg-[#3766EE] text-white rounded-xl py-3.5 font-bold text-center text-[17px]">
           청구서 화면으로
         </Link>
       </div>

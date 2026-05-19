@@ -172,7 +172,7 @@ export default function AdminVillaBillsPage() {
           <h1 className="text-[26px] font-black text-[#0F2242]">관리비</h1>
           <p className="text-[16px] text-[#6B7280] mt-0.5">총 {months.length}회차</p>
         </div>
-        <button onClick={() => setShowNew(!showNew)} className="bg-[#4263E8] text-white text-[16px] font-bold px-3.5 py-2.5 rounded-lg">
+        <button onClick={() => setShowNew(!showNew)} className="bg-[#3766EE] text-white text-[16px] font-bold px-3.5 py-2.5 rounded-xl">
           {showNew ? '취소' : '＋ 회차 추가'}
         </button>
       </div>
@@ -182,21 +182,21 @@ export default function AdminVillaBillsPage() {
           <div>
             <label className="block text-[15px] font-bold text-[#6B7280] mb-1.5">청구 월 *</label>
             <input value={newYM} onChange={e => setNewYM(e.target.value)} placeholder="2026-06" maxLength={7}
-              className="w-full bg-white border border-[#E8EBF0] rounded-lg px-3 py-2.5 text-[16px] outline-none focus:border-[#4263E8]" required />
+              className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-[16px] outline-none focus:border-[#3766EE]" required />
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="block text-[15px] font-bold text-[#6B7280] mb-1.5">라벨 (선택)</label>
               <input value={newLabel} onChange={e => setNewLabel(e.target.value)} placeholder="예: 6월 관리비"
-                className="w-full bg-white border border-[#E8EBF0] rounded-lg px-3 py-2.5 text-[16px] outline-none focus:border-[#4263E8]" />
+                className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-[16px] outline-none focus:border-[#3766EE]" />
             </div>
             <div>
               <label className="block text-[15px] font-bold text-[#6B7280] mb-1.5">납부 기한</label>
               <input type="date" value={newDue} onChange={e => setNewDue(e.target.value)}
-                className="w-full bg-white border border-[#E8EBF0] rounded-lg px-3 py-2.5 text-[16px] outline-none focus:border-[#4263E8]" />
+                className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-[16px] outline-none focus:border-[#3766EE]" />
             </div>
           </div>
-          <button type="submit" disabled={submitting} className="w-full bg-[#4263E8] text-white py-2.5 rounded-lg text-[16px] font-bold disabled:opacity-50">
+          <button type="submit" disabled={submitting} className="w-full bg-[#3766EE] text-white py-2.5 rounded-xl text-[16px] font-bold disabled:opacity-50">
             {submitting ? '생성 중…' : '회차 생성 (작성중)'}
           </button>
         </form>
@@ -230,7 +230,7 @@ export default function AdminVillaBillsPage() {
 
                   {/* published 상태 — 큰 카드 + 납부 현황 + 고지 발송 */}
                   {m.status === 'published' && (
-                    <div className="bg-gradient-to-br from-[#EEF1FB] to-[#F8FAFF] rounded-xl p-3 mb-3 border border-[#4263E8]/15">
+                    <div className="bg-gradient-to-br from-[#EEF1FB] to-[#F8FAFF] rounded-xl p-3 mb-3 border border-[#3766EE]/15">
                       <div className="flex items-end justify-between mb-3">
                         <div>
                           <p className={`text-[30px] font-black ${payRate >= 80 ? 'text-[#2ECC71]' : payRate >= 50 ? 'text-[#F39C12]' : 'text-[#E74C3C]'}`}>
@@ -243,10 +243,10 @@ export default function AdminVillaBillsPage() {
                           <p className="text-[13px] text-[#6B7280] mt-0.5">세대당 ₩{fmt(perUnit)}</p>
                         </div>
                       </div>
-                      <button onClick={() => sendBillNotice(m.id)} className="w-full bg-[#4263E8] text-white py-2.5 rounded-lg text-[15px] font-bold mb-2">
+                      <button onClick={() => sendBillNotice(m.id)} className="w-full bg-[#3766EE] text-white py-2.5 rounded-xl text-[15px] font-bold mb-2">
                         📢 관리비 고지 발송 ({units.length}세대)
                       </button>
-                      <button onClick={() => setExpandedMonth(isExpanded ? null : m.id)} className="w-full bg-white border border-[#E8EBF0] text-[#4263E8] py-2.5 rounded-lg text-[15px] font-bold">
+                      <button onClick={() => setExpandedMonth(isExpanded ? null : m.id)} className="w-full bg-white border border-[#E8EBF0] text-[#3766EE] py-2.5 rounded-xl text-[15px] font-bold">
                         {isExpanded ? '세대별 납부 닫기' : '세대별 납부 상세보기'}
                       </button>
                     </div>
@@ -261,7 +261,7 @@ export default function AdminVillaBillsPage() {
                         const pay = paidForUnit(m.id, u.id);
                         const isPaid = pay?.is_paid;
                         return (
-                          <div key={u.id} className="flex items-center justify-between bg-white rounded-lg p-2.5 border border-[#E8EBF0]">
+                          <div key={u.id} className="flex items-center justify-between bg-white rounded-xl p-2.5 border border-[#E8EBF0]">
                             <div className="flex items-center gap-2">
                               <span className={`text-[12px] font-bold px-1.5 py-0.5 rounded ${isPaid ? 'bg-[rgba(46,204,113,0.12)] text-[#2ECC71]' : 'bg-[rgba(231,76,60,0.12)] text-[#E74C3C]'}`}>
                                 {isPaid ? '납부' : '미납'}
@@ -312,7 +312,7 @@ export default function AdminVillaBillsPage() {
                     )}
                     <div className="flex justify-between pt-2 mt-1">
                       <span className="text-[15px] font-bold text-[#0F2242]">합계</span>
-                      <span className="text-[19px] font-black text-[#4263E8]">₩{fmt(total)}</span>
+                      <span className="text-[19px] font-black text-[#3766EE]">₩{fmt(total)}</span>
                     </div>
                   </div>
 
@@ -322,14 +322,14 @@ export default function AdminVillaBillsPage() {
                       {isAddingItem ? (
                         <form onSubmit={e => addItem(m.id, e)} className="flex gap-2">
                           <input value={itemName} onChange={e => setItemName(e.target.value)} placeholder="항목명" maxLength={30}
-                            className="flex-1 bg-white border border-[#E8EBF0] rounded-lg px-2.5 py-2 text-[16px] outline-none focus:border-[#4263E8]" />
+                            className="flex-1 bg-white border border-[#E8EBF0] rounded-xl px-2.5 py-2 text-[16px] outline-none focus:border-[#3766EE]" />
                           <input type="number" value={itemAmount} onChange={e => setItemAmount(e.target.value)} placeholder="금액" min={1}
-                            className="w-24 bg-white border border-[#E8EBF0] rounded-lg px-2.5 py-2 text-[16px] outline-none focus:border-[#4263E8]" />
-                          <button type="submit" className="bg-[#4263E8] text-white px-3 py-2 rounded-lg text-[15px] font-bold">＋</button>
+                            className="w-24 bg-white border border-[#E8EBF0] rounded-xl px-2.5 py-2 text-[16px] outline-none focus:border-[#3766EE]" />
+                          <button type="submit" className="bg-[#3766EE] text-white px-3 py-2 rounded-xl text-[15px] font-bold">＋</button>
                           <button type="button" onClick={() => { setEditingItemMonth(null); setItemName(''); setItemAmount(''); }} className="px-2 text-[#6B7280] text-[15px]">취소</button>
                         </form>
                       ) : (
-                        <button onClick={() => setEditingItemMonth(m.id)} className="text-[15px] text-[#4263E8] font-bold">＋ 항목 추가</button>
+                        <button onClick={() => setEditingItemMonth(m.id)} className="text-[15px] text-[#3766EE] font-bold">＋ 항목 추가</button>
                       )}
                     </div>
                   )}
@@ -337,12 +337,12 @@ export default function AdminVillaBillsPage() {
                   {/* draft — 상태 전환 */}
                   {m.status === 'draft' && (
                     <div className="flex gap-2 mt-3">
-                      <button onClick={() => changeStatus(m.id, 'published')} className="flex-1 bg-[#2ECC71] text-white py-2.5 rounded-lg text-[15px] font-bold">청구 시작</button>
-                      <button onClick={() => removeMonth(m.id)} className="px-3 bg-white border border-[#E74C3C]/30 text-[#E74C3C] py-2.5 rounded-lg text-[15px] font-bold">삭제</button>
+                      <button onClick={() => changeStatus(m.id, 'published')} className="flex-1 bg-[#2ECC71] text-white py-2.5 rounded-xl text-[15px] font-bold">청구 시작</button>
+                      <button onClick={() => removeMonth(m.id)} className="px-3 bg-white border border-[#E74C3C]/30 text-[#E74C3C] py-2.5 rounded-xl text-[15px] font-bold">삭제</button>
                     </div>
                   )}
                   {m.status === 'published' && (
-                    <button onClick={() => changeStatus(m.id, 'closed')} className="w-full mt-3 bg-[#8E44AD] text-white py-2.5 rounded-lg text-[15px] font-bold">마감 처리</button>
+                    <button onClick={() => changeStatus(m.id, 'closed')} className="w-full mt-3 bg-[#8E44AD] text-white py-2.5 rounded-xl text-[15px] font-bold">마감 처리</button>
                   )}
                   {m.status === 'closed' && (
                     <p className="text-[14px] text-[#9CA3AF] mt-3 text-center">이 회차는 마감되었습니다</p>

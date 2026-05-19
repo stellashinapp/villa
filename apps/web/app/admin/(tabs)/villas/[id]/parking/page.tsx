@@ -81,7 +81,7 @@ export default function AdminVillaParkingPage() {
           <h1 className="text-[24px] font-black text-[#0F2242]">주차 관리</h1>
           <p className="text-[15px] text-[#6B7280] mt-0.5">총 {items.length}대 등록</p>
         </div>
-        <button onClick={() => setShowForm(!showForm)} className="bg-[#4263E8] text-white text-[15px] font-bold px-3.5 py-2 rounded-lg">
+        <button onClick={() => setShowForm(!showForm)} className="bg-[#3766EE] text-white text-[15px] font-bold px-3.5 py-2 rounded-xl">
           {showForm ? '취소' : '＋ 차량 등록'}
         </button>
       </div>
@@ -91,13 +91,13 @@ export default function AdminVillaParkingPage() {
           <div>
             <label className="block text-[14px] font-bold text-[#6B7280] mb-1.5">차량 번호 *</label>
             <input value={plate} onChange={e => setPlate(e.target.value)} placeholder="예: 12가 3456" maxLength={15}
-              className="w-full bg-white border border-[#E8EBF0] rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#4263E8]" required />
+              className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#3766EE]" required />
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="block text-[14px] font-bold text-[#6B7280] mb-1.5">차량 구분</label>
               <select value={vehicleType} onChange={e => setVehicleType(e.target.value as 'resident' | 'visitor')}
-                className="w-full bg-white border border-[#E8EBF0] rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#4263E8]">
+                className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#3766EE]">
                 <option value="resident">입주민 차량</option>
                 <option value="visitor">방문 차량</option>
               </select>
@@ -105,7 +105,7 @@ export default function AdminVillaParkingPage() {
             <div>
               <label className="block text-[14px] font-bold text-[#6B7280] mb-1.5">호실</label>
               <select value={unitId} onChange={e => setUnitId(e.target.value)}
-                className="w-full bg-white border border-[#E8EBF0] rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#4263E8]">
+                className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#3766EE]">
                 <option value="">(선택 안 함)</option>
                 {units.map(u => <option key={u.id} value={u.id}>{u.ho_number}</option>)}
               </select>
@@ -114,14 +114,14 @@ export default function AdminVillaParkingPage() {
           <div>
             <label className="block text-[14px] font-bold text-[#6B7280] mb-1.5">메모 (선택)</label>
             <input value={memo} onChange={e => setMemo(e.target.value)} placeholder="예: 소나타 흰색 (주 사용)" maxLength={100}
-              className="w-full bg-white border border-[#E8EBF0] rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#4263E8]" />
+              className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#3766EE]" />
           </div>
           <div>
             <label className="block text-[14px] font-bold text-[#6B7280] mb-1.5">유효기간 (방문 차량용, 선택)</label>
             <input type="date" value={expiresAt} onChange={e => setExpiresAt(e.target.value)}
-              className="w-full bg-white border border-[#E8EBF0] rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#4263E8]" />
+              className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#3766EE]" />
           </div>
-          <button type="submit" disabled={submitting} className="w-full bg-[#4263E8] text-white py-2.5 rounded-lg text-[16px] font-bold disabled:opacity-50">
+          <button type="submit" disabled={submitting} className="w-full bg-[#3766EE] text-white py-2.5 rounded-xl text-[16px] font-bold disabled:opacity-50">
             {submitting ? '등록 중…' : '차량 등록'}
           </button>
         </form>

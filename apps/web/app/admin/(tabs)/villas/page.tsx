@@ -100,11 +100,11 @@ export default function AdminVillasPage() {
     <div className="px-5 pt-6 pb-8 max-w-screen-sm mx-auto">
       <div className="flex justify-between items-end">
         <div>
-          <p className="text-[14px] text-[#4263E8] font-bold tracking-[0.16em] mb-1.5">VILLAS</p>
+          <p className="text-[14px] text-[#3766EE] font-bold tracking-[0.16em] mb-1.5">VILLAS</p>
           <h1 className="text-[26px] font-black text-[#0F2242]">내 빌라</h1>
           <p className="text-[16px] text-[#6B7280] mt-0.5">총 {cards.length}개 등록</p>
         </div>
-        <Link href="/admin/villas/add" className="bg-[#4263E8] text-white text-[16px] font-bold px-3.5 py-2.5 rounded-lg shadow-sm">
+        <Link href="/admin/villas/add" className="bg-[#3766EE] text-white text-[16px] font-bold px-3.5 py-2.5 rounded-xl shadow-sm">
           ＋ 빌라 추가
         </Link>
       </div>
@@ -112,7 +112,7 @@ export default function AdminVillasPage() {
       {loading ? <p className="text-center text-[16px] text-[#9CA3AF] mt-20">불러오는 중…</p>
         : error ? <p className="text-center text-[16px] text-[#E74C3C] mt-20">오류: {error}</p>
         : cards.length === 0 ? (
-          <Link href="/admin/villas/add" className="block bg-white border border-dashed border-[#4263E8]/30 rounded-2xl p-8 text-center mt-10 hover:bg-[#EEF1FB]">
+          <Link href="/admin/villas/add" className="block bg-white border border-dashed border-[#3766EE]/30 rounded-2xl p-8 text-center mt-10 hover:bg-[#EEF1FB]">
             <div className="text-4xl mb-3">🏘️</div>
             <p className="text-[18px] font-bold text-[#0F2242]">첫 빌라를 등록해주세요</p>
             <p className="text-[15px] text-[#6B7280] mt-1">+ 빌라 추가 버튼으로 시작</p>
@@ -142,7 +142,7 @@ export default function AdminVillasPage() {
 
                 {/* 이번달 관리비 + 납부율 */}
                 {v.current_month_label ? (
-                  <div className="bg-[#EEF1FB] border border-[#4263E8]/15 rounded-xl p-3.5 mt-2">
+                  <div className="bg-[#EEF1FB] border border-[#3766EE]/15 rounded-xl p-3.5 mt-2">
                     <div className="flex items-start justify-between">
                       <div>
                         <p className="text-[14px] text-[#6B7280] font-bold">{v.current_month_label}</p>

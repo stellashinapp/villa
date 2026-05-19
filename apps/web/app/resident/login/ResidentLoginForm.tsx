@@ -123,7 +123,7 @@ export default function ResidentLoginForm() {
               key={t.phone}
               type="button"
               onClick={() => fillTestCredentials(i)}
-              className="bg-amber-50 text-amber-700 border border-amber-300 rounded-lg py-2 text-xs font-bold hover:bg-amber-100 transition-colors"
+              className="bg-amber-50 text-amber-700 border border-amber-300 rounded-xl py-2 text-xs font-bold hover:bg-amber-100 transition-colors"
             >
               {t.label}
             </button>

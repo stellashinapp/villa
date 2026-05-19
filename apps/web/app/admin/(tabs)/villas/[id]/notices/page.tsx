@@ -73,7 +73,7 @@ export default function AdminVillaNoticesPage() {
           <h1 className="text-[24px] font-black text-[#0F2242]">공지사항</h1>
           <p className="text-[15px] text-[#6B7280] mt-0.5">총 {notices.length}건</p>
         </div>
-        <button onClick={() => setShowForm(!showForm)} className="bg-[#4263E8] text-white text-[15px] font-bold px-3.5 py-2 rounded-lg">
+        <button onClick={() => setShowForm(!showForm)} className="bg-[#3766EE] text-white text-[15px] font-bold px-3.5 py-2 rounded-xl">
           {showForm ? '취소' : '＋ 공지 작성'}
         </button>
       </div>
@@ -81,14 +81,14 @@ export default function AdminVillaNoticesPage() {
       {showForm && (
         <form onSubmit={submit} className="mb-4 bg-white border border-[#E8EBF0] rounded-2xl p-4 shadow-sm space-y-3">
           <input value={title} onChange={e => setTitle(e.target.value)} placeholder="제목" maxLength={50}
-            className="w-full bg-white border border-[#E8EBF0] rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#4263E8]" required />
+            className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#3766EE]" required />
           <textarea value={body} onChange={e => setBody(e.target.value)} placeholder="내용" rows={5} maxLength={2000}
-            className="w-full bg-white border border-[#E8EBF0] rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#4263E8] resize-none" required />
+            className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#3766EE] resize-none" required />
           <label className="flex items-center gap-2 text-[15px] text-[#0F2242]">
             <input type="checkbox" checked={isPinned} onChange={e => setIsPinned(e.target.checked)} className="w-4 h-4" />
             상단 고정
           </label>
-          <button type="submit" disabled={submitting} className="w-full bg-[#4263E8] text-white py-2.5 rounded-lg text-[16px] font-bold disabled:opacity-50">
+          <button type="submit" disabled={submitting} className="w-full bg-[#3766EE] text-white py-2.5 rounded-xl text-[16px] font-bold disabled:opacity-50">
             {submitting ? '등록 중…' : '공지 등록'}
           </button>
         </form>
@@ -107,7 +107,7 @@ export default function AdminVillaNoticesPage() {
                 <div className="flex items-center gap-2 mb-2">
                   {n.is_pinned && <span className="bg-[rgba(255,107,53,0.12)] text-[#FF6B35] text-[12px] font-extrabold px-2 py-0.5 rounded">📌 고정</span>}
                   <span className="text-[14px] text-[#9CA3AF]">{new Date(n.created_at).toLocaleDateString('ko-KR')}</span>
-                  <button onClick={() => togglePin(n)} className="ml-auto text-[14px] text-[#4263E8] font-bold hover:underline">
+                  <button onClick={() => togglePin(n)} className="ml-auto text-[14px] text-[#3766EE] font-bold hover:underline">
                     {n.is_pinned ? '고정 해제' : '고정'}
                   </button>
                   <button onClick={() => remove(n)} className="text-[14px] text-[#E74C3C] font-bold hover:underline">삭제</button>
