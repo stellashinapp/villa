@@ -34,6 +34,12 @@ export default function AdminVillaDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // 기본정보 편집
+  const [editingBasic, setEditingBasic] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editAddress, setEditAddress] = useState('');
+  const [savingBasic, setSavingBasic] = useState(false);
+
   // 계좌 편집 상태
   const [editingAccount, setEditingAccount] = useState(false);
   const [bank, setBank] = useState('');
@@ -84,6 +90,33 @@ export default function AdminVillaDetailPage() {
     setEditingAccount(true);
   }
 
+  function startEditBasic() {
+    if (!villa) return;
+    setEditName(villa.name);
+    setEditAddress(villa.address);
+    setEditingBasic(true);
+  }
+
+  async function saveBasic() {
+    if (!villa) return;
+    if (!editName.trim() || !editAddress.trim()) {
+      alert('이름과 주소는 비울 수 없습니다');
+      return;
+    }
+    setSavingBasic(true);
+    const { error: upErr } = await supabase.from('villas').update({
+      name: editName.trim(),
+      address: editAddress.trim(),
+    }).eq('id', villa.id);
+    setSavingBasic(false);
+    if (upErr) {
+      alert('저장 실패: ' + upErr.message);
+      return;
+    }
+    setEditingBasic(false);
+    await load();
+  }
+
   async function saveAccount() {
     if (!villa) return;
     setSavingAccount(true);
@@ -112,8 +145,52 @@ export default function AdminVillaDetailPage() {
       <Link href="/admin/villas" className="text-[12px] text-[#6B7280] hover:text-[#0F2242]">← 빌라 목록</Link>
 
       <div className="mt-3 mb-6">
-        <h1 className="text-[22px] font-black text-[#0F2242]">{villa.name}</h1>
-        <p className="text-[13px] text-[#6B7280] mt-0.5">{villa.address}</p>
+        {editingBasic ? (
+          <div className="bg-white border border-[#4263E8] border-[1.5px] rounded-2xl p-4 shadow-sm space-y-3">
+            <div>
+              <label className="block text-[12px] font-bold text-[#6B7280] mb-1.5">빌라 이름</label>
+              <input
+                value={editName}
+                onChange={e => setEditName(e.target.value)}
+                placeholder="빌라 이름"
+                maxLength={50}
+                className="w-full bg-white border border-[#E8EBF0] rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#4263E8]"
+              />
+            </div>
+            <div>
+              <label className="block text-[12px] font-bold text-[#6B7280] mb-1.5">주소</label>
+              <input
+                value={editAddress}
+                onChange={e => setEditAddress(e.target.value)}
+                placeholder="주소"
+                maxLength={200}
+                className="w-full bg-white border border-[#E8EBF0] rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#4263E8]"
+              />
+            </div>
+            <div className="flex gap-2">
+              <button onClick={saveBasic} disabled={savingBasic} className="flex-1 bg-[#4263E8] text-white py-2.5 rounded-lg text-[14px] font-bold disabled:opacity-50">
+                {savingBasic ? '저장 중…' : '저장'}
+              </button>
+              <button onClick={() => setEditingBasic(false)} disabled={savingBasic} className="px-4 bg-[#F5F6FA] text-[#6B7280] py-2.5 rounded-lg text-[14px] font-bold">
+                취소
+              </button>
+            </div>
+            <p className="text-[11px] text-[#9CA3AF]">호실 추가·삭제는 입주민 메뉴에서 가능합니다</p>
+          </div>
+        ) : (
+          <div className="flex items-start justify-between">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-[22px] font-black text-[#0F2242]">{villa.name}</h1>
+              <p className="text-[13px] text-[#6B7280] mt-0.5">{villa.address}</p>
+            </div>
+            <button
+              onClick={startEditBasic}
+              className="text-[12px] text-[#4263E8] font-bold hover:underline ml-3 flex-shrink-0 mt-1"
+            >
+              ✏️ 편집
+            </button>
+          </div>
+        )}
       </div>
 
       {/* 요약 통계 4개 */}
