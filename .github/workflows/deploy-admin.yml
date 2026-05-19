@@ -56,10 +56,13 @@ jobs:
 
       - name: Deploy & restart on VM
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
+          envs: SUPABASE_SERVICE_ROLE_KEY
           script: |
             set -e
             DEPLOY_ROOT=/home/ubuntu/villatolk-admin
@@ -81,10 +84,21 @@ jobs:
             mv $STAGING $CURRENT
 
             cd $CURRENT/apps/admin-web
+            # 환경 변수 — super 권한 + Supabase fallback (admin-web 은 fallback 코드 없음)
+            export PORT=3302
+            export HOSTNAME=0.0.0.0
+            export NODE_ENV=production
+            export SUPER_ADMIN_EMAILS='skathezoom@gmail.com,thezoom@villatolk.app'
+            export NEXT_PUBLIC_SUPABASE_URL='https://tdgieeupxxalwxikdxji.supabase.co'
+            export NEXT_PUBLIC_SUPABASE_ANON_KEY='sb_publishable_1Ey6yq_QITDQ76SzEwljPQ_x37wLGly'
+            # service_role 키는 GitHub Secret 으로 (있으면 사용)
+            export SUPABASE_URL='https://tdgieeupxxalwxikdxji.supabase.co'
+            ${SUPABASE_SERVICE_ROLE_KEY:+export SUPABASE_SERVICE_ROLE_KEY="$SUPABASE_SERVICE_ROLE_KEY"}
+
             if pm2 describe villatolk-admin > /dev/null 2>&1; then
-              PORT=3302 HOSTNAME=0.0.0.0 NODE_ENV=production pm2 restart villatolk-admin --update-env
+              pm2 restart villatolk-admin --update-env
             else
-              PORT=3302 HOSTNAME=0.0.0.0 NODE_ENV=production pm2 start server.js --name villatolk-admin
+              pm2 start server.js --name villatolk-admin
             fi
             pm2 save
 
