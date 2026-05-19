@@ -13,7 +13,6 @@ export default function AdminSignupForm() {
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -51,32 +50,22 @@ export default function AdminSignupForm() {
         return;
       }
 
-      // signUp 성공 후 trigger 가 admins row 자동 생성. 본사 승인 대기 상태.
-      setSuccess(true);
-      setLoading(false);
+      // 이메일 컨펌 비활성 환경 → signUp 으로 session 즉시 발급됨 → 자동 로그인.
+      // 컨펌 필요 환경이면 session null → 명시적 안내.
+      if (!data.session) {
+        // fallback: 명시 로그인 시도 (트리거가 admins row 만들고 RLS 통과 가능 상태)
+        await supabase.auth.signInWithPassword({
+          email: email.trim().toLowerCase(),
+          password,
+        });
+      }
 
-      // 3초 후 로그인 페이지로
-      setTimeout(() => {
-        router.replace('/admin/login');
-      }, 3000);
+      // 가입 직후 → 빌라 등록 화면으로 이동 (관리자가 자기 빌라 등록하도록 유도)
+      router.replace('/admin/villas/add?welcome=1');
     } catch (err) {
       setError(err instanceof Error ? err.message : '네트워크 오류');
       setLoading(false);
     }
-  }
-
-  if (success) {
-    return (
-      <div className="bg-priL/40 border border-pri/30 rounded-2xl p-6 text-center">
-        <div className="text-4xl mb-3">✅</div>
-        <h2 className="text-lg font-extrabold text-t1 mb-2">가입 신청 완료</h2>
-        <p className="text-sm text-t2 leading-relaxed">
-          본사 승인 후 로그인 가능합니다.<br />
-          평일 기준 1일 이내 처리됩니다.
-        </p>
-        <p className="text-xs text-t3 mt-4">잠시 후 로그인 화면으로 이동합니다…</p>
-      </div>
-    );
   }
 
   return (
@@ -147,10 +136,10 @@ export default function AdminSignupForm() {
         disabled={loading}
         className="w-full bg-pri text-white rounded-xl py-3.5 text-base font-bold hover:bg-pri/90 disabled:opacity-50 transition-colors"
       >
-        {loading ? '처리 중…' : '가입 신청'}
+        {loading ? '처리 중…' : '가입 후 빌라 등록하기'}
       </button>
       <p className="text-xs text-t3 text-center leading-relaxed">
-        가입 시 <span className="underline">이용약관</span> 및 <span className="underline">개인정보처리방침</span> 에 동의합니다
+        가입 시 <a href="https://villtalk.store/legal/terms" target="_blank" rel="noreferrer" className="underline">이용약관</a> 및 <a href="https://villtalk.store/legal/privacy" target="_blank" rel="noreferrer" className="underline">개인정보처리방침</a> 에 동의합니다
       </p>
     </form>
   );

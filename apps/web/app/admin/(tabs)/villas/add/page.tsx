@@ -1,13 +1,27 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 
+type DuplicateCandidate = {
+  id: string;
+  name: string;
+  address: string;
+  admin_name: string | null;
+};
+
 export default function AdminVillaAddPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isWelcome = searchParams.get('welcome') === '1';
   const [adminId, setAdminId] = useState<string | null>(null);
+  const [adminName, setAdminName] = useState<string | null>(null);
+  const [existingVillaCount, setExistingVillaCount] = useState(0);
+  const [duplicates, setDuplicates] = useState<DuplicateCandidate[]>([]);
+  const [duplicateChecking, setDuplicateChecking] = useState(false);
+  const [forceProceed, setForceProceed] = useState(false);
 
   // 빌라 기본 정보
   const [name, setName] = useState('');
@@ -28,10 +42,45 @@ export default function AdminVillaAddPage() {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data } = await supabase.from('admins').select('id').eq('auth_id', user.id).maybeSingle();
-      if (data) setAdminId((data as { id: string }).id);
+      const { data: a } = await supabase.from('admins').select('id, name').eq('auth_id', user.id).maybeSingle();
+      if (a) {
+        const ar = a as { id: string; name: string | null };
+        setAdminId(ar.id);
+        setAdminName(ar.name);
+        // 내 빌라 개수 — 첫 등록인지 표시용
+        const { count } = await supabase
+          .from('villas')
+          .select('*', { count: 'exact', head: true })
+          .eq('admin_id', ar.id);
+        setExistingVillaCount(count ?? 0);
+      }
     })();
   }, []);
+
+  // 이름·주소 변경 시 디바운스 중복 검사 (입력하는 동안 미리 알림)
+  useEffect(() => {
+    const n = name.trim();
+    const a = address.trim();
+    if (n.length < 2 || a.length < 5) {
+      setDuplicates([]);
+      return;
+    }
+    setDuplicateChecking(true);
+    const handle = setTimeout(async () => {
+      // 같은 이름 OR 같은 주소 (둘 중 하나만 일치해도 후보)
+      const { data } = await supabase
+        .from('villas')
+        .select('id, name, address, admins(name)')
+        .or(`name.ilike.%${n}%,address.ilike.%${a}%`)
+        .neq('admin_id', adminId ?? '00000000-0000-0000-0000-000000000000')
+        .limit(5);
+      const cands: DuplicateCandidate[] = ((data ?? []) as unknown as { id: string; name: string; address: string; admins: { name: string | null } | null }[])
+        .map(v => ({ id: v.id, name: v.name, address: v.address, admin_name: v.admins?.name ?? null }));
+      setDuplicates(cands);
+      setDuplicateChecking(false);
+    }, 600);
+    return () => clearTimeout(handle);
+  }, [name, address, adminId]);
 
   // 미리보기 — 자동 생성될 호실 번호
   function previewUnits(): string[] {
@@ -71,6 +120,12 @@ export default function AdminVillaAddPage() {
     }
     const perFloor = parseInt(unitsPerFloor, 10) || total;
     const startF = parseInt(startFloor, 10) || 1;
+
+    // 중복 후보 있고 사용자가 명시 진행 체크 안 했으면 막음
+    if (duplicates.length > 0 && !forceProceed) {
+      setError('비슷한 이름·주소의 빌라가 이미 등록되어 있습니다. 아래 안내 확인 후 체크해주세요.');
+      return;
+    }
 
     setSubmitting(true);
 
@@ -126,8 +181,22 @@ export default function AdminVillaAddPage() {
     <div className="px-5 pt-6 pb-8 max-w-screen-sm mx-auto">
       <Link href="/admin/villas" className="text-[12px] text-[#6B7280] hover:text-[#0F2242]">← 빌라 목록</Link>
 
+      {/* Welcome 배너 — 가입 직후 진입 시 */}
+      {isWelcome && existingVillaCount === 0 && (
+        <div className="mt-3 bg-gradient-to-br from-[#4263E8] to-[#5A7DFF] rounded-2xl p-5 text-white shadow-lg">
+          <p className="text-[12px] font-bold opacity-80 tracking-widest mb-1">WELCOME</p>
+          <h2 className="text-[18px] font-extrabold mb-1">{adminName ?? '관리자'}님, 가입 완료!</h2>
+          <p className="text-[13px] opacity-90 leading-relaxed">
+            첫 단계 — 관리하는 빌라를 등록해주세요.<br/>
+            이름·주소·총 호실 수만 입력하면 시작할 수 있습니다.
+          </p>
+        </div>
+      )}
+
       <div className="mt-3 mb-6">
-        <p className="text-[11px] text-[#4263E8] font-bold tracking-[0.16em] mb-1.5">NEW VILLA</p>
+        <p className="text-[11px] text-[#4263E8] font-bold tracking-[0.16em] mb-1.5">
+          {isWelcome ? '내 빌라 등록' : 'NEW VILLA'}
+        </p>
         <h1 className="text-[22px] font-black text-[#0F2242]">빌라 추가</h1>
         <p className="text-[13px] text-[#6B7280] mt-0.5">기본 정보 입력 후 호실은 자동 생성됩니다</p>
       </div>
@@ -205,6 +274,44 @@ export default function AdminVillaAddPage() {
                 {units.slice(0, 12).join(' · ')}
                 {units.length > 12 && <span className="text-[#9CA3AF]"> ... 외 {units.length - 12}개</span>}
               </p>
+            </div>
+          )}
+
+          {/* 중복 후보 경고 — 비슷한 이름/주소 빌라 발견 시 */}
+          {duplicateChecking && (
+            <p className="text-[11px] text-[#9CA3AF]">중복 확인 중…</p>
+          )}
+          {duplicates.length > 0 && (
+            <div className="bg-[rgba(243,156,18,0.06)] border border-[rgba(243,156,18,0.3)] rounded-xl p-3.5">
+              <p className="text-[12px] font-bold text-[#F39C12] mb-2">
+                ⚠️ 비슷한 빌라가 이미 등록되어 있습니다 ({duplicates.length}건)
+              </p>
+              <ul className="space-y-1.5 mb-3">
+                {duplicates.map(d => (
+                  <li key={d.id} className="text-[12px] text-[#0F2242] bg-white rounded-lg px-2.5 py-1.5 border border-[#E8EBF0]">
+                    <span className="font-bold">{d.name}</span>
+                    <span className="text-[#6B7280]"> · {d.address}</span>
+                    {d.admin_name && (
+                      <span className="text-[#9CA3AF] block text-[11px] mt-0.5">관리자: {d.admin_name}</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              <p className="text-[11px] text-[#6B7280] leading-relaxed mb-2">
+                같은 빌라라면 <strong>기존 관리자에게 위임 요청</strong> 또는{' '}
+                <a href="mailto:villatolk@andnew.kr" className="text-[#4263E8] underline">본사 (villatolk@andnew.kr)</a> 에 권한 이전 요청을 해주세요.
+              </p>
+              <label className="flex items-start gap-2 text-[12px] text-[#0F2242] cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={forceProceed}
+                  onChange={e => setForceProceed(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 flex-shrink-0"
+                />
+                <span>
+                  위 빌라와 <strong>다른 빌라</strong>이며 (예: 다른 동/호수, 다른 주소), 본인이 정당한 관리자임을 확인합니다.
+                </span>
+              </label>
             </div>
           )}
         </Section>
