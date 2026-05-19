@@ -56,14 +56,39 @@ export default function MoveoutShell() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen px-5 py-12 flex flex-col items-center justify-center">
+      <div className="min-h-screen px-5 py-12 flex flex-col items-center justify-center max-w-screen-sm mx-auto">
         <div className="text-6xl mb-5">📦</div>
-        <h2 className="text-xl font-extrabold mb-3">이주 신청 완료</h2>
-        <p className="text-sm text-t2 text-center leading-relaxed mb-8">
-          {resident.villaName} 관리자에게 신청이 전송됐어요.<br/>
-          관리자 확정 후 이주 처리됩니다.
-        </p>
-        <Link href="/resident/bills" className="bg-pri text-white rounded-xl px-8 py-3 font-bold">청구서로</Link>
+        <h2 className="text-2xl font-extrabold mb-3 text-center">이주 신청 완료</h2>
+
+        <div className="bg-white border border-[#E8EBF0] rounded-2xl p-5 mb-4 w-full shadow-sm">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-2 h-2 rounded-full bg-[#F39C12] animate-pulse" />
+            <p className="text-[13px] font-bold text-[#F39C12]">관리자 확정 대기 중</p>
+          </div>
+          <p className="text-[13px] text-[#0F2242] leading-relaxed mb-2">
+            <strong>{resident.villaName}</strong> 관리자에게<br />
+            이주 확정 알림이 전송되었습니다.
+          </p>
+          <p className="text-[12px] text-[#6B7280] leading-relaxed">
+            관리자가 확정 처리하면:
+          </p>
+          <ul className="text-[12px] text-[#6B7280] leading-relaxed mt-1.5 space-y-1 pl-4">
+            <li>• 청구서·민원·공지 조회가 종료됩니다</li>
+            <li>• 다음 로그인 시 자동으로 <strong className="text-[#E74C3C]">회원 탈퇴 처리</strong> 됩니다</li>
+            <li>• 본인의 개인정보는 안전하게 삭제됩니다</li>
+          </ul>
+        </div>
+
+        <div className="bg-[#FFF8EE] border border-[rgba(243,156,18,0.3)] rounded-2xl p-4 mb-6 w-full">
+          <p className="text-[12px] text-[#0F2242] leading-relaxed">
+            ⚠️ 신청 취소가 필요하시면 빌라 관리자에게 직접 연락주세요.<br />
+            관리자가 아직 확정하지 않은 상태에서만 취소 가능합니다.
+          </p>
+        </div>
+
+        <Link href="/resident/bills" className="w-full bg-[#4263E8] text-white rounded-xl py-3.5 font-bold text-center text-[15px]">
+          청구서 화면으로
+        </Link>
       </div>
     );
   }
