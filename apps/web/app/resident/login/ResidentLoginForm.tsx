@@ -52,7 +52,7 @@ export default function ResidentLoginForm() {
         villaAddress: payload.resident.units.villas.address,
       }));
       sessionStorage.setItem('villatolk:resident-data', JSON.stringify({ villa: payload.villa, payments: payload.payments }));
-      router.replace('/resident/bills');
+      router.replace('/resident/verify');
     } catch (err) {
       setError(err instanceof Error ? err.message : '네트워크 오류');
       setLoading(false);

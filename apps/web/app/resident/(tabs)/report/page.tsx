@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import ResidentPageHeader from '@/components/ResidentPageHeader';
 
 type MessageReply = {
   id: string;
@@ -23,205 +24,119 @@ type Message = {
   message_replies: MessageReply[];
 };
 
-const CATEGORIES = [
-  { value: 'noise', label: '소음', emoji: '🔊' },
-  { value: 'leak', label: '누수', emoji: '💧' },
-  { value: 'elevator', label: '엘리베이터', emoji: '🛗' },
-  { value: 'pest', label: '해충', emoji: '🪳' },
-  { value: 'security', label: '보안', emoji: '🚨' },
-  { value: 'maintenance', label: '시설', emoji: '🛠' },
-  { value: 'other', label: '기타', emoji: '📝' },
-];
+type Session = { id: string; villaId: string; villaName: string; ho: string; name: string };
 
-function catMeta(value: string | null) {
-  return CATEGORIES.find(c => c.value === value) ?? CATEGORIES[CATEGORIES.length - 1];
+function fmtDate(iso: string) {
+  const d = new Date(iso);
+  return `${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
 }
 
 export default function ResidentReportPage() {
-  const [residentId, setResidentId] = useState<string | null>(null);
-  const [villaId, setVillaId] = useState<string | null>(null);
-  const [villaName, setVillaName] = useState('');
+  const [s, setS] = useState<Session | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-
-  const [category, setCategory] = useState('noise');
   const [text, setText] = useState('');
 
   useEffect(() => {
     const raw = sessionStorage.getItem('villatolk:resident');
     if (!raw) return;
-    const s = JSON.parse(raw) as { id: string; villaId: string; villaName: string };
-    setResidentId(s.id);
-    setVillaId(s.villaId);
-    setVillaName(s.villaName);
+    setS(JSON.parse(raw) as Session);
   }, []);
 
-  useEffect(() => {
-    if (!residentId) return;
-    loadMessages();
-  }, [residentId]);
+  useEffect(() => { if (s) loadMessages(s.id); }, [s]);
 
-  async function loadMessages() {
-    if (!residentId) return;
+  async function loadMessages(rid: string) {
     setLoading(true);
     const { data, error } = await supabase
       .from('messages')
       .select('id, unit_id, resident_id, text, image_url, category, is_read, created_at, message_replies(id, text, author_type, author_name, created_at)')
-      .eq('resident_id', residentId)
+      .eq('resident_id', rid)
       .order('created_at', { ascending: false });
-    if (error) {
-      setError(error.message);
-      setMessages([]);
-    } else {
-      setMessages((data ?? []) as unknown as Message[]);
-    }
+    if (error) { setError(error.message); setMessages([]); }
+    else setMessages((data ?? []) as unknown as Message[]);
     setLoading(false);
   }
 
-  async function submitMessage(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!text.trim()) {
-      alert('내용을 입력해 주세요');
-      return;
-    }
-    if (!residentId || !villaId) return;
+    if (!text.trim()) { alert('내용을 입력해 주세요'); return; }
+    if (!s) return;
     setSubmitting(true);
     const { error } = await supabase.from('messages').insert({
-      resident_id: residentId,
-      villa_id: villaId,
-      text: text.trim(),
-      category,
-      is_read: false,
+      resident_id: s.id, villa_id: s.villaId, text: text.trim(), category: 'other', is_read: false,
     });
     setSubmitting(false);
-    if (error) {
-      alert('등록 실패: ' + error.message);
-      return;
-    }
+    if (error) { alert('등록 실패: ' + error.message); return; }
     setText('');
-    setCategory('noise');
-    setShowForm(false);
-    await loadMessages();
+    if (s) await loadMessages(s.id);
   }
 
-  return (
-    <div className="px-5 pt-6 pb-8 max-w-screen-sm mx-auto">
-      <div className="flex justify-between items-end">
-        <div>
-          <h1 className="text-[24px] font-black text-[#0F2242]">신고/민원</h1>
-          <p className="text-[15px] text-[#6B7280] mt-0.5">{villaName}</p>
-        </div>
-        <button
-          className="bg-[#3766EE] text-white text-[15px] font-bold px-3.5 py-2 rounded-xl shadow-sm"
-          onClick={() => setShowForm(!showForm)}
-        >
-          {showForm ? '취소' : '＋ 신고'}
-        </button>
-      </div>
+  if (!s) return <div className="min-h-screen flex items-center justify-center text-[14px] text-[#9CA3AF]">불러오는 중…</div>;
 
-      {showForm && (
-        <form onSubmit={submitMessage} className="mt-4 bg-white rounded-xl p-4 border border-[#E8EBF0] shadow-sm">
-          <label className="block text-[14px] font-bold text-[#6B7280] mb-1.5">카테고리</label>
-          <div className="grid grid-cols-4 gap-1.5 mb-4">
-            {CATEGORIES.map(c => (
-              <button
-                key={c.value}
-                type="button"
-                onClick={() => setCategory(c.value)}
-                className={`py-2 rounded-xl text-[13px] font-bold border ${
-                  category === c.value
-                    ? 'bg-[#3766EE] text-white border-[#3766EE]'
-                    : 'bg-white text-[#6B7280] border-[#E8EBF0]'
-                }`}
-              >
-                {c.emoji} {c.label}
-              </button>
-            ))}
-          </div>
-          <label className="block text-[14px] font-bold text-[#6B7280] mb-1.5">내용</label>
-          <textarea
-            value={text}
-            onChange={e => setText(e.target.value)}
-            placeholder="언제, 어디서, 무슨 일이 있었는지 적어주세요"
-            rows={5}
-            maxLength={500}
-            className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3.5 py-2.5 text-sm text-[#0F2242] outline-none focus:border-[#3766EE] mb-3 resize-none"
-          />
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full bg-[#3766EE] text-white py-3 rounded-xl text-[16px] font-bold disabled:opacity-50"
-          >
-            {submitting ? '등록 중…' : '신고 등록'}
+  return (
+    <>
+      <ResidentPageHeader villaName={s.villaName} title="민원" ho={s.ho} name={s.name} />
+
+      <div className="px-5 pt-4 pb-8 max-w-screen-sm mx-auto">
+        <h2 className="text-[15px] font-extrabold text-[#0F2242] mb-3">관리자에게 신고/건의</h2>
+        <form onSubmit={submit} className="bg-[#EEF2FF] rounded-2xl p-4 space-y-3 mb-6">
+          <textarea value={text} onChange={e => setText(e.target.value)} placeholder="내용을 입력하세요" rows={4} maxLength={500}
+            className="w-full bg-white border border-[#E8EBF0] rounded-xl px-4 py-3 text-[15px] text-[#0F2242] outline-none focus:border-[#3766EE] focus:ring-2 focus:ring-[#3766EE]/15 transition resize-none" required />
+          <button type="button" disabled
+            className="bg-white border border-[#E8EBF0] text-[#9CA3AF] text-[13px] font-bold px-3 py-2 rounded-xl">
+            📷 사진 첨부
+          </button>
+          <button type="submit" disabled={submitting}
+            className="w-full bg-[#3766EE] text-white py-3.5 rounded-xl text-[15px] font-bold hover:bg-[#1F3DC2] disabled:opacity-50 transition">
+            {submitting ? '전송 중…' : '보내기'}
           </button>
         </form>
-      )}
 
-      {loading ? (
-        <p className="text-center text-sm text-[#9CA3AF] mt-20">불러오는 중…</p>
-      ) : error ? (
-        <div className="text-center mt-20">
-          <p className="text-[17px] font-bold text-[#E74C3C] mb-1">오류</p>
-          <p className="text-[15px] text-[#9CA3AF]">{error}</p>
-        </div>
-      ) : messages.length === 0 && !showForm ? (
-        <div className="text-center mt-20">
-          <div className="text-5xl mb-3">⚠️</div>
-          <p className="text-[17px] font-bold text-[#0F2242] mb-1">신고 내역이 없습니다</p>
-          <p className="text-[15px] text-[#9CA3AF]">불편 사항이 있으면 위 버튼으로 신고해주세요</p>
-        </div>
-      ) : (
-        <div className="mt-4 space-y-2.5">
-          {messages.map(m => {
-            const cat = catMeta(m.category);
-            const replies = m.message_replies ?? [];
-            const adminReplied = replies.some(r => r.author_type === 'admin');
-            return (
-              <div key={m.id} className="bg-white rounded-xl p-4 border border-[#E8EBF0] shadow-sm">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-[14px] font-bold">
-                    {cat.emoji} {cat.label}
-                  </span>
-                  <span
-                    className={`text-[13px] font-bold px-2 py-0.5 rounded ${
-                      adminReplied
-                        ? 'bg-[rgba(46,204,113,0.12)] text-[#2ECC71]'
-                        : 'bg-[#F5F6FA] text-[#6B7280]'
-                    }`}
-                  >
-                    {adminReplied ? '답변완료' : '접수'}
-                  </span>
-                  <span className="text-[14px] text-[#9CA3AF] ml-auto">
-                    {new Date(m.created_at).toLocaleDateString('ko-KR')}
-                  </span>
-                </div>
-                <p className="text-[15px] text-[#0F2242] leading-[20px] whitespace-pre-wrap">{m.text}</p>
-                {replies.length > 0 && (
-                  <div className="mt-3 pt-3 border-t border-[#E8EBF0] space-y-2">
-                    {replies.map(r => (
-                      <div key={r.id} className="bg-[#F5F6FA] rounded-xl p-3">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-[13px] font-bold text-[#3766EE]">
-                            {r.author_type === 'admin' ? '관리자' : '시스템'}
-                            {r.author_name && ` · ${r.author_name}`}
-                          </span>
-                          <span className="text-[13px] text-[#9CA3AF] ml-auto">
-                            {new Date(r.created_at).toLocaleDateString('ko-KR')}
-                          </span>
-                        </div>
-                        <p className="text-[15px] text-[#0F2242] leading-[20px] whitespace-pre-wrap">{r.text}</p>
+        <h2 className="text-[15px] font-extrabold text-[#0F2242] mb-3">대화 내역</h2>
+
+        {loading ? <p className="text-center text-[14px] text-[#9CA3AF] mt-10">불러오는 중…</p>
+          : error ? <p className="text-center text-[14px] text-[#FF3B30] mt-10">오류: {error}</p>
+          : messages.length === 0 ? (
+            <div className="bg-white rounded-2xl p-8 border border-[#F0F2F5] text-center">
+              <div className="text-4xl mb-2">📭</div>
+              <p className="text-[15px] font-bold text-[#0F2242]">신고·건의 내역이 없습니다</p>
+              <p className="text-[13px] text-[#9CA3AF] mt-1">불편 사항이 있으면 위에서 보내주세요</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {messages.map(m => {
+                const replies = m.message_replies ?? [];
+                const replied = replies.some(r => r.author_type === 'admin');
+                return (
+                  <div key={m.id} className="bg-white rounded-2xl p-4 border border-[#F0F2F5] shadow-sm">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-[14px] font-bold text-[#0F2242]">{fmtDate(m.created_at)} 보냄</span>
+                      <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ml-auto ${
+                        replied ? 'bg-[#E8F8EC] text-[#2ECC71]' : 'bg-[#F5F6FA] text-[#6B7280]'
+                      }`}>
+                        {replied ? '답변완료' : '전달됨'}
+                      </span>
+                    </div>
+                    <p className="text-[14px] text-[#0F2242] leading-relaxed whitespace-pre-wrap">{m.text}</p>
+                    {replies.length > 0 && (
+                      <div className="mt-3 space-y-2">
+                        {replies.map(r => (
+                          <div key={r.id} className="bg-[#F5F6FA] rounded-xl px-3 py-2.5 flex items-start gap-1.5">
+                            <span className="text-[#3766EE] text-[14px] mt-0.5">↳</span>
+                            <p className="text-[13px] text-[#0F2242] leading-relaxed whitespace-pre-wrap flex-1">{r.text}</p>
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    )}
                   </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
+                );
+              })}
+            </div>
+          )
+        }
+      </div>
+    </>
   );
 }
