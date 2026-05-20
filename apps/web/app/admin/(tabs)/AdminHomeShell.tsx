@@ -224,13 +224,13 @@ export default function AdminHomeShell() {
         {/* 8-그리드 빠른 액션 (아파트아이 스타일) */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#F0F2F5] mb-5">
           <div className="grid grid-cols-4 gap-y-4">
-            <QuickAction href={`/admin/villas/${featuredVilla?.id ?? ''}/bills`} disabled={!featuredVilla} bg="#EEF2FF" color="#3766EE" icon="bills" label="관리비" badge={agg.unpaidCurrentMonth > 0 ? '미납' : undefined} />
-            <QuickAction href={`/admin/villas/${featuredVilla?.id ?? ''}/notices`} disabled={!featuredVilla} bg="#FFF0E6" color="#FF6B35" icon="notice" label="공지작성" />
-            <QuickAction href={`/admin/villas/${featuredVilla?.id ?? ''}/residents`} disabled={!featuredVilla} bg="#E8F8EC" color="#2ECC71" icon="residents" label="입주민" badge={agg.pendingApplications > 0 ? 'NEW' : undefined} />
-            <QuickAction href="/admin/inbox" bg="#FFE8E8" color="#FF3B30" icon="message" label="민원" badge={agg.unreadMessages > 0 ? String(agg.unreadMessages) : undefined} />
-            <QuickAction href={`/admin/villas/${featuredVilla?.id ?? ''}/parking`} disabled={!featuredVilla} bg="#F3E8FF" color="#8E44AD" icon="parking" label="주차" />
-            <QuickAction href="/admin/villas" bg="#E0F2FE" color="#0EA5E9" icon="villa" label="빌라" />
-            <QuickAction href="/admin/applications" bg="#FEF3C7" color="#F39C12" icon="residents" label="가입신청" badge={agg.pendingApplications > 0 ? String(agg.pendingApplications) : undefined} />
+            <QuickAction href="/admin/bills" disabled={agg.totalVillas === 0} bg="#EEF2FF" color="#3766EE" icon="bills" label="관리비" badge={agg.unpaidCurrentMonth > 0 ? '미납' : undefined} />
+            <QuickAction href="/admin/notices" disabled={agg.totalVillas === 0} bg="#EEF2FF" color="#3766EE" icon="notice" label="공지작성" />
+            <QuickAction href="/admin/residents" disabled={agg.totalVillas === 0} bg="#EEF2FF" color="#3766EE" icon="residents" label="입주민" badge={agg.pendingApplications > 0 ? 'NEW' : undefined} />
+            <QuickAction href="/admin/inbox" bg="#EEF2FF" color="#3766EE" icon="message" label="민원" badge={agg.unreadMessages > 0 ? String(agg.unreadMessages) : undefined} />
+            <QuickAction href="/admin/parking" disabled={agg.totalVillas === 0} bg="#EEF2FF" color="#3766EE" icon="parking" label="주차" />
+            <QuickAction href="/admin/villas" bg="#EEF2FF" color="#3766EE" icon="villa" label="빌라" />
+            <QuickAction href="/admin/applications" bg="#EEF2FF" color="#3766EE" icon="residents" label="가입신청" badge={agg.pendingApplications > 0 ? String(agg.pendingApplications) : undefined} />
             <QuickAction href="/admin/settings" bg="#F5F6FA" color="#6B7280" icon="settings" label="설정" />
           </div>
         </div>
@@ -241,10 +241,10 @@ export default function AdminHomeShell() {
             <h3 className="text-[13px] font-bold text-[#0F2242] mb-2 px-1">오늘 처리 필요</h3>
             <div className="bg-white rounded-2xl shadow-sm border border-[#F0F2F5] mb-5 overflow-hidden">
               {agg.pendingApplications > 0 && (
-                <AlertRow href="/admin/applications" emoji="📮" title="가입 신청 대기" desc="입주민 가입 신청을 확인해주세요" count={agg.pendingApplications} accent="#F39C12" />
+                <AlertRow href="/admin/applications" emoji="📮" title="가입 신청 대기" desc="입주민 가입 신청을 확인해주세요" count={agg.pendingApplications} accent="#3766EE" />
               )}
               {agg.pendingMoveouts > 0 && (
-                <AlertRow href="/admin/villas" emoji="📦" title="이주 확정 대기" desc="입주민 이사 요청을 확정해주세요" count={agg.pendingMoveouts} accent="#FF6B35" />
+                <AlertRow href="/admin/residents" emoji="📦" title="이주 확정 대기" desc="입주민 이사 요청을 확정해주세요" count={agg.pendingMoveouts} accent="#3766EE" />
               )}
               {agg.unreadMessages > 0 && (
                 <AlertRow href="/admin/inbox" emoji="✉️" title="미답변 메시지" desc="입주민 민원에 답변해주세요" count={agg.unreadMessages} accent="#FF3B30" />
@@ -272,7 +272,7 @@ export default function AdminHomeShell() {
                     {v.current_month_label && (
                       <div className="text-right">
                         <p className="text-[15px] font-extrabold text-[#0F2242]">₩{fmt(v.per_unit_amount)}</p>
-                        <p className={`text-[11px] font-bold mt-0.5 ${v.pay_rate >= 80 ? 'text-[#2ECC71]' : v.pay_rate >= 50 ? 'text-[#F39C12]' : 'text-[#FF3B30]'}`}>
+                        <p className={`text-[11px] font-bold mt-0.5 ${v.pay_rate >= 80 ? 'text-[#2ECC71]' : v.pay_rate >= 50 ? 'text-[#3766EE]' : 'text-[#FF3B30]'}`}>
                           납부율 {v.pay_rate}%
                         </p>
                       </div>
@@ -289,13 +289,13 @@ export default function AdminHomeShell() {
         <Link href="/admin/settings" className={`block rounded-2xl p-4 shadow-sm mb-5 ${
           sub?.status === 'active' ? 'bg-gradient-to-br from-[#3766EE] to-[#5B86FF] text-white'
           : sub?.status === 'past_due' ? 'bg-[#FEE8E7] border border-[#FF3B30]/30'
-          : sub?.status === 'trialing' ? 'bg-[#FFF7E0] border border-[#F39C12]/30'
+          : sub?.status === 'trialing' ? 'bg-[#EEF2FF] border border-[#3766EE]/30'
           : 'bg-white border border-[#F0F2F5]'
         }`}>
           <div className="flex items-center justify-between">
             <div>
               <p className={`text-[11px] font-bold tracking-widest ${sub?.status === 'active' ? 'opacity-80' : 'text-[#6B7280]'}`}>구독 상태</p>
-              <p className={`text-[18px] font-extrabold mt-0.5 ${sub?.status === 'past_due' ? 'text-[#FF3B30]' : sub?.status === 'trialing' ? 'text-[#F39C12]' : ''}`}>{subLabel}</p>
+              <p className={`text-[18px] font-extrabold mt-0.5 ${sub?.status === 'past_due' ? 'text-[#FF3B30]' : sub?.status === 'trialing' ? 'text-[#3766EE]' : ''}`}>{subLabel}</p>
               {sub?.card_last4 && <p className={`text-[12px] mt-1 ${sub?.status === 'active' ? 'opacity-90' : 'text-[#6B7280]'}`}>{sub.card_brand} ····{sub.card_last4}</p>}
               {!sub && <p className="text-[12px] text-[#6B7280] mt-1">카드 등록 시 무료 체험 시작</p>}
             </div>
