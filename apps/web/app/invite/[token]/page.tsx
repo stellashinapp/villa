@@ -174,8 +174,8 @@ export default function InviteAcceptPage() {
         </form>
 
         <p className="text-[11px] text-[#9CA3AF] text-center mt-6 leading-relaxed">
-          가입 시 <a href="https://villtalk.store/legal/terms" target="_blank" rel="noreferrer" className="underline">이용약관</a> 및{' '}
-          <a href="https://villtalk.store/legal/privacy" target="_blank" rel="noreferrer" className="underline">개인정보처리방침</a> 에 동의합니다
+          가입 시 <a href="/legal/terms" target="_blank" rel="noreferrer" className="underline">이용약관</a> 및{' '}
+          <a href="/legal/privacy" target="_blank" rel="noreferrer" className="underline">개인정보처리방침</a> 에 동의합니다
         </p>
       </div>
     </div>

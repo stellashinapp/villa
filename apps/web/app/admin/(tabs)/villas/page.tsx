@@ -155,7 +155,7 @@ export default function AdminVillasPage() {
                       </div>
                       <div className="text-right">
                         <p className="text-[14px] text-[#6B7280] font-bold">납부율</p>
-                        <p className={`text-[26px] font-black ${v.pay_rate >= 80 ? 'text-[#2ECC71]' : v.pay_rate >= 50 ? 'text-[#2B2BEE]' : 'text-[#FF3B30]'}`}>
+                        <p className={`text-[26px] font-black ${v.pay_rate >= 80 ? 'text-[#2B2BEE]' : v.pay_rate >= 50 ? 'text-[#2B2BEE]' : 'text-[#FF3B30]'}`}>
                           {v.pay_rate}%
                         </p>
                         <p className="text-[13px] text-[#6B7280] mt-0.5">{v.paid_count}/{v.total_units}</p>

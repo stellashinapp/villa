@@ -113,8 +113,9 @@ export default function AdminSettingsPage() {
 
         {/* 약관 */}
         <Section title="약관 및 정책">
-          <ExternalRow href="https://villtalk.store/legal/terms" label="이용약관" />
-          <ExternalRow href="https://villtalk.store/legal/privacy" label="개인정보 처리방침" />
+          <ExternalRow href="/legal/terms" label="이용약관" />
+          <ExternalRow href="/legal/privacy" label="개인정보 처리방침" />
+          <ExternalRow href="/legal/refund" label="구독 상품 안내 및 환불규정" />
         </Section>
 
         {/* 앱 정보 */}
@@ -156,7 +157,7 @@ function Row({ label, value, valueClassName = '' }: { label: string; value: stri
 
 function ExternalRow({ href, label }: { href: string; label: string }) {
   return (
-    <a href={href} target="_blank" rel="noreferrer"
+    <a href={href}
       className="flex justify-between items-center py-2.5 border-b border-[#F5F6FA] last:border-b-0">
       <span className="text-[14px] font-semibold text-[#0F2242]">{label}</span>
       <span className="text-xl text-[#9CA3AF]">›</span>

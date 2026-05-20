@@ -76,9 +76,9 @@ export default function HomePage() {
 
           {/* Footer */}
           <div className="text-center pt-4 text-[11px] text-[#9CA3AF] space-x-2">
-            <a href="https://villtalk.store/legal/terms" target="_blank" rel="noreferrer" className="hover:text-[#6B7280]">이용약관</a>
+            <a href="/legal/terms" target="_blank" rel="noreferrer" className="hover:text-[#6B7280]">이용약관</a>
             <span className="text-[#D1D5DB]">·</span>
-            <a href="https://villtalk.store/legal/privacy" target="_blank" rel="noreferrer" className="hover:text-[#6B7280]">개인정보처리방침</a>
+            <a href="/legal/privacy" target="_blank" rel="noreferrer" className="hover:text-[#6B7280]">개인정보처리방침</a>
           </div>
           <p className="text-center text-[11px] text-[#9CA3AF]">© 앤뉴 (ANDNEW)</p>
         </div>

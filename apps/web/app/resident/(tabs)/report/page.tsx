@@ -115,7 +115,7 @@ export default function ResidentReportPage() {
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-[14px] font-bold text-[#0F2242]">{fmtDate(m.created_at)} 보냄</span>
                       <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ml-auto ${
-                        replied ? 'bg-[#E8F8EC] text-[#2ECC71]' : 'bg-[#F5F6FA] text-[#6B7280]'
+                        replied ? 'bg-[#E9E9FD] text-[#2B2BEE]' : 'bg-[#F5F6FA] text-[#6B7280]'
                       }`}>
                         {replied ? '답변완료' : '전달됨'}
                       </span>

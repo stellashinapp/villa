@@ -139,7 +139,7 @@ export default function AdminSignupForm() {
         {loading ? '처리 중…' : '가입 후 빌라 등록하기'}
       </button>
       <p className="text-xs text-t3 text-center leading-relaxed">
-        가입 시 <a href="https://villtalk.store/legal/terms" target="_blank" rel="noreferrer" className="underline">이용약관</a> 및 <a href="https://villtalk.store/legal/privacy" target="_blank" rel="noreferrer" className="underline">개인정보처리방침</a> 에 동의합니다
+        가입 시 <a href="/legal/terms" target="_blank" rel="noreferrer" className="underline">이용약관</a> 및 <a href="/legal/privacy" target="_blank" rel="noreferrer" className="underline">개인정보처리방침</a> 에 동의합니다
       </p>
     </form>
   );

@@ -17,3 +17,9 @@ html, body {
   font-family: var(--font-noto);
 }
 * { -webkit-tap-highlight-color: transparent; }
+
+/* 약관·정책 문서 본문 */
+.legal-body h2 { font-size: 15px; font-weight: 800; color: #0F2242; margin: 18px 0 6px; }
+.legal-body h2:first-child { margin-top: 0; }
+.legal-body p { margin-bottom: 8px; }
+.legal-body ul { margin-bottom: 8px; }

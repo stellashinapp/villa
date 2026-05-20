@@ -24,7 +24,7 @@ type Resident = {
 type UnpaidBill = { label: string; amount: number };
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
-  active: { label: '거주중', color: 'bg-[#E8F8EC] text-[#2ECC71]' },
+  active: { label: '거주중', color: 'bg-[#E9E9FD] text-[#2B2BEE]' },
   pending: { label: '승인대기', color: 'bg-[#E9E9FD] text-[#2B2BEE]' },
   pending_moveout: { label: '이사대기', color: 'bg-[#E9E9FD] text-[#2B2BEE]' },
   moved_out: { label: '이사완료', color: 'bg-[#F5F6FA] text-[#9CA3AF]' },
@@ -410,8 +410,8 @@ export default function AdminVillaResidentsPage() {
                 <p className="text-[12px] text-[#6B7280] mt-2">미정산 금액이 있습니다. 정산 완료 여부를 확인 후 진행하세요.</p>
               </div>
             ) : (
-              <div className="bg-[#E8F8EC] border border-[#2ECC71]/25 rounded-xl p-4 mb-3">
-                <p className="text-[14px] font-bold text-[#2ECC71]">✓ 미정산 관리비가 없습니다</p>
+              <div className="bg-[#E9E9FD] border border-[#2B2BEE]/25 rounded-xl p-4 mb-3">
+                <p className="text-[14px] font-bold text-[#2B2BEE]">✓ 미정산 관리비가 없습니다</p>
                 <p className="text-[12px] text-[#6B7280] mt-1">모든 세대 관리비가 정산 완료되었습니다.</p>
               </div>
             )}

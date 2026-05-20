@@ -272,7 +272,7 @@ export default function AdminHomeShell() {
                     {v.current_month_label && (
                       <div className="text-right">
                         <p className="text-[15px] font-extrabold text-[#0F2242]">₩{fmt(v.per_unit_amount)}</p>
-                        <p className={`text-[11px] font-bold mt-0.5 ${v.pay_rate >= 80 ? 'text-[#2ECC71]' : v.pay_rate >= 50 ? 'text-[#2B2BEE]' : 'text-[#FF3B30]'}`}>
+                        <p className={`text-[11px] font-bold mt-0.5 ${v.pay_rate >= 80 ? 'text-[#2B2BEE]' : v.pay_rate >= 50 ? 'text-[#2B2BEE]' : 'text-[#FF3B30]'}`}>
                           납부율 {v.pay_rate}%
                         </p>
                       </div>
@@ -295,7 +295,7 @@ export default function AdminHomeShell() {
           <div className="flex items-center justify-between">
             <div>
               <p className={`text-[11px] font-bold tracking-widest ${sub?.status === 'active' ? 'opacity-80' : 'text-[#6B7280]'}`}>구독 상태</p>
-              <p className={`text-[18px] font-extrabold mt-0.5 ${sub?.status === 'past_due' ? 'text-[#FF3B30]' : sub?.status === 'trialing' ? 'text-[#2B2BEE]' : ''}`}>{subLabel}</p>
+              <p className={`text-[15px] font-extrabold mt-0.5 ${sub?.status === 'past_due' ? 'text-[#FF3B30]' : sub?.status === 'trialing' ? 'text-[#2B2BEE]' : ''}`}>{subLabel}</p>
               {sub?.card_last4 && <p className={`text-[12px] mt-1 ${sub?.status === 'active' ? 'opacity-90' : 'text-[#6B7280]'}`}>{sub.card_brand} ····{sub.card_last4}</p>}
               {!sub && <p className="text-[12px] text-[#6B7280] mt-1">카드 등록 시 무료 체험 시작</p>}
             </div>

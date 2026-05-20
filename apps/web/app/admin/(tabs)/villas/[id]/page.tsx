@@ -222,7 +222,7 @@ export default function AdminVillaDetailPage() {
           </div>
           <div className="flex items-end justify-between mb-3">
             <div>
-              <p className={`text-[38px] font-black ${status.current_pay_rate >= 80 ? 'text-[#2ECC71]' : 'text-[#2B2BEE]'}`}>
+              <p className={`text-[38px] font-black ${status.current_pay_rate >= 80 ? 'text-[#2B2BEE]' : 'text-[#2B2BEE]'}`}>
                 {status.current_pay_rate}%
               </p>
               <p className="text-[13px] text-[#6B7280] mt-0.5">납부율 · {status.current_paid_count}/{villa.total_units}</p>

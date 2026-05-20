@@ -159,8 +159,8 @@ export default function AdminInboxPage() {
                   <span
                     className={`text-[13px] font-bold px-2 py-0.5 rounded ${
                       replied
-                        ? 'bg-[rgba(46,204,113,0.12)] text-[#2ECC71]'
-                        : 'bg-[rgba(231,76,60,0.12)] text-[#FF3B30]'
+                        ? 'bg-[#E9E9FD] text-[#2B2BEE]'
+                        : 'bg-[#FEE8E7] text-[#FF3B30]'
                     }`}
                   >
                     {replied ? '답변완료' : '미답변'}

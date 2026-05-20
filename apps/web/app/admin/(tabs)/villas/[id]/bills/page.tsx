@@ -363,7 +363,7 @@ export default function AdminVillaBillsPage() {
                         return (
                           <div key={u.id} className="flex items-center justify-between bg-white rounded-xl p-2.5 border border-[#E8EBF0]">
                             <div className="flex items-center gap-2">
-                              <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded-full ${isPaid ? 'bg-[#E8F8EC] text-[#2ECC71]' : 'bg-[#FEE8E7] text-[#FF3B30]'}`}>
+                              <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded-full ${isPaid ? 'bg-[#E9E9FD] text-[#2B2BEE]' : 'bg-[#FEE8E7] text-[#FF3B30]'}`}>
                                 {isPaid ? '납부' : '미납'}
                               </span>
                               <span className="text-[14px] font-bold text-[#0F2242]">{u.ho_number}</span>
@@ -373,7 +373,7 @@ export default function AdminVillaBillsPage() {
                             {pay && (
                               <button
                                 onClick={() => togglePaid(pay, !isPaid)}
-                                className={`text-[12px] font-bold px-2.5 py-1 rounded-full ${isPaid ? 'bg-[#F5F6FA] text-[#6B7280]' : 'bg-[#2ECC71] text-white'}`}
+                                className={`text-[12px] font-bold px-2.5 py-1 rounded-full ${isPaid ? 'bg-[#F5F6FA] text-[#6B7280]' : 'bg-[#2B2BEE] text-white'}`}
                               >
                                 {isPaid ? '미납으로' : '납부 확인'}
                               </button>

@@ -141,7 +141,7 @@ export default function AdminVillaParkingPage() {
                   <button onClick={() => remove(p)} className="text-[14px] text-[#FF3B30] font-bold hover:underline">삭제</button>
                 </div>
                 <div className="text-[14px] text-[#6B7280] space-y-0.5">
-                  <p>구분: <span className={p.vehicle_type === 'visitor' ? 'text-[#2B2BEE] font-semibold' : 'text-[#2ECC71] font-semibold'}>
+                  <p>구분: <span className={p.vehicle_type === 'visitor' ? 'text-[#2B2BEE] font-semibold' : 'text-[#2B2BEE] font-semibold'}>
                     {p.vehicle_type === 'resident' ? '입주민' : '방문'}
                   </span></p>
                   {p.units?.ho_number && <p>호실: {p.units.ho_number}</p>}

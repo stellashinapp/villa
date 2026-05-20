@@ -91,7 +91,7 @@ export default function AdminVillaMessagesPage() {
                 <div key={m.id} className="bg-white border border-[#E8EBF0] rounded-xl p-4 shadow-sm">
                   <div className="flex items-center gap-2 mb-2 flex-wrap">
                     <span className="text-[14px] font-bold">{cat.emoji} {cat.label}</span>
-                    <span className={`text-[13px] font-bold px-2 py-0.5 rounded ${replied ? 'bg-[rgba(46,204,113,0.12)] text-[#2ECC71]' : 'bg-[rgba(231,76,60,0.12)] text-[#FF3B30]'}`}>
+                    <span className={`text-[13px] font-bold px-2 py-0.5 rounded ${replied ? 'bg-[#E9E9FD] text-[#2B2BEE]' : 'bg-[#FEE8E7] text-[#FF3B30]'}`}>
                       {replied ? '답변완료' : '미답변'}
                     </span>
                     <span className="text-[13px] text-[#6B7280] font-semibold">

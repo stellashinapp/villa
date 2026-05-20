@@ -257,7 +257,7 @@ export default function ResidentBillsShell() {
                       <p className="text-[12px] text-[#9CA3AF] mt-0.5">{ymLabel(m.year_month)}</p>
                     </div>
                     <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${
-                      pay?.is_paid ? 'bg-[#E8F8EC] text-[#2ECC71]' : 'bg-[#F5F6FA] text-[#9CA3AF]'
+                      pay?.is_paid ? 'bg-[#E9E9FD] text-[#2B2BEE]' : 'bg-[#F5F6FA] text-[#9CA3AF]'
                     }`}>
                       {pay?.is_paid ? '납부완료' : '미납'}
                     </span>
@@ -322,7 +322,7 @@ function PaymentModal({
         <label className="flex items-start gap-3 mt-3 bg-[#F5F6FA] rounded-xl p-3 cursor-pointer">
           <input type="checkbox" checked={autoPay} onChange={e => onAutoPay(e.target.checked)} className="mt-0.5 w-5 h-5 flex-shrink-0 accent-[#2B2BEE]" />
           <span>
-            <span className="block text-[14px] font-bold text-[#0F2242]">매월 자동납부 {hasBillingKey && <span className="text-[#2ECC71]">· 등록됨</span>}</span>
+            <span className="block text-[14px] font-bold text-[#0F2242]">매월 자동납부 {hasBillingKey && <span className="text-[#2B2BEE]">· 등록됨</span>}</span>
             <span className="block text-[12px] text-[#6B7280] mt-0.5">카드를 등록하면 매월 관리비가 자동으로 결제됩니다.</span>
           </span>
         </label>
