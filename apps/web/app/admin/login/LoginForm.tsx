@@ -48,7 +48,7 @@ export default function LoginForm({ next }: { next: string }) {
           value={email}
           onChange={e => setEmail(e.target.value)}
           placeholder="admin"
-          className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-4 py-3.5 text-[15px] text-[#0F2242] outline-none focus:border-[#6C2FF2] focus:ring-2 focus:ring-[#6C2FF2]/15 transition"
+          className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-4 py-3.5 text-[15px] text-[#0F2242] outline-none focus:border-[#2B2BEE] focus:ring-2 focus:ring-[#2B2BEE]/15 transition"
         />
       </div>
       <div>
@@ -59,7 +59,7 @@ export default function LoginForm({ next }: { next: string }) {
           autoComplete="current-password"
           value={password}
           onChange={e => setPassword(e.target.value)}
-          className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-4 py-3.5 text-[15px] text-[#0F2242] outline-none focus:border-[#6C2FF2] focus:ring-2 focus:ring-[#6C2FF2]/15 transition"
+          className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-4 py-3.5 text-[15px] text-[#0F2242] outline-none focus:border-[#2B2BEE] focus:ring-2 focus:ring-[#2B2BEE]/15 transition"
         />
       </div>
       {error && (
@@ -70,7 +70,7 @@ export default function LoginForm({ next }: { next: string }) {
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-[#6C2FF2] text-white rounded-2xl py-3.5 text-[15px] font-bold hover:bg-[#5320C9] disabled:opacity-50 transition-colors"
+        className="w-full bg-[#2B2BEE] text-white rounded-2xl py-3.5 text-[15px] font-bold hover:bg-[#1C1CC9] disabled:opacity-50 transition-colors"
       >
         {loading ? '확인 중…' : '로그인'}
       </button>

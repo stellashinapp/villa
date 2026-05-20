@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#EFEAFE] via-[#F5F1FE] to-white">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#EAEAFE] via-[#F2F2FE] to-white">
       <div className="flex-1 flex flex-col justify-between px-5 pt-16 pb-8 w-full max-w-sm mx-auto">
         {/* Hero — 로고 + 일러스트 */}
         <div className="flex-1 flex flex-col items-center justify-center pb-8">
@@ -10,16 +10,16 @@ export default function HomePage() {
           <div className="mb-6">
             <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
               {/* 왼쪽 빌라 */}
-              <path d="M16 100 L16 56 L40 36 L40 100 Z" fill="#A78BFA" stroke="#6C2FF2" strokeWidth="2" strokeLinejoin="round"/>
-              <path d="M16 56 L40 36 L48 42 L24 62 Z" fill="#C4B5FD" stroke="#6C2FF2" strokeWidth="2" strokeLinejoin="round"/>
-              <rect x="22" y="64" width="6" height="8" fill="#6C2FF2" rx="1"/>
-              <rect x="22" y="78" width="6" height="8" fill="#6C2FF2" rx="1"/>
-              <rect x="30" y="70" width="6" height="8" fill="#6C2FF2" rx="1"/>
-              <rect x="30" y="84" width="6" height="10" fill="#6C2FF2" rx="1"/>
+              <path d="M16 100 L16 56 L40 36 L40 100 Z" fill="#8B9BFA" stroke="#2B2BEE" strokeWidth="2" strokeLinejoin="round"/>
+              <path d="M16 56 L40 36 L48 42 L24 62 Z" fill="#B5C2FD" stroke="#2B2BEE" strokeWidth="2" strokeLinejoin="round"/>
+              <rect x="22" y="64" width="6" height="8" fill="#2B2BEE" rx="1"/>
+              <rect x="22" y="78" width="6" height="8" fill="#2B2BEE" rx="1"/>
+              <rect x="30" y="70" width="6" height="8" fill="#2B2BEE" rx="1"/>
+              <rect x="30" y="84" width="6" height="10" fill="#2B2BEE" rx="1"/>
 
               {/* 가운데 빌라 (큰) */}
-              <path d="M40 100 L40 44 L76 16 L76 100 Z" fill="#6C2FF2" stroke="#5320C9" strokeWidth="2" strokeLinejoin="round"/>
-              <path d="M40 44 L76 16 L86 24 L50 52 Z" fill="#9D6BF7" stroke="#5320C9" strokeWidth="2" strokeLinejoin="round"/>
+              <path d="M40 100 L40 44 L76 16 L76 100 Z" fill="#2B2BEE" stroke="#1C1CC9" strokeWidth="2" strokeLinejoin="round"/>
+              <path d="M40 44 L76 16 L86 24 L50 52 Z" fill="#6B6BF5" stroke="#1C1CC9" strokeWidth="2" strokeLinejoin="round"/>
               <rect x="48" y="56" width="8" height="10" fill="white" rx="1"/>
               <rect x="60" y="56" width="8" height="10" fill="white" rx="1"/>
               <rect x="48" y="72" width="8" height="10" fill="white" rx="1"/>
@@ -27,16 +27,16 @@ export default function HomePage() {
               <rect x="54" y="86" width="8" height="14" fill="white" rx="1"/>
 
               {/* 오른쪽 빌라 */}
-              <path d="M76 100 L76 60 L100 40 L100 100 Z" fill="#A78BFA" stroke="#6C2FF2" strokeWidth="2" strokeLinejoin="round"/>
-              <path d="M76 60 L100 40 L108 46 L84 66 Z" fill="#C4B5FD" stroke="#6C2FF2" strokeWidth="2" strokeLinejoin="round"/>
-              <rect x="82" y="68" width="6" height="8" fill="#6C2FF2" rx="1"/>
-              <rect x="82" y="82" width="6" height="8" fill="#6C2FF2" rx="1"/>
-              <rect x="90" y="74" width="6" height="8" fill="#6C2FF2" rx="1"/>
-              <rect x="90" y="88" width="6" height="10" fill="#6C2FF2" rx="1"/>
+              <path d="M76 100 L76 60 L100 40 L100 100 Z" fill="#8B9BFA" stroke="#2B2BEE" strokeWidth="2" strokeLinejoin="round"/>
+              <path d="M76 60 L100 40 L108 46 L84 66 Z" fill="#B5C2FD" stroke="#2B2BEE" strokeWidth="2" strokeLinejoin="round"/>
+              <rect x="82" y="68" width="6" height="8" fill="#2B2BEE" rx="1"/>
+              <rect x="82" y="82" width="6" height="8" fill="#2B2BEE" rx="1"/>
+              <rect x="90" y="74" width="6" height="8" fill="#2B2BEE" rx="1"/>
+              <rect x="90" y="88" width="6" height="10" fill="#2B2BEE" rx="1"/>
 
               {/* 말풍선 */}
-              <circle cx="92" cy="22" r="8" fill="#6C2FF2"/>
-              <path d="M88 28 L86 32 L90 30 Z" fill="#6C2FF2"/>
+              <circle cx="92" cy="22" r="8" fill="#2B2BEE"/>
+              <path d="M88 28 L86 32 L90 30 Z" fill="#2B2BEE"/>
               <circle cx="89" cy="22" r="1" fill="white"/>
               <circle cx="92" cy="22" r="1" fill="white"/>
               <circle cx="95" cy="22" r="1" fill="white"/>
@@ -46,7 +46,7 @@ export default function HomePage() {
           {/* 로고 텍스트 */}
           <h1 className="text-[44px] font-black tracking-tight mb-3">
             <span className="text-[#0F2242]">Villa</span>
-            <span className="text-[#6C2FF2] ml-2">Talk</span>
+            <span className="text-[#2B2BEE] ml-2">Talk</span>
           </h1>
 
           {/* 서브 카피 */}
@@ -62,7 +62,7 @@ export default function HomePage() {
         <div className="space-y-3">
           <Link
             href="/admin/login"
-            className="block bg-gradient-to-br from-[#6C2FF2] to-[#9D6BF7] text-white rounded-2xl py-4 text-center shadow-md active:scale-[0.98] transition-transform"
+            className="block bg-gradient-to-br from-[#2B2BEE] to-[#6B6BF5] text-white rounded-2xl py-4 text-center shadow-md active:scale-[0.98] transition-transform"
           >
             <span className="text-[16px] font-extrabold">관리자로 시작</span>
           </Link>

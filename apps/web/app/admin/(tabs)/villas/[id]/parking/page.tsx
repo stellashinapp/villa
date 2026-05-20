@@ -81,7 +81,7 @@ export default function AdminVillaParkingPage() {
           <h1 className="text-[24px] font-black text-[#0F2242]">주차 관리</h1>
           <p className="text-[15px] text-[#6B7280] mt-0.5">총 {items.length}대 등록</p>
         </div>
-        <button onClick={() => setShowForm(!showForm)} className="bg-[#6C2FF2] text-white text-[15px] font-bold px-3.5 py-2 rounded-2xl">
+        <button onClick={() => setShowForm(!showForm)} className="bg-[#2B2BEE] text-white text-[15px] font-bold px-3.5 py-2 rounded-2xl">
           {showForm ? '취소' : '＋ 차량 등록'}
         </button>
       </div>
@@ -91,13 +91,13 @@ export default function AdminVillaParkingPage() {
           <div>
             <label className="block text-[14px] font-bold text-[#6B7280] mb-1.5">차량 번호 *</label>
             <input value={plate} onChange={e => setPlate(e.target.value)} placeholder="예: 12가 3456" maxLength={15}
-              className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-3 py-2.5 text-sm outline-none focus:border-[#6C2FF2]" required />
+              className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-3 py-2.5 text-sm outline-none focus:border-[#2B2BEE]" required />
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="block text-[14px] font-bold text-[#6B7280] mb-1.5">차량 구분</label>
               <select value={vehicleType} onChange={e => setVehicleType(e.target.value as 'resident' | 'visitor')}
-                className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-3 py-2.5 text-sm outline-none focus:border-[#6C2FF2]">
+                className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-3 py-2.5 text-sm outline-none focus:border-[#2B2BEE]">
                 <option value="resident">입주민 차량</option>
                 <option value="visitor">방문 차량</option>
               </select>
@@ -105,7 +105,7 @@ export default function AdminVillaParkingPage() {
             <div>
               <label className="block text-[14px] font-bold text-[#6B7280] mb-1.5">호실</label>
               <select value={unitId} onChange={e => setUnitId(e.target.value)}
-                className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-3 py-2.5 text-sm outline-none focus:border-[#6C2FF2]">
+                className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-3 py-2.5 text-sm outline-none focus:border-[#2B2BEE]">
                 <option value="">(선택 안 함)</option>
                 {units.map(u => <option key={u.id} value={u.id}>{u.ho_number}</option>)}
               </select>
@@ -114,14 +114,14 @@ export default function AdminVillaParkingPage() {
           <div>
             <label className="block text-[14px] font-bold text-[#6B7280] mb-1.5">메모 (선택)</label>
             <input value={memo} onChange={e => setMemo(e.target.value)} placeholder="예: 소나타 흰색 (주 사용)" maxLength={100}
-              className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-3 py-2.5 text-sm outline-none focus:border-[#6C2FF2]" />
+              className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-3 py-2.5 text-sm outline-none focus:border-[#2B2BEE]" />
           </div>
           <div>
             <label className="block text-[14px] font-bold text-[#6B7280] mb-1.5">유효기간 (방문 차량용, 선택)</label>
             <input type="date" value={expiresAt} onChange={e => setExpiresAt(e.target.value)}
-              className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-3 py-2.5 text-sm outline-none focus:border-[#6C2FF2]" />
+              className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-3 py-2.5 text-sm outline-none focus:border-[#2B2BEE]" />
           </div>
-          <button type="submit" disabled={submitting} className="w-full bg-[#6C2FF2] text-white py-2.5 rounded-2xl text-[16px] font-bold disabled:opacity-50">
+          <button type="submit" disabled={submitting} className="w-full bg-[#2B2BEE] text-white py-2.5 rounded-2xl text-[16px] font-bold disabled:opacity-50">
             {submitting ? '등록 중…' : '차량 등록'}
           </button>
         </form>
@@ -141,7 +141,7 @@ export default function AdminVillaParkingPage() {
                   <button onClick={() => remove(p)} className="text-[14px] text-[#FF3B30] font-bold hover:underline">삭제</button>
                 </div>
                 <div className="text-[14px] text-[#6B7280] space-y-0.5">
-                  <p>구분: <span className={p.vehicle_type === 'visitor' ? 'text-[#6C2FF2] font-semibold' : 'text-[#2ECC71] font-semibold'}>
+                  <p>구분: <span className={p.vehicle_type === 'visitor' ? 'text-[#2B2BEE] font-semibold' : 'text-[#2ECC71] font-semibold'}>
                     {p.vehicle_type === 'resident' ? '입주민' : '방문'}
                   </span></p>
                   {p.units?.ho_number && <p>호실: {p.units.ho_number}</p>}

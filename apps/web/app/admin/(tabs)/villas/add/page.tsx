@@ -286,7 +286,7 @@ export default function AdminVillaAddPage() {
       <Link href="/admin/villas" className="hidden md:inline-block text-[14px] text-[#6B7280] hover:text-[#0F2242]">← 빌라 목록</Link>
 
       {isWelcome && existingVillaCount === 0 && (
-        <div className="mt-3 bg-gradient-to-br from-[#6C2FF2] to-[#9D6BF7] rounded-2xl p-5 text-white shadow-lg">
+        <div className="mt-3 bg-gradient-to-br from-[#2B2BEE] to-[#6B6BF5] rounded-2xl p-5 text-white shadow-lg">
           <p className="text-[14px] font-bold opacity-80 tracking-widest mb-1">WELCOME</p>
           <h2 className="text-[20px] font-extrabold mb-1">{adminName ?? '관리자'}님, 가입 완료!</h2>
           <p className="text-[15px] opacity-90 leading-relaxed">
@@ -297,7 +297,7 @@ export default function AdminVillaAddPage() {
       )}
 
       <div className="mt-3 mb-6">
-        <p className="text-[13px] text-[#6C2FF2] font-bold tracking-[0.16em] mb-1.5">
+        <p className="text-[13px] text-[#2B2BEE] font-bold tracking-[0.16em] mb-1.5">
           {isWelcome ? '내 빌라 등록' : 'NEW VILLA'}
         </p>
         <h1 className="text-[24px] font-black text-[#0F2242]">빌라 추가</h1>
@@ -329,7 +329,7 @@ export default function AdminVillaAddPage() {
               <button
                 type="button"
                 onClick={openPostcode}
-                className="bg-[#6C2FF2] text-white px-3.5 py-2.5 rounded-2xl text-[15px] font-bold whitespace-nowrap"
+                className="bg-[#2B2BEE] text-white px-3.5 py-2.5 rounded-2xl text-[15px] font-bold whitespace-nowrap"
               >
                 🔍 검색
               </button>
@@ -353,7 +353,7 @@ export default function AdminVillaAddPage() {
                   type="button"
                   onClick={() => { setUnitsPerFloor(n); setAutoLocked(true); }}
                   className={`px-3 py-1.5 rounded-full text-[14px] font-bold border transition ${
-                    unitsPerFloor === n ? 'bg-[#6C2FF2] text-white border-[#6C2FF2]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'
+                    unitsPerFloor === n ? 'bg-[#2B2BEE] text-white border-[#2B2BEE]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'
                   }`}
                 >
                   {n}개
@@ -434,7 +434,7 @@ export default function AdminVillaAddPage() {
                   <button
                     type="button"
                     onClick={applyAutoGenerate}
-                    className="text-[14px] text-[#6C2FF2] font-bold hover:underline"
+                    className="text-[14px] text-[#2B2BEE] font-bold hover:underline"
                   >
                     ✏️ 직접 편집
                   </button>
@@ -465,7 +465,7 @@ export default function AdminVillaAddPage() {
                           value={u.ho}
                           onChange={e => renameUnit(u.tempId, e.target.value)}
                           maxLength={20}
-                          className="flex-1 bg-white border border-[#E8EBF0] rounded-2xl px-3 py-1.5 text-[15px] outline-none focus:border-[#6C2FF2]"
+                          className="flex-1 bg-white border border-[#E8EBF0] rounded-2xl px-3 py-1.5 text-[15px] outline-none focus:border-[#2B2BEE]"
                         />
                         <button
                           type="button"
@@ -483,13 +483,13 @@ export default function AdminVillaAddPage() {
                         onChange={e => setCustomUnitName(e.target.value)}
                         placeholder="예: 카페, 부동산, 상가1"
                         maxLength={20}
-                        className="flex-1 bg-white border border-dashed border-[#6C2FF2]/50 rounded-2xl px-3 py-1.5 text-[15px] outline-none focus:border-[#6C2FF2]"
+                        className="flex-1 bg-white border border-dashed border-[#2B2BEE]/50 rounded-2xl px-3 py-1.5 text-[15px] outline-none focus:border-[#2B2BEE]"
                         onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addCustomUnit(); }}}
                       />
                       <button
                         type="button"
                         onClick={addCustomUnit}
-                        className="bg-[#6C2FF2] text-white px-3 py-1.5 rounded-2xl text-[15px] font-bold"
+                        className="bg-[#2B2BEE] text-white px-3 py-1.5 rounded-2xl text-[15px] font-bold"
                       >
                         ＋
                       </button>
@@ -517,15 +517,15 @@ export default function AdminVillaAddPage() {
               </p>
               <p className="text-[13px] text-[#6B7280] mt-2">
                 같은 빌라를 두 번 등록할 수 없습니다.{' '}
-                <Link href={`/admin/villas/${ownDuplicate.id}`} className="text-[#6C2FF2] font-bold underline">기존 빌라 보기 →</Link>
+                <Link href={`/admin/villas/${ownDuplicate.id}`} className="text-[#2B2BEE] font-bold underline">기존 빌라 보기 →</Link>
               </p>
             </div>
           )}
 
           {/* 타 관리자 중복 후보 — 정보성 안내 */}
           {duplicates.length > 0 && (
-            <div className="bg-[#F1ECFE] border border-[#6C2FF2]/20 rounded-2xl p-3.5">
-              <p className="text-[14px] font-bold text-[#6C2FF2] mb-2">
+            <div className="bg-[#E9E9FD] border border-[#2B2BEE]/20 rounded-2xl p-3.5">
+              <p className="text-[14px] font-bold text-[#2B2BEE] mb-2">
                 비슷한 빌라가 이미 등록되어 있습니다 ({duplicates.length}건)
               </p>
               <ul className="space-y-1.5 mb-3">
@@ -541,7 +541,7 @@ export default function AdminVillaAddPage() {
               </ul>
               <p className="text-[13px] text-[#6B7280] leading-relaxed mb-2">
                 같은 빌라라면 <strong>기존 관리자에게 위임 요청</strong> 또는{' '}
-                <a href="mailto:villatolk@andnew.kr" className="text-[#6C2FF2] underline">본사 (villatolk@andnew.kr)</a> 에 권한 이전 요청을 해주세요.
+                <a href="mailto:villatolk@andnew.kr" className="text-[#2B2BEE] underline">본사 (villatolk@andnew.kr)</a> 에 권한 이전 요청을 해주세요.
               </p>
               <label className="flex items-start gap-2 text-[14px] text-[#0F2242] cursor-pointer">
                 <input
@@ -562,7 +562,7 @@ export default function AdminVillaAddPage() {
             <button
               type="button"
               onClick={loadPrevAccount}
-              className="w-full bg-[#F1ECFE] border border-[#6C2FF2]/30 text-[#6C2FF2] rounded-2xl py-2.5 text-[15px] font-bold hover:bg-[#E5DAFB] transition-colors"
+              className="w-full bg-[#E9E9FD] border border-[#2B2BEE]/30 text-[#2B2BEE] rounded-2xl py-2.5 text-[15px] font-bold hover:bg-[#DCDCFB] transition-colors"
             >
               📥 이전 빌라 계좌 불러오기 ({prevAccount.bank} {prevAccount.number.slice(0, -4)}****)
             </button>
@@ -612,7 +612,7 @@ export default function AdminVillaAddPage() {
               type="checkbox"
               checked={exposeAdminContact}
               onChange={e => setExposeAdminContact(e.target.checked)}
-              className="mt-0.5 w-5 h-5 flex-shrink-0 accent-[#6C2FF2]"
+              className="mt-0.5 w-5 h-5 flex-shrink-0 accent-[#2B2BEE]"
             />
             <span>
               <span className="block text-[15px] font-bold text-[#0F2242]">관리자 성함·전화번호 노출</span>
@@ -649,7 +649,7 @@ export default function AdminVillaAddPage() {
         <button
           type="submit"
           disabled={submitting || !adminId}
-          className="w-full bg-[#6C2FF2] text-white rounded-2xl py-3.5 text-[17px] font-bold hover:bg-[#5320C9] disabled:opacity-50 transition-colors"
+          className="w-full bg-[#2B2BEE] text-white rounded-2xl py-3.5 text-[17px] font-bold hover:bg-[#1C1CC9] disabled:opacity-50 transition-colors"
         >
           {submitting ? '빌라 생성 중…' : `빌라 + ${displayUnits.length || 0}개 호실 생성`}
         </button>
@@ -671,7 +671,7 @@ export default function AdminVillaAddPage() {
           outline: none;
         }
         .input:focus {
-          border-color: #6C2FF2;
+          border-color: #2B2BEE;
         }
       `}</style>
     </div>

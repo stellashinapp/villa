@@ -62,7 +62,7 @@ export default function AdminSettingsPage() {
 
       <div className="px-5 pb-8 max-w-screen-sm mx-auto">
         {/* 프로필 카드 */}
-        <div className="bg-gradient-to-br from-[#6C2FF2] to-[#9D6BF7] rounded-2xl p-5 text-white shadow-md mb-4">
+        <div className="bg-gradient-to-br from-[#2B2BEE] to-[#6B6BF5] rounded-2xl p-5 text-white shadow-md mb-4">
           <div className="flex items-center gap-3">
             <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center text-[24px] font-black">
               {profile?.name?.[0] ?? profile?.email?.[0] ?? '?'}
@@ -81,7 +81,7 @@ export default function AdminSettingsPage() {
           <Section title="본사 콘솔">
             <a href={ADMIN_WEB_URL} target="_blank" rel="noreferrer"
               className="flex items-center bg-white border border-[#F0F2F5] rounded-2xl p-4 shadow-sm active:scale-[0.99] transition">
-              <span className="w-12 h-12 rounded-2xl flex items-center justify-center mr-3 bg-gradient-to-br from-[#6C2FF2] to-[#9D6BF7]">
+              <span className="w-12 h-12 rounded-2xl flex items-center justify-center mr-3 bg-gradient-to-br from-[#2B2BEE] to-[#6B6BF5]">
                 <Icon name="villa" size={24} color="#FFFFFF" filled />
               </span>
               <div className="flex-1">
@@ -100,12 +100,12 @@ export default function AdminSettingsPage() {
           <Row label="이메일" value={profile?.email ?? '-'} />
           <Row label="전화번호" value={profile?.phone ?? '-'} />
           <Row label="등록 빌라" value={`${villaCount}개`} />
-          <Row label="권한" value={isSuper ? 'super (본사)' : 'admin (관리자)'} valueClassName={isSuper ? 'text-[#6C2FF2]' : ''} />
+          <Row label="권한" value={isSuper ? 'super (본사)' : 'admin (관리자)'} valueClassName={isSuper ? 'text-[#2B2BEE]' : ''} />
         </Section>
 
         {/* 구독 */}
         <Section title="구독">
-          <Row label="상태" value={subLabel} valueClassName={sub?.status === 'past_due' ? 'text-[#FF3B30]' : sub?.status === 'trialing' ? 'text-[#6C2FF2]' : ''} />
+          <Row label="상태" value={subLabel} valueClassName={sub?.status === 'past_due' ? 'text-[#FF3B30]' : sub?.status === 'trialing' ? 'text-[#2B2BEE]' : ''} />
           <Row label="등록 카드" value={sub?.card_last4 ? `${sub.card_brand ?? 'CARD'} •••• ${sub.card_last4}` : '미등록'} />
           <p className="text-[12px] text-[#9CA3AF] mt-2">
             ⓘ 구독·결제 관리는 모바일 앱에서 가능합니다
@@ -121,7 +121,7 @@ export default function AdminSettingsPage() {
         {/* 앱 정보 */}
         <Section title="앱 정보">
           <Row label="앱 버전" value="v1.0.0" />
-          <Row label="고객센터" value="villatolk@andnew.kr" valueClassName="text-[#6C2FF2]" />
+          <Row label="고객센터" value="villatolk@andnew.kr" valueClassName="text-[#2B2BEE]" />
         </Section>
 
         <button onClick={logout}

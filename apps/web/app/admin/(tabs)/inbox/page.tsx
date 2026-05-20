@@ -179,7 +179,7 @@ export default function AdminInboxPage() {
                     {adminReplies.map(r => (
                       <div key={r.id} className="bg-[#F5F6FA] rounded-2xl p-3">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-[13px] font-bold text-[#6C2FF2]">
+                          <span className="text-[13px] font-bold text-[#2B2BEE]">
                             관리자 {r.author_name && `· ${r.author_name}`}
                           </span>
                           <span className="text-[13px] text-[#9CA3AF] ml-auto">
@@ -199,13 +199,13 @@ export default function AdminInboxPage() {
                       onChange={e => setReplyText(e.target.value)}
                       placeholder="답변 내용을 입력하세요"
                       rows={3}
-                      className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-3 py-2 text-sm text-[#0F2242] outline-none focus:border-[#6C2FF2] resize-none"
+                      className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-3 py-2 text-sm text-[#0F2242] outline-none focus:border-[#2B2BEE] resize-none"
                     />
                     <div className="flex gap-2 mt-2">
                       <button
                         onClick={() => submitReply(m.id)}
                         disabled={submitting}
-                        className="flex-1 bg-[#6C2FF2] text-white py-2 rounded-2xl text-[15px] font-bold disabled:opacity-50"
+                        className="flex-1 bg-[#2B2BEE] text-white py-2 rounded-2xl text-[15px] font-bold disabled:opacity-50"
                       >
                         {submitting ? '등록 중…' : '답변 등록'}
                       </button>
@@ -220,7 +220,7 @@ export default function AdminInboxPage() {
                 ) : (
                   <button
                     onClick={() => { setReplyingTo(m.id); setReplyText(''); }}
-                    className="mt-3 text-[14px] font-bold text-[#6C2FF2] hover:underline"
+                    className="mt-3 text-[14px] font-bold text-[#2B2BEE] hover:underline"
                   >
                     {replied ? '추가 답변' : '답변하기'} →
                   </button>

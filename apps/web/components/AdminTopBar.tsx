@@ -16,7 +16,7 @@ export default function AdminTopBar({
   right?: ReactNode;
 }) {
   return (
-    <header className="bg-[#6C2FF2] rounded-b-[24px]">
+    <header className="bg-[#2B2BEE] rounded-b-[24px]">
       <div className="max-w-screen-sm mx-auto px-5 pt-7 pb-6">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">

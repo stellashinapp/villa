@@ -19,10 +19,10 @@ type VillaRow = {
 };
 
 const META: Record<Kind, { title: string; sub: string; icon: IconName; color: string; bg: string; path: string }> = {
-  bills:     { title: '관리비',   sub: '빌라별 이번 달 관리비 현황', icon: 'bills',     color: '#6C2FF2', bg: '#F1ECFE', path: 'bills' },
-  notices:   { title: '공지',     sub: '빌라별 공지 현황',           icon: 'notice',    color: '#6C2FF2', bg: '#F1ECFE', path: 'notices' },
-  residents: { title: '입주민',   sub: '빌라별 입주민 현황',         icon: 'residents', color: '#6C2FF2', bg: '#F1ECFE', path: 'residents' },
-  parking:   { title: '주차',     sub: '빌라별 등록 차량 현황',      icon: 'parking',   color: '#6C2FF2', bg: '#F1ECFE', path: 'parking' },
+  bills:     { title: '관리비',   sub: '빌라별 이번 달 관리비 현황', icon: 'bills',     color: '#2B2BEE', bg: '#E9E9FD', path: 'bills' },
+  notices:   { title: '공지',     sub: '빌라별 공지 현황',           icon: 'notice',    color: '#2B2BEE', bg: '#E9E9FD', path: 'notices' },
+  residents: { title: '입주민',   sub: '빌라별 입주민 현황',         icon: 'residents', color: '#2B2BEE', bg: '#E9E9FD', path: 'residents' },
+  parking:   { title: '주차',     sub: '빌라별 등록 차량 현황',      icon: 'parking',   color: '#2B2BEE', bg: '#E9E9FD', path: 'parking' },
 };
 
 function fmt(n: number) { return n.toLocaleString('ko-KR'); }
@@ -153,7 +153,7 @@ export default function VillaAggregateList({ kind }: { kind: Kind }) {
         ) : rows.length === 0 ? (
           <div className="bg-white border border-[#F0F2F5] rounded-2xl p-8 text-center">
             <p className="text-[15px] font-bold text-[#0F2242]">등록된 빌라가 없습니다</p>
-            <Link href="/admin/villas/add" className="inline-block mt-3 bg-[#6C2FF2] text-white px-4 py-2 rounded-2xl text-[14px] font-bold">＋ 빌라 등록</Link>
+            <Link href="/admin/villas/add" className="inline-block mt-3 bg-[#2B2BEE] text-white px-4 py-2 rounded-2xl text-[14px] font-bold">＋ 빌라 등록</Link>
           </div>
         ) : (
           <>
@@ -168,7 +168,7 @@ export default function VillaAggregateList({ kind }: { kind: Kind }) {
                       <p className="text-[12px] text-[#9CA3AF] mt-0.5 truncate">{v.metricSub}</p>
                     </div>
                     <div className="text-right ml-3 flex items-center gap-2">
-                      <span className={`text-[17px] font-black ${v.highlight ? 'text-[#FF3B30]' : 'text-[#6C2FF2]'}`}>{v.metricMain}</span>
+                      <span className={`text-[17px] font-black ${v.highlight ? 'text-[#FF3B30]' : 'text-[#2B2BEE]'}`}>{v.metricMain}</span>
                       <span className="text-[18px] text-[#9CA3AF]">›</span>
                     </div>
                   </div>

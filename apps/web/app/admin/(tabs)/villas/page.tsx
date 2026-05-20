@@ -104,7 +104,7 @@ export default function AdminVillasPage() {
           <h1 className="text-[26px] font-black text-[#0F2242] leading-tight">내 빌라</h1>
           <p className="text-[14px] text-[#6B7280] mt-1">총 {cards.length}개 등록</p>
         </div>
-        <Link href="/admin/villas/add" className="bg-[#6C2FF2] text-white text-[15px] font-bold px-3.5 py-2.5 rounded-2xl shadow-sm hover:bg-[#5320C9] transition">
+        <Link href="/admin/villas/add" className="bg-[#2B2BEE] text-white text-[15px] font-bold px-3.5 py-2.5 rounded-2xl shadow-sm hover:bg-[#1C1CC9] transition">
           ＋ 빌라 추가
         </Link>
       </div>
@@ -112,8 +112,8 @@ export default function AdminVillasPage() {
       {loading ? <p className="text-center text-[16px] text-[#9CA3AF] mt-20">불러오는 중…</p>
         : error ? <p className="text-center text-[16px] text-[#FF3B30] mt-20">오류: {error}</p>
         : cards.length === 0 ? (
-          <Link href="/admin/villas/add" className="block bg-white border border-dashed border-[#6C2FF2]/30 rounded-2xl p-8 text-center mt-10 hover:bg-[#F1ECFE]">
-            <div className="w-12 h-12 rounded-2xl bg-[#F1ECFE] flex items-center justify-center mx-auto mb-3"><Icon name="villa" size={26} color="#6C2FF2" filled /></div>
+          <Link href="/admin/villas/add" className="block bg-white border border-dashed border-[#2B2BEE]/30 rounded-2xl p-8 text-center mt-10 hover:bg-[#E9E9FD]">
+            <div className="w-12 h-12 rounded-2xl bg-[#E9E9FD] flex items-center justify-center mx-auto mb-3"><Icon name="villa" size={26} color="#2B2BEE" filled /></div>
             <p className="text-[18px] font-bold text-[#0F2242]">첫 빌라를 등록해주세요</p>
             <p className="text-[15px] text-[#6B7280] mt-1">+ 빌라 추가 버튼으로 시작</p>
           </Link>
@@ -142,7 +142,7 @@ export default function AdminVillasPage() {
 
                 {/* 이번달 관리비 + 납부율 */}
                 {v.current_month_label ? (
-                  <div className="bg-[#F1ECFE] border border-[#6C2FF2]/15 rounded-2xl p-3.5 mt-2">
+                  <div className="bg-[#E9E9FD] border border-[#2B2BEE]/15 rounded-2xl p-3.5 mt-2">
                     <div className="flex items-start justify-between">
                       <div>
                         <p className="text-[14px] text-[#6B7280] font-bold">{v.current_month_label}</p>
@@ -153,7 +153,7 @@ export default function AdminVillasPage() {
                       </div>
                       <div className="text-right">
                         <p className="text-[14px] text-[#6B7280] font-bold">납부율</p>
-                        <p className={`text-[26px] font-black ${v.pay_rate >= 80 ? 'text-[#2ECC71]' : v.pay_rate >= 50 ? 'text-[#6C2FF2]' : 'text-[#FF3B30]'}`}>
+                        <p className={`text-[26px] font-black ${v.pay_rate >= 80 ? 'text-[#2ECC71]' : v.pay_rate >= 50 ? 'text-[#2B2BEE]' : 'text-[#FF3B30]'}`}>
                           {v.pay_rate}%
                         </p>
                         <p className="text-[13px] text-[#6B7280] mt-0.5">{v.paid_count}/{v.total_units}</p>

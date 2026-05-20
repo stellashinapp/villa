@@ -62,8 +62,8 @@ export default function MoveoutShell() {
 
         <div className="bg-white border border-[#E8EBF0] rounded-2xl p-5 mb-4 w-full shadow-sm">
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-2 h-2 rounded-full bg-[#6C2FF2] animate-pulse" />
-            <p className="text-[15px] font-bold text-[#6C2FF2]">관리자 확정 대기 중</p>
+            <div className="w-2 h-2 rounded-full bg-[#2B2BEE] animate-pulse" />
+            <p className="text-[15px] font-bold text-[#2B2BEE]">관리자 확정 대기 중</p>
           </div>
           <p className="text-[15px] text-[#0F2242] leading-relaxed mb-2">
             <strong>{resident.villaName}</strong> 관리자에게<br />
@@ -86,7 +86,7 @@ export default function MoveoutShell() {
           </p>
         </div>
 
-        <Link href="/resident/bills" className="w-full bg-[#6C2FF2] text-white rounded-2xl py-3.5 font-bold text-center text-[17px]">
+        <Link href="/resident/bills" className="w-full bg-[#2B2BEE] text-white rounded-2xl py-3.5 font-bold text-center text-[17px]">
           청구서 화면으로
         </Link>
       </div>
