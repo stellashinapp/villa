@@ -52,7 +52,8 @@ export default function AdminVillaBillsPage() {
   const [submitting, setSubmitting] = useState(false);
   const [itemName, setItemName] = useState('');
   const [itemAmount, setItemAmount] = useState('');
-  const [editingItemMonth, setEditingItemMonth] = useState<string | null>(null);
+  // 항목 금액 인라인 편집용 (itemId → 금액 문자열)
+  const [itemDraft, setItemDraft] = useState<Record<string, string>>({});
   const [expandedMonth, setExpandedMonth] = useState<string | null>(null);
   const [bulkAmount, setBulkAmount] = useState('');
   const [villaName, setVillaName] = useState('');
@@ -80,11 +81,14 @@ export default function AdminVillaBillsPage() {
 
     // 세대별 입력 로컬 상태 초기화
     const draft: Record<string, Record<string, string>> = {};
+    const idraft: Record<string, string> = {};
     for (const m of bmList) {
       const map = m.per_unit_amounts ?? {};
       draft[m.id] = Object.fromEntries(Object.entries(map).map(([ho, v]) => [ho, v ? String(v) : '']));
+      for (const it of m.bill_items ?? []) idraft[it.id] = String(it.amount);
     }
     setUnitDraft(draft);
+    setItemDraft(idraft);
 
     const bmIds = bmList.map(b => b.id);
     if (bmIds.length > 0) {
@@ -168,14 +172,37 @@ export default function AdminVillaBillsPage() {
 
   async function addItem(monthId: string, e: React.FormEvent) {
     e.preventDefault();
-    if (!itemName.trim() || !itemAmount) return;
-    const amt = parseInt(itemAmount, 10);
+    if (!itemName.trim()) { alert('항목을 선택하세요'); return; }
+    const amt = parseInt((itemAmount || '').replace(/\D/g, ''), 10);
     if (!amt || amt <= 0) { alert('금액을 정확히 입력하세요'); return; }
     const { error } = await supabase.from('bill_items').insert({
       bill_month_id: monthId, name: itemName.trim(), amount: amt,
     });
     if (error) { alert('항목 추가 실패: ' + error.message); return; }
     setItemName(''); setItemAmount('');
+    await load();
+  }
+
+  // 예시 항목 5개 채우기 (이후 자유 편집)
+  async function fillExamples(monthId: string) {
+    const examples = [
+      { name: '일반관리비', amount: 30000 },
+      { name: '청소비', amount: 20000 },
+      { name: '공동전기료', amount: 15000 },
+      { name: '공동수도료', amount: 15000 },
+      { name: '승강기 유지비', amount: 10000 },
+    ];
+    const rows = examples.map(e => ({ bill_month_id: monthId, name: e.name, amount: e.amount }));
+    const { error } = await supabase.from('bill_items').insert(rows);
+    if (error) { alert('예시 추가 실패: ' + error.message); return; }
+    await load();
+  }
+
+  // 항목 금액 인라인 수정 (onBlur)
+  async function updateItemAmount(itemId: string, raw: string) {
+    const amt = parseInt((raw || '').replace(/\D/g, ''), 10);
+    if (!amt || amt <= 0) return;
+    await supabase.from('bill_items').update({ amount: amt }).eq('id', itemId);
     await load();
   }
 
@@ -341,7 +368,6 @@ export default function AdminVillaBillsPage() {
               const monthPayments = payments.filter(p => p.bill_month_id === m.id);
               const paidCount = monthPayments.filter(p => p.is_paid).length;
               const payRate = units.length > 0 ? Math.round((paidCount / units.length) * 100) : 0;
-              const isAddingItem = editingItemMonth === m.id;
               const isExpanded = expandedMonth === m.id;
               const editable = m.status === 'draft';
 
@@ -448,24 +474,38 @@ export default function AdminVillaBillsPage() {
                       <div className="flex items-center justify-between mb-2 mt-1">
                         <p className="text-[13px] font-bold text-[#6B7280]">관리비 항목</p>
                         {editable && m.bill_items.length === 0 && (
-                          <button onClick={() => copyPrevious(m)} className="text-[12px] font-bold text-[#2B2BEE] bg-[#E9E9FD] px-2.5 py-1 rounded-full">
-                            ↻ 전월 항목 복사
-                          </button>
+                          <div className="flex gap-1.5">
+                            <button onClick={() => fillExamples(m.id)} className="text-[12px] font-bold text-[#2B2BEE] bg-[#E9E9FD] px-2.5 py-1 rounded-full">
+                              예시 5개 넣기
+                            </button>
+                            <button onClick={() => copyPrevious(m)} className="text-[12px] font-bold text-[#2B2BEE] bg-[#E9E9FD] px-2.5 py-1 rounded-full">
+                              ↻ 전월 가져오기
+                            </button>
+                          </div>
                         )}
                       </div>
                       <div className="space-y-1.5">
                         {m.bill_items.length === 0 ? (
-                          <p className="text-[14px] text-[#9CA3AF] py-2">아직 항목이 없습니다</p>
+                          <p className="text-[14px] text-[#9CA3AF] py-2">예시 5개 넣기 또는 ＋ 항목 추가로 시작하세요</p>
                         ) : (
                           m.bill_items.map(it => (
-                            <div key={it.id} className="flex justify-between items-center py-1.5 border-b border-[#F0F2F5]">
-                              <span className="text-[15px] text-[#0F2242]">{it.name}</span>
-                              <div className="flex items-center gap-2">
+                            <div key={it.id} className="flex justify-between items-center gap-2 py-1.5 border-b border-[#F0F2F5]">
+                              <span className="text-[15px] text-[#0F2242] flex-1 min-w-0 truncate">{it.name}</span>
+                              {editable ? (
+                                <>
+                                  <input
+                                    inputMode="numeric"
+                                    value={itemDraft[it.id] ?? String(it.amount)}
+                                    onChange={e => setItemDraft(d => ({ ...d, [it.id]: e.target.value }))}
+                                    onBlur={e => updateItemAmount(it.id, e.target.value)}
+                                    className="w-28 text-right bg-white border border-[#E8EBF0] rounded-xl px-2.5 py-1.5 text-[15px] font-bold outline-none focus:border-[#2B2BEE]"
+                                  />
+                                  <span className="text-[13px] text-[#6B7280]">원</span>
+                                  <button onClick={() => removeItem(it.id)} className="text-[15px] text-[#FF3B30] font-bold px-1">×</button>
+                                </>
+                              ) : (
                                 <span className="text-[15px] font-bold text-[#0F2242]">₩{fmt(it.amount)}</span>
-                                {editable && (
-                                  <button onClick={() => removeItem(it.id)} className="text-[14px] text-[#FF3B30] font-bold">×</button>
-                                )}
-                              </div>
+                              )}
                             </div>
                           ))
                         )}
@@ -475,24 +515,18 @@ export default function AdminVillaBillsPage() {
                         </div>
                       </div>
 
+                      {/* 항목 추가 — 항상 노출 */}
                       {editable && (
-                        <div className="mt-3 pt-3 border-t border-[#E8EBF0]">
-                          {isAddingItem ? (
-                            <form onSubmit={e => addItem(m.id, e)} className="flex gap-2">
-                              <select value={itemName} onChange={e => setItemName(e.target.value)}
-                                className="flex-1 bg-white border border-[#E8EBF0] rounded-xl px-2.5 py-2 text-[15px] outline-none focus:border-[#2B2BEE]">
-                                <option value="">항목 선택</option>
-                                {BILL_ITEM_PRESETS.map(p => <option key={p} value={p}>{p}</option>)}
-                              </select>
-                              <input type="number" value={itemAmount} onChange={e => setItemAmount(e.target.value)} placeholder="예: 80000" min={1}
-                                className="w-24 bg-white border border-[#E8EBF0] rounded-xl px-2.5 py-2 text-[15px] outline-none focus:border-[#2B2BEE]" />
-                              <button type="submit" className="bg-[#2B2BEE] text-white px-3 py-2 rounded-xl text-[14px] font-bold">＋</button>
-                              <button type="button" onClick={() => { setEditingItemMonth(null); setItemName(''); setItemAmount(''); }} className="px-2 text-[#6B7280] text-[14px]">취소</button>
-                            </form>
-                          ) : (
-                            <button onClick={() => setEditingItemMonth(m.id)} className="text-[14px] text-[#2B2BEE] font-bold">＋ 항목 추가</button>
-                          )}
-                        </div>
+                        <form onSubmit={e => addItem(m.id, e)} className="flex gap-2 mt-3 pt-3 border-t border-[#E8EBF0]">
+                          <select value={itemName} onChange={e => setItemName(e.target.value)}
+                            className="flex-1 min-w-0 bg-white border border-[#E8EBF0] rounded-xl px-2.5 py-2 text-[15px] outline-none focus:border-[#2B2BEE]">
+                            <option value="">항목 선택</option>
+                            {BILL_ITEM_PRESETS.map(p => <option key={p} value={p}>{p}</option>)}
+                          </select>
+                          <input type="number" value={itemAmount} onChange={e => setItemAmount(e.target.value)} placeholder="예: 80000" min={1}
+                            className="w-24 bg-white border border-[#E8EBF0] rounded-xl px-2.5 py-2 text-[15px] outline-none focus:border-[#2B2BEE]" />
+                          <button type="submit" className="bg-[#2B2BEE] text-white px-3.5 py-2 rounded-xl text-[14px] font-bold whitespace-nowrap hover:bg-[#1C1CC9] transition">추가</button>
+                        </form>
                       )}
                     </>
                   )}
