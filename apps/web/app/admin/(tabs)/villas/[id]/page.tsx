@@ -249,9 +249,9 @@ export default function AdminVillaDetailPage() {
       ) : (
         <div className="bg-[#F5F6FA] border border-dashed border-[#E8EBF0] rounded-2xl p-5 text-center">
           <p className="text-[16px] font-bold text-[#0F2242] mb-1">이번 달 관리비 미발행</p>
-          <p className="text-[14px] text-[#9CA3AF] mb-3">관리비 메뉴에서 회차 생성 + 항목 추가 → 청구 시작</p>
-          <Link href={`/admin/villas/${villa.id}/bills`} className="inline-block bg-[#3766EE] text-white px-4 py-2 rounded-2xl text-[15px] font-bold">
-            관리비 메뉴로 →
+          <p className="text-[14px] text-[#9CA3AF] mb-3">관리비 메뉴에서 고지 작성 → 청구 시작</p>
+          <Link href={`/admin/villas/${villa.id}/bills`} className="block w-full bg-[#3766EE] text-white py-3 rounded-2xl text-[15px] font-bold hover:bg-[#1F3DC2] transition">
+            관리비 발행
           </Link>
         </div>
       )}

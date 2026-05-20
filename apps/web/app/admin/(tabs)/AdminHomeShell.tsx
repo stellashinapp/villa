@@ -213,10 +213,10 @@ export default function AdminHomeShell() {
             <p className="text-[14px] font-bold mt-3 underline">＋ 빌라 등록 시작 →</p>
           </Link>
         ) : (
-          <div className="bg-white rounded-2xl p-5 border border-[#F0F2F5] shadow-sm mb-5">
-            <p className="text-[14px] text-[#6B7280]">이번 달 발행된 관리비가 없습니다</p>
-            <Link href={`/admin/villas/${villas[0].id}/bills`} className="text-[13px] text-[#3766EE] font-bold mt-2 inline-block">
-              관리비 발행 →
+          <div className="bg-white rounded-2xl p-5 border border-[#F0F2F5] shadow-sm mb-5 text-center">
+            <p className="text-[14px] text-[#6B7280] mb-3">이번 달 발행된 관리비가 없습니다</p>
+            <Link href="/admin/bills" className="block w-full bg-[#3766EE] text-white rounded-2xl py-3 text-[15px] font-bold hover:bg-[#1F3DC2] transition">
+              관리비 발행
             </Link>
           </div>
         )}
