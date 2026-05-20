@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import { BANK_NAMES, getBankCode } from '@villatolk/shared';
 
 type DuplicateCandidate = {
   id: string;
@@ -29,11 +30,17 @@ export default function AdminVillaAddPage() {
 
   const [adminId, setAdminId] = useState<string | null>(null);
   const [adminName, setAdminName] = useState<string | null>(null);
+  const [adminPhone, setAdminPhone] = useState<string | null>(null);
   const [existingVillaCount, setExistingVillaCount] = useState(0);
   const [prevAccount, setPrevAccount] = useState<{ bank: string; number: string; holder: string } | null>(null);
   const [duplicates, setDuplicates] = useState<DuplicateCandidate[]>([]);
+  const [ownDuplicate, setOwnDuplicate] = useState<DuplicateCandidate | null>(null);
   const [duplicateChecking, setDuplicateChecking] = useState(false);
   const [forceProceed, setForceProceed] = useState(false);
+
+  // 관리자 연락처 노출 + 특이사항
+  const [exposeAdminContact, setExposeAdminContact] = useState(false);
+  const [specialNotes, setSpecialNotes] = useState('');
 
   // 빌라 기본 정보
   const [name, setName] = useState('');
@@ -75,11 +82,12 @@ export default function AdminVillaAddPage() {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data: a } = await supabase.from('admins').select('id, name').eq('auth_id', user.id).maybeSingle();
+      const { data: a } = await supabase.from('admins').select('id, name, phone').eq('auth_id', user.id).maybeSingle();
       if (!a) return;
-      const ar = a as { id: string; name: string | null };
+      const ar = a as { id: string; name: string | null; phone: string | null };
       setAdminId(ar.id);
       setAdminName(ar.name);
+      setAdminPhone(ar.phone);
 
       // 내 빌라 개수 + 계좌 정보 (있는 가장 최근 1건)
       const { data: vs, count } = await supabase
@@ -109,11 +117,16 @@ export default function AdminVillaAddPage() {
     const handle = setTimeout(async () => {
       const { data } = await supabase
         .from('villas')
-        .select('id, name, address, admins(name)')
+        .select('id, name, address, admin_id, admins(name)')
         .or(`name.ilike.%${n}%,address.ilike.%${address.trim() || n}%`)
-        .neq('admin_id', adminId ?? '00000000-0000-0000-0000-000000000000')
-        .limit(5);
-      const cands: DuplicateCandidate[] = ((data ?? []) as unknown as { id: string; name: string; address: string; admins: { name: string | null } | null }[])
+        .limit(8);
+      const rows = (data ?? []) as unknown as { id: string; name: string; address: string; admin_id: string; admins: { name: string | null } | null }[];
+      // 본인 빌라 중복 (이미 내가 등록한 같은 이름/주소) — 실수 방지
+      const mine = rows.find(v => v.admin_id === adminId && (v.name.trim() === n || v.address.includes(address.trim())));
+      setOwnDuplicate(mine ? { id: mine.id, name: mine.name, address: mine.address, admin_name: mine.admins?.name ?? null } : null);
+      // 타 관리자 중복 후보
+      const cands: DuplicateCandidate[] = rows
+        .filter(v => v.admin_id !== adminId)
         .map(v => ({ id: v.id, name: v.name, address: v.address, admin_name: v.admins?.name ?? null }));
       setDuplicates(cands);
       setDuplicateChecking(false);
@@ -216,6 +229,11 @@ export default function AdminVillaAddPage() {
     const dupes = finalUnits.map(u => u.ho.trim()).filter((v, i, a) => a.indexOf(v) !== i);
     if (dupes.length > 0) { setError(`중복된 호실 이름이 있습니다: ${[...new Set(dupes)].join(', ')}`); return; }
 
+    if (ownDuplicate) {
+      setError(`이미 동일한 빌라 "${ownDuplicate.name}" 를 등록하셨습니다. 중복 등록을 막았습니다.`);
+      return;
+    }
+
     if (duplicates.length > 0 && !forceProceed) {
       setError('비슷한 이름·주소의 빌라가 이미 등록되어 있습니다. 아래 안내 확인 후 체크해주세요.');
       return;
@@ -234,8 +252,11 @@ export default function AdminVillaAddPage() {
         total_units: finalUnits.length,
         units_per_floor: parseInt(unitsPerFloor, 10) || null,
         account_bank: accountBank.trim() || null,
+        account_bank_code: accountBank.trim() ? getBankCode(accountBank.trim()) : null,
         account_number: accountNumber.trim() || null,
         account_holder: accountHolder.trim() || null,
+        expose_admin_contact: exposeAdminContact,
+        special_notes: specialNotes.trim() || null,
         status: 'active',
       })
       .select('id')
@@ -263,7 +284,7 @@ export default function AdminVillaAddPage() {
 
   return (
     <div className="px-5 pt-6 pb-8 max-w-screen-sm mx-auto">
-      <Link href="/admin/villas" className="text-[14px] text-[#6B7280] hover:text-[#0F2242]">← 빌라 목록</Link>
+      <Link href="/admin/villas" className="hidden md:inline-block text-[14px] text-[#6B7280] hover:text-[#0F2242]">← 빌라 목록</Link>
 
       {isWelcome && existingVillaCount === 0 && (
         <div className="mt-3 bg-gradient-to-br from-[#3766EE] to-[#5B86FF] rounded-2xl p-5 text-white shadow-lg">
@@ -332,8 +353,27 @@ export default function AdminVillaAddPage() {
         {/* 호실 구성 */}
         <Section title="호실 구성">
           <p className="text-[14px] text-[#6B7280] mb-2 leading-relaxed">
-            지하·지상·옥탑 자동 생성 후, 필요 시 직접 편집 가능합니다.
+            ① 아래 숫자만 채우면 호실이 자동 생성됩니다. ② 필요 시 직접 편집·추가하세요.
           </p>
+
+          {/* 간편 입력 — 층당 호실 프리셋 칩 */}
+          <div className="mb-1">
+            <p className="text-[13px] font-bold text-[#6B7280] mb-1.5">층당 호실 빠른 선택</p>
+            <div className="flex gap-1.5 flex-wrap">
+              {['1', '2', '3', '4', '6'].map(n => (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => { setUnitsPerFloor(n); setAutoLocked(true); }}
+                  className={`px-3 py-1.5 rounded-full text-[14px] font-bold border transition ${
+                    unitsPerFloor === n ? 'bg-[#3766EE] text-white border-[#3766EE]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'
+                  }`}
+                >
+                  {n}개
+                </button>
+              ))}
+            </div>
+          </div>
 
           <div className="grid grid-cols-3 gap-2">
             <Field label="지상 총 호실">
@@ -443,7 +483,7 @@ export default function AdminVillaAddPage() {
                         <button
                           type="button"
                           onClick={() => removeUnit(u.tempId)}
-                          className="text-[#E74C3C] text-[15px] font-bold px-2"
+                          className="text-[#FF3B30] text-[15px] font-bold px-2"
                         >
                           ×
                         </button>
@@ -473,14 +513,33 @@ export default function AdminVillaAddPage() {
             </>
           )}
 
-          {/* 중복 후보 경고 */}
+          {/* 중복 확인 */}
           {duplicateChecking && (
             <p className="text-[13px] text-[#9CA3AF]">중복 확인 중…</p>
           )}
+
+          {/* 본인 빌라 중복 — 강한 차단 */}
+          {ownDuplicate && (
+            <div className="bg-[#FEE8E7] border border-[#FF3B30]/25 rounded-xl p-3.5">
+              <p className="text-[14px] font-bold text-[#FF3B30] mb-1.5">
+                ⛔ 이미 등록한 빌라입니다
+              </p>
+              <p className="text-[14px] text-[#0F2242] bg-white rounded-xl px-2.5 py-1.5 border border-[#E8EBF0]">
+                <span className="font-bold">{ownDuplicate.name}</span>
+                <span className="text-[#6B7280]"> · {ownDuplicate.address}</span>
+              </p>
+              <p className="text-[13px] text-[#6B7280] mt-2">
+                같은 빌라를 두 번 등록할 수 없습니다.{' '}
+                <Link href={`/admin/villas/${ownDuplicate.id}`} className="text-[#3766EE] font-bold underline">기존 빌라 보기 →</Link>
+              </p>
+            </div>
+          )}
+
+          {/* 타 관리자 중복 후보 — 정보성 안내 */}
           {duplicates.length > 0 && (
-            <div className="bg-[rgba(243,156,18,0.06)] border border-[rgba(243,156,18,0.3)] rounded-xl p-3.5">
-              <p className="text-[14px] font-bold text-[#F39C12] mb-2">
-                ⚠️ 비슷한 빌라가 이미 등록되어 있습니다 ({duplicates.length}건)
+            <div className="bg-[#EEF2FF] border border-[#3766EE]/20 rounded-xl p-3.5">
+              <p className="text-[14px] font-bold text-[#3766EE] mb-2">
+                비슷한 빌라가 이미 등록되어 있습니다 ({duplicates.length}건)
               </p>
               <ul className="space-y-1.5 mb-3">
                 {duplicates.map(d => (
@@ -523,14 +582,14 @@ export default function AdminVillaAddPage() {
           )}
           <div className="grid grid-cols-2 gap-2.5">
             <Field label="은행">
-              <input
-                type="text"
+              <select
                 value={accountBank}
                 onChange={e => setAccountBank(e.target.value)}
-                placeholder="예: 신한"
-                maxLength={20}
                 className="input"
-              />
+              >
+                <option value="">은행 선택</option>
+                {BANK_NAMES.map(b => <option key={b} value={b}>{b}</option>)}
+              </select>
             </Field>
             <Field label="예금주">
               <input
@@ -546,17 +605,56 @@ export default function AdminVillaAddPage() {
           <Field label="계좌번호">
             <input
               type="text"
+              inputMode="numeric"
               value={accountNumber}
               onChange={e => setAccountNumber(e.target.value)}
-              placeholder="예: 110-123-456789"
+              placeholder="- 없이 숫자만 입력"
               maxLength={30}
               className="input"
             />
           </Field>
+          <p className="text-[12px] text-[#9CA3AF] leading-relaxed">
+            은행 선택 시 토스페이먼츠 표준 코드가 함께 저장됩니다. 추후 가상계좌·자동이체 연동에 사용됩니다.
+          </p>
+        </Section>
+
+        {/* 입주민 공개 설정 */}
+        <Section title="입주민 공개 설정">
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={exposeAdminContact}
+              onChange={e => setExposeAdminContact(e.target.checked)}
+              className="mt-0.5 w-5 h-5 flex-shrink-0 accent-[#3766EE]"
+            />
+            <span>
+              <span className="block text-[15px] font-bold text-[#0F2242]">관리자 성함·전화번호 노출</span>
+              <span className="block text-[13px] text-[#6B7280] mt-0.5 leading-relaxed">
+                켜면 입주민 앱에 관리자 연락처가 표시됩니다.
+                {adminName && (
+                  <span className="block text-[#9CA3AF] mt-1">
+                    노출될 정보: {adminName}{adminPhone ? ` · ${adminPhone}` : ' (전화번호 미등록)'}
+                  </span>
+                )}
+              </span>
+            </span>
+          </label>
+
+          <Field label="특이사항 (입주민에게 항시 표시)">
+            <textarea
+              value={specialNotes}
+              onChange={e => setSpecialNotes(e.target.value)}
+              placeholder="예: 분리수거는 매주 화·금요일 / 방문차량은 관리실 사전 등록 필수"
+              maxLength={300}
+              rows={3}
+              className="input resize-none"
+            />
+            <p className="text-[12px] text-[#9CA3AF] mt-1">입주민 앱 상단에 항상 노출되는 안내문입니다. ({specialNotes.length}/300)</p>
+          </Field>
         </Section>
 
         {error && (
-          <div className="bg-[rgba(231,76,60,0.08)] text-[#E74C3C] border border-[rgba(231,76,60,0.2)] rounded-xl px-3 py-2.5 text-[15px]">
+          <div className="bg-[#FEE8E7] text-[#FF3B30] border border-[#FF3B30]/20 rounded-xl px-3 py-2.5 text-[15px]">
             {error}
           </div>
         )}
@@ -608,7 +706,7 @@ function Field({ label, required, children }: { label: string; required?: boolea
   return (
     <div>
       <label className="block text-[14px] font-bold text-[#6B7280] mb-1.5">
-        {label} {required && <span className="text-[#E74C3C]">*</span>}
+        {label} {required && <span className="text-[#FF3B30]">*</span>}
       </label>
       {children}
     </div>

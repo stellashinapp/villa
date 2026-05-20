@@ -21,7 +21,10 @@ type BillMonth = {
 type Villa = {
   name: string; address: string; total_units: number;
   account_bank: string | null; account_number: string | null; account_holder: string | null;
+  special_notes: string | null; expose_admin_contact: boolean | null;
 };
+
+type AdminContact = { admin_name: string; admin_phone: string };
 
 type Payment = {
   id: string; bill_month_id: string; is_paid: boolean;
@@ -41,6 +44,7 @@ export default function ResidentBillsShell() {
   const [months, setMonths] = useState<BillMonth[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [unitId, setUnitId] = useState<string | null>(null);
+  const [adminContact, setAdminContact] = useState<AdminContact | null>(null);
   const [loading, setLoading] = useState(true);
   const [showPayModal, setShowPayModal] = useState(false);
   const [paying, setPaying] = useState(false);
@@ -58,15 +62,18 @@ export default function ResidentBillsShell() {
     const { data: unitData } = await supabase.from('units').select('id').eq('villa_id', s.villaId).eq('ho_number', s.ho).maybeSingle();
     const uid = (unitData as { id: string } | null)?.id ?? null;
     setUnitId(uid);
-    const [{ data: v }, { data: bms }, { data: ps }] = await Promise.all([
-      supabase.from('villas').select('name, address, total_units, account_bank, account_number, account_holder').eq('id', s.villaId).maybeSingle(),
+    const [{ data: v }, { data: bms }, { data: ps }, { data: contact }] = await Promise.all([
+      supabase.from('villas').select('name, address, total_units, account_bank, account_number, account_holder, special_notes, expose_admin_contact').eq('id', s.villaId).maybeSingle(),
       supabase.from('bill_months').select('id, year_month, label, due_date, status, billing_mode, per_unit_amounts, bill_items(id, name, amount)')
         .eq('villa_id', s.villaId).in('status', ['published', 'closed']).order('year_month', { ascending: false }),
       uid ? supabase.from('payments').select('id, bill_month_id, is_paid, paid_at, method, amount').eq('unit_id', uid) : Promise.resolve({ data: [] }),
+      supabase.rpc('get_villa_admin_contact', { p_villa_id: s.villaId }),
     ]);
     setVilla(v as Villa | null);
     setMonths((bms ?? []) as unknown as BillMonth[]);
     setPayments((ps ?? []) as Payment[]);
+    const c = ((contact ?? []) as AdminContact[])[0];
+    setAdminContact(c ?? null);
     setLoading(false);
   }
 
@@ -117,6 +124,25 @@ export default function ResidentBillsShell() {
       <ResidentPageHeader villaName={resident.villaName} title="관리비" ho={resident.ho} name={resident.name} />
 
       <div className="px-5 pt-4 pb-8 max-w-screen-sm mx-auto">
+        {/* 특이사항 — 항시 노출 */}
+        {villa?.special_notes && (
+          <div className="bg-[#EEF2FF] border border-[#3766EE]/15 rounded-2xl px-4 py-3 mb-3">
+            <p className="text-[12px] font-bold text-[#3766EE] mb-1">📌 빌라 안내</p>
+            <p className="text-[13px] text-[#0F2242] leading-relaxed whitespace-pre-wrap">{villa.special_notes}</p>
+          </div>
+        )}
+
+        {/* 관리자 연락처 — 노출 설정 시 */}
+        {adminContact && (
+          <a href={`tel:${adminContact.admin_phone}`} className="flex items-center justify-between bg-white border border-[#F0F2F5] rounded-2xl px-4 py-3 mb-3 shadow-sm">
+            <div>
+              <p className="text-[11px] text-[#9CA3AF]">관리자</p>
+              <p className="text-[14px] font-bold text-[#0F2242]">{adminContact.admin_name}</p>
+            </div>
+            <span className="text-[13px] font-bold text-[#3766EE]">📞 {adminContact.admin_phone}</span>
+          </a>
+        )}
+
         {currentMonth ? (
           <div className="bg-gradient-to-br from-[#3766EE] to-[#4D7AEF] rounded-3xl px-5 py-6 text-white shadow-md text-center">
             <p className="text-[13px] font-bold opacity-90">{ymLabel(currentMonth.year_month)} 관리비</p>

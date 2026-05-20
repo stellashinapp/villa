@@ -184,7 +184,7 @@ export default function AdminVillaResidentsPage() {
 
   return (
     <div className="px-5 pt-6 pb-8 max-w-screen-sm mx-auto">
-      <Link href={`/admin/villas/${villaId}`} className="text-[15px] text-[#6B7280]">← 빌라 상세</Link>
+      <Link href={`/admin/villas/${villaId}`} className="hidden md:inline-block text-[15px] text-[#6B7280]">← 빌라 상세</Link>
       <div className="flex justify-between items-end mt-3 mb-4">
         <div>
           <h1 className="text-[26px] font-black text-[#0F2242]">입주민</h1>

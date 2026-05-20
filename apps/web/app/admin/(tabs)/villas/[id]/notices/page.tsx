@@ -67,7 +67,7 @@ export default function AdminVillaNoticesPage() {
 
   return (
     <div className="px-5 pt-6 pb-8 max-w-screen-sm mx-auto">
-      <Link href={`/admin/villas/${villaId}`} className="text-[14px] text-[#6B7280]">← 빌라 상세</Link>
+      <Link href={`/admin/villas/${villaId}`} className="hidden md:inline-block text-[14px] text-[#6B7280]">← 빌라 상세</Link>
       <div className="flex justify-between items-end mt-3 mb-5">
         <div>
           <h1 className="text-[24px] font-black text-[#0F2242]">공지사항</h1>

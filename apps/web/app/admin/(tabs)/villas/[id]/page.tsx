@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import Icon, { type IconName } from '@/components/Icon';
+import { BANK_NAMES, getBankCode } from '@villatolk/shared';
 
 type Villa = {
   id: string;
@@ -15,6 +16,8 @@ type Villa = {
   account_bank: string | null;
   account_number: string | null;
   account_holder: string | null;
+  expose_admin_contact: boolean | null;
+  special_notes: string | null;
   status: string;
 };
 
@@ -55,6 +58,12 @@ export default function AdminVillaDetailPage() {
   const [holder, setHolder] = useState('');
   const [savingAccount, setSavingAccount] = useState(false);
 
+  // 공개 설정 (관리자 연락처 노출 + 특이사항)
+  const [editingExpose, setEditingExpose] = useState(false);
+  const [exposeContact, setExposeContact] = useState(false);
+  const [notes, setNotes] = useState('');
+  const [savingExpose, setSavingExpose] = useState(false);
+
   useEffect(() => { if (villaId) load(); }, [villaId]);
 
   async function load() {
@@ -69,7 +78,7 @@ export default function AdminVillaDetailPage() {
       { count: msgUnread },
       { data: currentBM },
     ] = await Promise.all([
-      supabase.from('villas').select('id, name, address, total_units, units_per_floor, account_bank, account_number, account_holder, status').eq('id', villaId).maybeSingle(),
+      supabase.from('villas').select('id, name, address, total_units, units_per_floor, account_bank, account_number, account_holder, expose_admin_contact, special_notes, status').eq('id', villaId).maybeSingle(),
       supabase.from('residents').select('id, units!inner(villa_id)', { count: 'exact', head: true })
         .eq('units.villa_id', villaId).eq('status', 'active'),
       supabase.from('bill_months').select('*', { count: 'exact', head: true }).eq('villa_id', villaId),
@@ -135,6 +144,7 @@ export default function AdminVillaDetailPage() {
     setSavingAccount(true);
     const { error: upErr } = await supabase.from('villas').update({
       account_bank: bank.trim() || null,
+      account_bank_code: bank.trim() ? getBankCode(bank.trim()) : null,
       account_number: number.trim() || null,
       account_holder: holder.trim() || null,
     }).eq('id', villa.id);
@@ -142,9 +152,26 @@ export default function AdminVillaDetailPage() {
     if (upErr) { alert('저장 실패: ' + upErr.message); return; }
     setEditingAccount(false); await load();
   }
+  function startEditExpose() {
+    if (!villa) return;
+    setExposeContact(!!villa.expose_admin_contact);
+    setNotes(villa.special_notes ?? '');
+    setEditingExpose(true);
+  }
+  async function saveExpose() {
+    if (!villa) return;
+    setSavingExpose(true);
+    const { error: upErr } = await supabase.from('villas').update({
+      expose_admin_contact: exposeContact,
+      special_notes: notes.trim() || null,
+    }).eq('id', villa.id);
+    setSavingExpose(false);
+    if (upErr) { alert('저장 실패: ' + upErr.message); return; }
+    setEditingExpose(false); await load();
+  }
 
   if (loading) return <div className="px-5 pt-6 text-center text-[16px] text-[#9CA3AF]">불러오는 중…</div>;
-  if (error) return <div className="px-5 pt-6 text-center text-[16px] text-[#E74C3C]">오류: {error}</div>;
+  if (error) return <div className="px-5 pt-6 text-center text-[16px] text-[#FF3B30]">오류: {error}</div>;
   if (!villa) return <div className="px-5 pt-6 text-center text-[16px] text-[#9CA3AF]">빌라를 찾을 수 없습니다</div>;
 
   const unpaidCount = villa.total_units - status.current_paid_count;
@@ -152,7 +179,7 @@ export default function AdminVillaDetailPage() {
 
   return (
     <div className="px-5 pt-6 pb-8 max-w-screen-sm mx-auto">
-      <Link href="/admin/villas" className="text-[15px] text-[#6B7280] hover:text-[#0F2242]">← 빌라 목록</Link>
+      <Link href="/admin/villas" className="hidden md:inline-block text-[15px] text-[#6B7280] hover:text-[#0F2242]">← 빌라 목록</Link>
 
       {/* 이름/주소 + 편집 */}
       <div className="mt-3 mb-5">
@@ -193,12 +220,12 @@ export default function AdminVillaDetailPage() {
           <div className="flex items-end justify-between mb-1">
             <p className="text-[15px] text-[#6B7280] font-bold">{status.current_label}</p>
             {unpaidCount > 0 && (
-              <span className="bg-[rgba(231,76,60,0.12)] text-[#E74C3C] text-[13px] font-bold px-2 py-0.5 rounded">{unpaidCount}세대 미납</span>
+              <span className="bg-[#FEE8E7] text-[#FF3B30] text-[13px] font-bold px-2 py-0.5 rounded-full">{unpaidCount}세대 미납</span>
             )}
           </div>
           <div className="flex items-end justify-between mb-3">
             <div>
-              <p className={`text-[38px] font-black ${status.current_pay_rate >= 80 ? 'text-[#2ECC71]' : status.current_pay_rate >= 50 ? 'text-[#F39C12]' : 'text-[#E74C3C]'}`}>
+              <p className={`text-[38px] font-black ${status.current_pay_rate >= 80 ? 'text-[#2ECC71]' : 'text-[#3766EE]'}`}>
                 {status.current_pay_rate}%
               </p>
               <p className="text-[13px] text-[#6B7280] mt-0.5">납부율 · {status.current_paid_count}/{villa.total_units}</p>
@@ -211,7 +238,7 @@ export default function AdminVillaDetailPage() {
           {unpaidCount > 0 && (
             <button
               onClick={() => alert('미납세대 독촉 발송 기능 준비중\n다음 업데이트에서 카카오 알림톡 또는 푸시 알림으로 자동 발송됩니다.')}
-              className="w-full bg-[#FF6B35] text-white py-2.5 rounded-xl text-[15px] font-bold mb-2"
+              className="w-full bg-[#3766EE] text-white py-2.5 rounded-xl text-[15px] font-bold mb-2 hover:bg-[#1F3DC2] transition"
             >
               📢 미납세대 독촉 보내기
             </button>
@@ -234,11 +261,11 @@ export default function AdminVillaDetailPage() {
       {status.messages_unread > 0 && (
         <div className="mt-3">
           <p className="text-[14px] text-[#6B7280] font-bold tracking-widest mb-2">중요 알림</p>
-          <Link href={`/admin/villas/${villa.id}/messages`} className="block bg-white border border-[#E74C3C]/30 rounded-2xl p-4">
+          <Link href={`/admin/villas/${villa.id}/messages`} className="block bg-white border border-[#FF3B30]/30 rounded-2xl p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[15px] font-bold text-[#E74C3C]">민원 메시지 대기 중</p>
-                <p className="text-[24px] font-extrabold text-[#E74C3C] mt-0.5">{status.messages_unread}건</p>
+                <p className="text-[15px] font-bold text-[#FF3B30]">민원 메시지 대기 중</p>
+                <p className="text-[24px] font-extrabold text-[#FF3B30] mt-0.5">{status.messages_unread}건</p>
               </div>
               <button className="bg-[#3766EE] text-white px-4 py-2.5 rounded-xl text-[15px] font-bold">바로 확인</button>
             </div>
@@ -270,7 +297,10 @@ export default function AdminVillaDetailPage() {
           <div className="grid grid-cols-2 gap-2.5">
             <div>
               <label className="block text-[14px] font-bold text-[#6B7280] mb-1.5">은행</label>
-              <input value={bank} onChange={e => setBank(e.target.value)} maxLength={20} className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-[16px] outline-none focus:border-[#3766EE]" />
+              <select value={bank} onChange={e => setBank(e.target.value)} className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-[16px] outline-none focus:border-[#3766EE]">
+                <option value="">은행 선택</option>
+                {BANK_NAMES.map(b => <option key={b} value={b}>{b}</option>)}
+              </select>
             </div>
             <div>
               <label className="block text-[14px] font-bold text-[#6B7280] mb-1.5">예금주</label>
@@ -296,6 +326,53 @@ export default function AdminVillaDetailPage() {
       ) : (
         <div className="bg-white border border-dashed border-[#E8EBF0] rounded-2xl p-4 text-center">
           <p className="text-[15px] text-[#9CA3AF]">아직 입금 계좌가 등록되지 않았습니다</p>
+        </div>
+      )}
+
+      {/* 입주민 공개 설정 */}
+      <div className="flex items-center justify-between mt-6 mb-2">
+        <h2 className="text-[14px] font-bold text-[#6B7280] tracking-widest">입주민 공개 설정</h2>
+        {!editingExpose && (
+          <button onClick={startEditExpose} className="text-[14px] text-[#3766EE] font-bold">수정</button>
+        )}
+      </div>
+      {editingExpose ? (
+        <div className="bg-white border-[1.5px] border-[#3766EE] rounded-2xl p-4 shadow-sm space-y-3">
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input type="checkbox" checked={exposeContact} onChange={e => setExposeContact(e.target.checked)} className="mt-0.5 w-5 h-5 flex-shrink-0 accent-[#3766EE]" />
+            <span>
+              <span className="block text-[15px] font-bold text-[#0F2242]">관리자 성함·전화번호 노출</span>
+              <span className="block text-[13px] text-[#6B7280] mt-0.5">켜면 입주민 앱에 관리자 연락처가 표시됩니다.</span>
+            </span>
+          </label>
+          <div>
+            <label className="block text-[14px] font-bold text-[#6B7280] mb-1.5">특이사항 (입주민에게 항시 표시)</label>
+            <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} maxLength={300}
+              placeholder="예: 분리수거는 매주 화·금요일 / 방문차량 사전 등록 필수"
+              className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-[15px] outline-none focus:border-[#3766EE] resize-none" />
+            <p className="text-[12px] text-[#9CA3AF] mt-1">{notes.length}/300</p>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={saveExpose} disabled={savingExpose} className="flex-1 bg-[#3766EE] text-white py-2.5 rounded-xl text-[16px] font-bold disabled:opacity-50">
+              {savingExpose ? '저장 중…' : '저장'}
+            </button>
+            <button onClick={() => setEditingExpose(false)} className="px-4 bg-[#F5F6FA] text-[#6B7280] py-2.5 rounded-xl text-[16px] font-bold">취소</button>
+          </div>
+        </div>
+      ) : (
+        <div className="bg-white border border-[#E8EBF0] rounded-2xl p-4 shadow-sm space-y-2.5">
+          <div className="flex items-center justify-between">
+            <span className="text-[15px] text-[#0F2242]">관리자 연락처 노출</span>
+            <span className={`text-[13px] font-bold px-2 py-0.5 rounded-full ${villa.expose_admin_contact ? 'bg-[#EEF2FF] text-[#3766EE]' : 'bg-[#F5F6FA] text-[#9CA3AF]'}`}>
+              {villa.expose_admin_contact ? '공개' : '비공개'}
+            </span>
+          </div>
+          <div className="pt-2.5 border-t border-[#F0F2F5]">
+            <p className="text-[13px] font-bold text-[#6B7280] mb-1">특이사항</p>
+            {villa.special_notes
+              ? <p className="text-[14px] text-[#0F2242] leading-relaxed whitespace-pre-wrap">{villa.special_notes}</p>
+              : <p className="text-[14px] text-[#9CA3AF]">등록된 특이사항이 없습니다</p>}
+          </div>
         </div>
       )}
     </div>
