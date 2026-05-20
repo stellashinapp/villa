@@ -237,7 +237,7 @@ export default function AdminVillaResidentsPage() {
         title="입주민"
         subtitle={`총 ${residents.length}명 · 호실 ${units.length}개`}
         right={
-          <button onClick={() => setShowAdd(!showAdd)} className="bg-white text-[#2B2BEE] text-[14px] font-bold px-3.5 py-2.5 rounded-xl hover:bg-white/90 transition">
+          <button onClick={() => setShowAdd(!showAdd)} className="bg-[#2B2BEE] text-white text-[14px] font-bold px-3.5 py-2.5 rounded-xl hover:bg-[#1C1CC9] transition">
             {showAdd ? '취소' : '＋ 추가'}
           </button>
         }

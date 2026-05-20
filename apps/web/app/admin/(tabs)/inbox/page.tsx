@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import AdminTopBar from '@/components/AdminTopBar';
 
 type Reply = {
   id: string;
@@ -123,11 +124,12 @@ export default function AdminInboxPage() {
   }
 
   return (
-    <div className="px-5 pt-6 pb-8 max-w-screen-sm mx-auto">
-      <h1 className="text-[26px] font-black text-[#0F2242] leading-tight">메시지</h1>
-      <p className="text-[14px] text-[#6B7280] mt-1">
-        입주민 신고/민원 — 총 {messages.length}건, 미답변 {messages.filter(m => m.message_replies.filter(r => r.author_type === 'admin').length === 0).length}건
-      </p>
+    <>
+      <AdminTopBar
+        title="메시지"
+        subtitle={`입주민 신고/민원 — 총 ${messages.length}건, 미답변 ${messages.filter(m => m.message_replies.filter(r => r.author_type === 'admin').length === 0).length}건`}
+      />
+      <div className="px-5 pt-4 pb-8 max-w-screen-sm mx-auto">
 
       {loading ? (
         <p className="text-center text-sm text-[#9CA3AF] mt-20">불러오는 중…</p>
@@ -230,6 +232,7 @@ export default function AdminInboxPage() {
           })}
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }

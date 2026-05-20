@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import AdminTopBar from '@/components/AdminTopBar';
 
 type Pending = {
   id: string;
@@ -99,11 +100,9 @@ export default function ApplicationsShell() {
   const moveouts = rows.filter(r => r.status === 'pending_moveout');
 
   return (
-    <div className="max-w-screen-sm mx-auto px-5 pt-6 pb-24">
-      <header className="mb-5">
-        <h1 className="text-[26px] font-black text-[#0F2242] leading-tight">입주·이주 신청</h1>
-        <p className="text-[14px] text-[#6B7280] mt-1">대기 중인 가입·이주 요청을 확인하세요</p>
-      </header>
+    <>
+      <AdminTopBar title="입주·이주 신청" subtitle="대기 중인 가입·이주 요청을 확인하세요" />
+      <div className="max-w-screen-sm mx-auto px-5 pt-4 pb-24">
 
       {/* 입주 신청 */}
       <section className="mb-6">
@@ -181,6 +180,7 @@ export default function ApplicationsShell() {
           </div>
         )}
       </section>
-    </div>
+      </div>
+    </>
   );
 }

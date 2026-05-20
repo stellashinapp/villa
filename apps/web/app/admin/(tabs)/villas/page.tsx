@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import Icon from '@/components/Icon';
+import AdminTopBar from '@/components/AdminTopBar';
 
 type VillaRow = {
   id: string;
@@ -98,16 +99,17 @@ export default function AdminVillasPage() {
   }
 
   return (
-    <div className="px-5 pt-6 pb-8 max-w-screen-sm mx-auto">
-      <div className="flex justify-between items-end">
-        <div>
-          <h1 className="text-[26px] font-black text-[#0F2242] leading-tight">내 빌라</h1>
-          <p className="text-[14px] text-[#6B7280] mt-1">총 {cards.length}개 등록</p>
-        </div>
-        <Link href="/admin/villas/add" className="bg-[#2B2BEE] text-white text-[15px] font-bold px-3.5 py-2.5 rounded-xl shadow-sm hover:bg-[#1C1CC9] transition">
-          ＋ 빌라 추가
-        </Link>
-      </div>
+    <>
+      <AdminTopBar
+        title="내 빌라"
+        subtitle={`총 ${cards.length}개 등록`}
+        right={
+          <Link href="/admin/villas/add" className="bg-[#2B2BEE] text-white text-[14px] font-bold px-3.5 py-2.5 rounded-xl shadow-sm hover:bg-[#1C1CC9] transition">
+            ＋ 추가
+          </Link>
+        }
+      />
+      <div className="px-5 pt-4 pb-8 max-w-screen-sm mx-auto">
 
       {loading ? <p className="text-center text-[16px] text-[#9CA3AF] mt-20">불러오는 중…</p>
         : error ? <p className="text-center text-[16px] text-[#FF3B30] mt-20">오류: {error}</p>
@@ -130,7 +132,7 @@ export default function AdminVillasPage() {
                     <div className="flex items-center gap-2">
                       <h3 className="text-[19px] font-extrabold text-[#0F2242]">{v.name}</h3>
                       <span className={`text-[13px] font-bold px-2 py-0.5 rounded ${
-                        v.status === 'active' ? 'bg-[rgba(46,204,113,0.12)] text-[#2ECC71]' : 'bg-[#F5F6FA] text-[#6B7280]'
+                        v.status === 'active' ? 'bg-[#E9E9FD] text-[#2B2BEE]' : 'bg-[#F5F6FA] text-[#6B7280]'
                       }`}>
                         {v.status === 'active' ? '운영중' : v.status}
                       </span>
@@ -174,6 +176,7 @@ export default function AdminVillasPage() {
           </div>
         )
       }
-    </div>
+      </div>
+    </>
   );
 }

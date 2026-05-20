@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import Icon from '@/components/Icon';
+import AdminTopBar from '@/components/AdminTopBar';
 
 type Profile = { id: string; name: string | null; phone: string | null; email: string; role: string | null };
 type Subscription = {
@@ -56,11 +57,9 @@ export default function AdminSettingsPage() {
 
   return (
     <div className="bg-[#F5F6FA] min-h-screen">
-      <div className="px-5 pt-6 pb-4 max-w-screen-sm mx-auto">
-        <h1 className="text-[26px] font-black text-[#0F2242] leading-tight">내정보</h1>
-      </div>
+      <AdminTopBar title="내정보" />
 
-      <div className="px-5 pb-8 max-w-screen-sm mx-auto">
+      <div className="px-5 pt-4 pb-8 max-w-screen-sm mx-auto">
         {/* 프로필 카드 */}
         <div className="bg-gradient-to-br from-[#2B2BEE] to-[#6B6BF5] rounded-xl p-5 text-white shadow-md mb-4">
           <div className="flex items-center gap-3">

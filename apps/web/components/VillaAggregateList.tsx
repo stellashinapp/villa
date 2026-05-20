@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import Icon, { type IconName } from '@/components/Icon';
+import { type IconName } from '@/components/Icon';
+import AdminTopBar from '@/components/AdminTopBar';
 
 type Kind = 'bills' | 'notices' | 'residents' | 'parking';
 
@@ -135,19 +136,9 @@ export default function VillaAggregateList({ kind }: { kind: Kind }) {
 
   return (
     <div className="bg-[#F5F6FA] min-h-screen">
-      <div className="px-5 pt-6 pb-4 max-w-screen-sm mx-auto">
-        <div className="flex items-center gap-3">
-          <span className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: meta.bg }}>
-            <Icon name={meta.icon} size={22} color={meta.color} filled />
-          </span>
-          <div>
-            <h1 className="text-[26px] font-black text-[#0F2242] leading-tight">{meta.title}</h1>
-            <p className="text-[14px] text-[#6B7280]">{meta.sub}</p>
-          </div>
-        </div>
-      </div>
+      <AdminTopBar title={meta.title} subtitle={meta.sub} />
 
-      <div className="px-5 pb-8 max-w-screen-sm mx-auto">
+      <div className="px-5 pt-4 pb-8 max-w-screen-sm mx-auto">
         {loading ? (
           <p className="text-center text-[14px] text-[#9CA3AF] mt-10">불러오는 중…</p>
         ) : rows.length === 0 ? (
