@@ -185,16 +185,64 @@ export default function AdminVillaBillsPage() {
     await load();
   }
 
-  // 전월 항목 복사
+  // 전월 정보 가져오기 — 모드별(항목/세대별 금액) 복사
   async function copyPrevious(m: BillMonth) {
     const idx = months.findIndex(x => x.id === m.id);
-    const prev = months.slice(idx + 1).find(x => x.bill_items.length > 0);
-    if (!prev) { alert('복사할 이전 회차 항목이 없습니다'); return; }
-    if (!confirm(`${prev.label ?? prev.year_month} 의 항목 ${prev.bill_items.length}개를 복사할까요?`)) return;
-    const rows = prev.bill_items.map(it => ({ bill_month_id: m.id, name: it.name, amount: it.amount }));
-    const { error } = await supabase.from('bill_items').insert(rows);
-    if (error) { alert('복사 실패: ' + error.message); return; }
+    const prev = months.slice(idx + 1)[0]; // 직전 회차
+    if (!prev) { alert('복사할 이전 회차가 없습니다'); return; }
+
+    if (modeOf(m) === 'per_unit') {
+      const map = prev.per_unit_amounts ?? {};
+      if (Object.keys(map).length === 0) { alert(`${prev.label ?? prev.year_month} 에 세대별 금액이 없습니다`); return; }
+      if (!confirm(`${prev.label ?? prev.year_month} 의 세대별 금액을 가져올까요? (이후 수정 가능)`)) return;
+      const { error } = await supabase.from('bill_months').update({ per_unit_amounts: map }).eq('id', m.id);
+      if (error) { alert('복사 실패: ' + error.message); return; }
+    } else {
+      const items = prev.bill_items ?? [];
+      if (items.length === 0) { alert(`${prev.label ?? prev.year_month} 에 항목이 없습니다`); return; }
+      if (!confirm(`${prev.label ?? prev.year_month} 의 항목 ${items.length}개를 가져올까요? (이후 수정 가능)`)) return;
+      const rows = items.map(it => ({ bill_month_id: m.id, name: it.name, amount: it.amount }));
+      const { error } = await supabase.from('bill_items').insert(rows);
+      if (error) { alert('복사 실패: ' + error.message); return; }
+    }
     await load();
+  }
+
+  // 월간 보고서 다운로드 (CSV, 엑셀 한글 호환 BOM)
+  function downloadReport(m: BillMonth) {
+    const rows: string[][] = [];
+    rows.push([`${villaName} ${m.label ?? m.year_month} 관리비 보고서`]);
+    rows.push([`청구 방식`, modeOf(m) === 'per_unit' ? '세대별 차등' : '일괄(균등 분배)']);
+    rows.push([`총 청구액`, `${totalOf(m)}원`]);
+    rows.push([]);
+    if (modeOf(m) === 'equal' && m.bill_items.length > 0) {
+      rows.push(['[항목별 내역]']);
+      rows.push(['항목', '금액', '세대당']);
+      for (const it of m.bill_items) {
+        rows.push([it.name, String(it.amount), String(units.length > 0 ? Math.round(it.amount / units.length) : 0)]);
+      }
+      rows.push([]);
+    }
+    rows.push(['[세대별 납부 현황]']);
+    rows.push(['호실', '입주민', '청구금액', '납부상태', '납부일']);
+    for (const u of units) {
+      const res = residents.find(r => r.unit_id === u.id);
+      const pay = paidForUnit(m.id, u.id);
+      rows.push([
+        u.ho_number, res?.name ?? '-',
+        String(amountForUnit(m, u.ho_number)),
+        pay?.is_paid ? '납부' : '미납',
+        pay?.paid_at ? new Date(pay.paid_at).toLocaleDateString('ko-KR') : '',
+      ]);
+    }
+    const csv = '﻿' + rows.map(r => r.map(c => `"${(c ?? '').replace(/"/g, '""')}"`).join(',')).join('\r\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `관리비보고서_${villaName}_${m.year_month}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
   }
 
   async function changeStatus(m: BillMonth, status: string) {
@@ -344,10 +392,20 @@ export default function AdminVillaBillsPage() {
                           <button onClick={() => sendBillNotice(m)} className="w-full bg-[#2B2BEE] text-white py-2.5 rounded-xl text-[14px] font-bold hover:bg-[#1C1CC9] transition mb-2">
                             관리비 고지 발송 ({units.length}세대)
                           </button>
-                          <button onClick={() => setExpandedMonth(isExpanded ? null : m.id)} className="w-full bg-white border border-[#E8EBF0] text-[#2B2BEE] py-2.5 rounded-xl text-[14px] font-bold">
-                            {isExpanded ? '세대별 납부 닫기' : '세대별 납부 상세보기'}
-                          </button>
+                          <div className="grid grid-cols-2 gap-2">
+                            <button onClick={() => setExpandedMonth(isExpanded ? null : m.id)} className="bg-white border border-[#E8EBF0] text-[#2B2BEE] py-2.5 rounded-xl text-[14px] font-bold">
+                              {isExpanded ? '납부 닫기' : '세대별 납부'}
+                            </button>
+                            <button onClick={() => downloadReport(m)} className="bg-white border border-[#E8EBF0] text-[#2B2BEE] py-2.5 rounded-xl text-[14px] font-bold">
+                              월간 보고서
+                            </button>
+                          </div>
                         </>
+                      )}
+                      {m.status === 'closed' && (
+                        <button onClick={() => downloadReport(m)} className="w-full bg-white border border-[#E8EBF0] text-[#2B2BEE] py-2.5 rounded-xl text-[14px] font-bold">
+                          월간 보고서 다운로드
+                        </button>
                       )}
                     </div>
                   )}
@@ -426,7 +484,7 @@ export default function AdminVillaBillsPage() {
                                 <option value="">항목 선택</option>
                                 {BILL_ITEM_PRESETS.map(p => <option key={p} value={p}>{p}</option>)}
                               </select>
-                              <input type="number" value={itemAmount} onChange={e => setItemAmount(e.target.value)} placeholder="금액" min={1}
+                              <input type="number" value={itemAmount} onChange={e => setItemAmount(e.target.value)} placeholder="예: 80000" min={1}
                                 className="w-24 bg-white border border-[#E8EBF0] rounded-xl px-2.5 py-2 text-[15px] outline-none focus:border-[#2B2BEE]" />
                               <button type="submit" className="bg-[#2B2BEE] text-white px-3 py-2 rounded-xl text-[14px] font-bold">＋</button>
                               <button type="button" onClick={() => { setEditingItemMonth(null); setItemName(''); setItemAmount(''); }} className="px-2 text-[#6B7280] text-[14px]">취소</button>
@@ -443,11 +501,18 @@ export default function AdminVillaBillsPage() {
                   {mode === 'per_unit' && (
                     <>
                       {editable && (
-                        <div className="flex gap-2 mb-3">
-                          <input value={bulkAmount} onChange={e => setBulkAmount(e.target.value)} inputMode="numeric" placeholder="모든 세대 일괄 적용 (₩)"
-                            className="flex-1 bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-[15px] outline-none focus:border-[#2B2BEE] focus:ring-2 focus:ring-[#2B2BEE]/15 transition" />
-                          <button onClick={() => applyBulk(m)} className="bg-[#2B2BEE] text-white px-4 rounded-xl text-[14px] font-bold hover:bg-[#1C1CC9] transition">적용</button>
-                        </div>
+                        <>
+                          <div className="flex justify-end mb-2">
+                            <button onClick={() => copyPrevious(m)} className="text-[12px] font-bold text-[#2B2BEE] bg-[#E9E9FD] px-2.5 py-1 rounded-full">
+                              ↻ 전월 세대별 금액 가져오기
+                            </button>
+                          </div>
+                          <div className="flex gap-2 mb-3">
+                            <input value={bulkAmount} onChange={e => setBulkAmount(e.target.value)} inputMode="numeric" placeholder="예: 100000 (모든 세대 일괄 적용)"
+                              className="flex-1 bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-[15px] outline-none focus:border-[#2B2BEE] focus:ring-2 focus:ring-[#2B2BEE]/15 transition" />
+                            <button onClick={() => applyBulk(m)} className="bg-[#2B2BEE] text-white px-4 rounded-xl text-[14px] font-bold hover:bg-[#1C1CC9] transition">적용</button>
+                          </div>
+                        </>
                       )}
                       <p className="text-[13px] font-bold text-[#6B7280] mb-2">세대별 금액</p>
                       <div className="space-y-1.5">
