@@ -9,6 +9,11 @@ on:
       - '.github/workflows/deploy-pwa.yml'
   workflow_dispatch:
 
+# 동시 배포 레이스 방지 — 항상 최신 커밋만 배포 (이전 진행분은 취소)
+concurrency:
+  group: deploy-pwa
+  cancel-in-progress: true
+
 jobs:
   deploy:
     name: Build & Deploy PWA (VM)
