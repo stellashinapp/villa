@@ -296,11 +296,18 @@ export default function AdminVillaBillsPage() {
     await load();
   }
 
+  // 수동 입금 확인 — 토스/현금/계좌이체 등 어떤 경로든 관리자가 직접 완료 처리
   async function togglePaid(payment: Payment, paid: boolean) {
+    let method: string | null = null;
+    if (paid) {
+      const choice = prompt('입금 방법을 입력하세요 (예: 현금 / 계좌이체 / 토스 / 기타)', '계좌이체');
+      if (choice === null) return; // 취소
+      method = choice.trim() || '수동확인';
+    }
     await supabase.from('payments').update({
       is_paid: paid,
       paid_at: paid ? new Date().toISOString() : null,
-      method: paid ? 'bank_transfer' : null,
+      method,
     }).eq('id', payment.id);
     await load();
   }
@@ -331,7 +338,7 @@ export default function AdminVillaBillsPage() {
         <form onSubmit={createMonth} className="mb-4 bg-white border border-[#E8EBF0] rounded-xl p-4 shadow-sm space-y-3">
           <div>
             <label className="block text-[14px] font-bold text-[#0F2242] mb-1.5">청구 월 *</label>
-            <input value={newYM} onChange={e => setNewYM(e.target.value)} placeholder="2026-06" maxLength={7}
+            <input type="month" value={newYM} onChange={e => setNewYM(e.target.value)}
               className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-[15px] outline-none focus:border-[#2B2BEE] focus:ring-2 focus:ring-[#2B2BEE]/15 transition" required />
           </div>
           <div className="grid grid-cols-2 gap-2">
@@ -360,6 +367,25 @@ export default function AdminVillaBillsPage() {
             <p className="text-[14px] text-[#9CA3AF] mt-1">＋ 새 고지로 시작하세요</p>
           </div>
         ) : (
+          <>
+          {/* 장기수선충당금 적립 잔액 — 빌라 내 모인 금액 */}
+          {(() => {
+            const reserve = months
+              .filter(m => m.status === 'published' || m.status === 'closed')
+              .flatMap(m => m.bill_items ?? [])
+              .filter(it => /수선|충당/.test(it.name))
+              .reduce((s, it) => s + it.amount, 0);
+            if (reserve <= 0) return null;
+            return (
+              <div className="bg-white border border-[#F0F2F5] rounded-xl p-4 shadow-sm mb-3 flex items-center justify-between">
+                <div>
+                  <p className="text-[13px] text-[#6B7280]">장기수선충당금 적립액</p>
+                  <p className="text-[12px] text-[#9CA3AF] mt-0.5">고지·마감된 회차 누적</p>
+                </div>
+                <p className="text-[19px] font-black text-[#2B2BEE]">₩{fmt(reserve)}</p>
+              </div>
+            );
+          })()}
           <div className="space-y-3">
             {months.map(m => {
               const mode = modeOf(m);
@@ -605,6 +631,7 @@ export default function AdminVillaBillsPage() {
               );
             })}
           </div>
+          </>
         )
       }
       </div>
