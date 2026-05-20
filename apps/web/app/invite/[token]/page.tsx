@@ -119,7 +119,7 @@ export default function InviteAcceptPage() {
         <div className="text-5xl mb-3">⚠️</div>
         <h2 className="text-[20px] font-extrabold text-[#0F2242] mb-2">초대 링크 오류</h2>
         <p className="text-[14px] text-[#6B7280] text-center mb-6">{error}</p>
-        <Link href="/" className="bg-[#2B2BEE] text-white px-6 py-3 rounded-2xl font-bold">홈으로</Link>
+        <Link href="/" className="bg-[#2B2BEE] text-white px-6 py-3 rounded-xl font-bold">홈으로</Link>
       </div>
     );
   }
@@ -133,7 +133,7 @@ export default function InviteAcceptPage() {
           <h1 className="text-[22px] font-extrabold text-[#0F2242]">{inv.name}님, 환영합니다</h1>
         </div>
 
-        <div className="bg-white border border-[#E8EBF0] rounded-2xl p-5 shadow-sm mb-4">
+        <div className="bg-white border border-[#E8EBF0] rounded-xl p-5 shadow-sm mb-4">
           <p className="text-[12px] font-bold text-[#6B7280] tracking-wider mb-3">초대 정보</p>
           <Row label="빌라" value={inv.villas.name} />
           <Divider />
@@ -150,7 +150,7 @@ export default function InviteAcceptPage() {
           )}
         </div>
 
-        <form onSubmit={accept} className="bg-white border border-[#E8EBF0] rounded-2xl p-5 shadow-sm space-y-3">
+        <form onSubmit={accept} className="bg-white border border-[#E8EBF0] rounded-xl p-5 shadow-sm space-y-3">
           <p className="text-[13px] font-bold text-[#0F2242]">본인 확인</p>
           <p className="text-[12px] text-[#6B7280] leading-relaxed">
             본인의 휴대전화 마지막 4자리를 입력해주세요.
@@ -161,13 +161,13 @@ export default function InviteAcceptPage() {
             placeholder="마지막 4자리"
             maxLength={11}
             inputMode="tel"
-            className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-3 py-3 text-[16px] outline-none focus:border-[#2B2BEE]"
+            className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-3 text-[16px] outline-none focus:border-[#2B2BEE]"
             required
           />
           <button
             type="submit"
             disabled={accepting}
-            className="w-full bg-[#2B2BEE] text-white py-3.5 rounded-2xl text-[16px] font-bold disabled:opacity-50"
+            className="w-full bg-[#2B2BEE] text-white py-3.5 rounded-xl text-[16px] font-bold disabled:opacity-50"
           >
             {accepting ? '가입 처리 중…' : '✓ 가입 완료 (자동 로그인)'}
           </button>

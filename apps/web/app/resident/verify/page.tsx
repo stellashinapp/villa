@@ -54,7 +54,7 @@ export default function ResidentVerifyPage() {
       </header>
 
       <div className="flex-1 px-5 pt-6 max-w-screen-sm mx-auto w-full">
-        <div className="bg-gradient-to-br from-[#2B2BEE] to-[#6B6BF5] rounded-2xl px-6 py-7 text-white text-center shadow-md">
+        <div className="bg-gradient-to-br from-[#2B2BEE] to-[#6B6BF5] rounded-xl px-6 py-7 text-white text-center shadow-md">
           <p className="text-[15px] font-bold opacity-90">{s.villaName}</p>
           <p className="text-[12px] opacity-70 mt-1">{s.villaAddress}</p>
           <p className="text-[42px] font-black mt-4 leading-none">{s.ho}</p>
@@ -70,13 +70,13 @@ export default function ResidentVerifyPage() {
         <div className="grid grid-cols-2 gap-3 mt-7">
           <button
             onClick={reject}
-            className="bg-white border border-[#E8EBF0] text-[#0F2242] rounded-2xl py-3.5 text-[15px] font-bold hover:bg-[#F9FAFB] transition"
+            className="bg-white border border-[#E8EBF0] text-[#0F2242] rounded-xl py-3.5 text-[15px] font-bold hover:bg-[#F9FAFB] transition"
           >
             아니요
           </button>
           <button
             onClick={confirm}
-            className="bg-[#2B2BEE] text-white rounded-2xl py-3.5 text-[15px] font-bold hover:bg-[#1C1CC9] transition"
+            className="bg-[#2B2BEE] text-white rounded-xl py-3.5 text-[15px] font-bold hover:bg-[#1C1CC9] transition"
           >
             네, 맞습니다
           </button>

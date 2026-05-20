@@ -109,11 +109,11 @@ export default function ApplicationsShell() {
       <section className="mb-6">
         <h2 className="text-xs font-bold text-t3 tracking-widest mb-3">입주 신청 ({applications.length})</h2>
         {applications.length === 0 ? (
-          <div className="bg-white border border-border rounded-2xl p-6 text-center text-sm text-t3">대기 중인 입주 신청 없음</div>
+          <div className="bg-white border border-border rounded-xl p-6 text-center text-sm text-t3">대기 중인 입주 신청 없음</div>
         ) : (
           <div className="space-y-3">
             {applications.map(r => (
-              <div key={r.id} className="bg-white border border-border rounded-2xl p-4">
+              <div key={r.id} className="bg-white border border-border rounded-xl p-4">
                 <div className="flex justify-between items-start mb-2">
                   <div>
                     <div className="font-bold text-t1">{r.name}</div>
@@ -129,14 +129,14 @@ export default function ApplicationsShell() {
                   <button
                     disabled={busy === r.id}
                     onClick={() => decide(r.id, 'reject', 'application')}
-                    className="flex-1 border border-err/30 text-err rounded-2xl py-2.5 text-sm font-semibold disabled:opacity-50"
+                    className="flex-1 border border-err/30 text-err rounded-xl py-2.5 text-sm font-semibold disabled:opacity-50"
                   >
                     거부
                   </button>
                   <button
                     disabled={busy === r.id}
                     onClick={() => decide(r.id, 'approve', 'application')}
-                    className="flex-1 bg-pri text-white rounded-2xl py-2.5 text-sm font-bold disabled:opacity-50"
+                    className="flex-1 bg-pri text-white rounded-xl py-2.5 text-sm font-bold disabled:opacity-50"
                   >
                     {busy === r.id ? '처리 중…' : '승인'}
                   </button>
@@ -151,11 +151,11 @@ export default function ApplicationsShell() {
       <section>
         <h2 className="text-xs font-bold text-t3 tracking-widest mb-3">이주 신청 ({moveouts.length})</h2>
         {moveouts.length === 0 ? (
-          <div className="bg-white border border-border rounded-2xl p-6 text-center text-sm text-t3">대기 중인 이주 신청 없음</div>
+          <div className="bg-white border border-border rounded-xl p-6 text-center text-sm text-t3">대기 중인 이주 신청 없음</div>
         ) : (
           <div className="space-y-3">
             {moveouts.map(r => (
-              <div key={r.id} className="bg-white border border-border rounded-2xl p-4">
+              <div key={r.id} className="bg-white border border-border rounded-xl p-4">
                 <div className="flex justify-between items-start mb-2">
                   <div>
                     <div className="font-bold text-t1">{r.name}</div>
@@ -172,7 +172,7 @@ export default function ApplicationsShell() {
                 <button
                   disabled={busy === r.id}
                   onClick={() => decide(r.id, 'approve', 'moveout')}
-                  className="w-full bg-warn text-white rounded-2xl py-2.5 text-sm font-bold disabled:opacity-50"
+                  className="w-full bg-warn text-white rounded-xl py-2.5 text-sm font-bold disabled:opacity-50"
                 >
                   {busy === r.id ? '처리 중…' : '이주 확정 (moved_out)'}
                 </button>

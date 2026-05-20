@@ -89,7 +89,7 @@ export default function AdminVillaMessagesPage() {
               const adminReplies = m.message_replies.filter(r => r.author_type === 'admin');
               const replied = adminReplies.length > 0;
               return (
-                <div key={m.id} className="bg-white border border-[#E8EBF0] rounded-2xl p-4 shadow-sm">
+                <div key={m.id} className="bg-white border border-[#E8EBF0] rounded-xl p-4 shadow-sm">
                   <div className="flex items-center gap-2 mb-2 flex-wrap">
                     <span className="text-[14px] font-bold">{cat.emoji} {cat.label}</span>
                     <span className={`text-[13px] font-bold px-2 py-0.5 rounded ${replied ? 'bg-[rgba(46,204,113,0.12)] text-[#2ECC71]' : 'bg-[rgba(231,76,60,0.12)] text-[#FF3B30]'}`}>
@@ -105,7 +105,7 @@ export default function AdminVillaMessagesPage() {
                   {adminReplies.length > 0 && (
                     <div className="mt-3 pt-3 border-t border-[#E8EBF0] space-y-2">
                       {adminReplies.map(r => (
-                        <div key={r.id} className="bg-[#F5F6FA] rounded-2xl p-3">
+                        <div key={r.id} className="bg-[#F5F6FA] rounded-xl p-3">
                           <div className="flex items-center gap-2 mb-1">
                             <span className="text-[13px] font-bold text-[#2B2BEE]">관리자{r.author_name && ` · ${r.author_name}`}</span>
                             <span className="text-[13px] text-[#9CA3AF] ml-auto">{new Date(r.created_at).toLocaleDateString('ko-KR')}</span>
@@ -119,10 +119,10 @@ export default function AdminVillaMessagesPage() {
                   {replyingTo === m.id ? (
                     <div className="mt-3 pt-3 border-t border-[#E8EBF0]">
                       <textarea value={replyText} onChange={e => setReplyText(e.target.value)} placeholder="답변 내용" rows={3}
-                        className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-3 py-2 text-sm outline-none focus:border-[#2B2BEE] resize-none" />
+                        className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2 text-sm outline-none focus:border-[#2B2BEE] resize-none" />
                       <div className="flex gap-2 mt-2">
-                        <button onClick={() => submitReply(m.id)} className="flex-1 bg-[#2B2BEE] text-white py-2 rounded-2xl text-[15px] font-bold">답변 등록</button>
-                        <button onClick={() => { setReplyingTo(null); setReplyText(''); }} className="px-3 bg-[#F5F6FA] text-[#6B7280] py-2 rounded-2xl text-[15px] font-bold">취소</button>
+                        <button onClick={() => submitReply(m.id)} className="flex-1 bg-[#2B2BEE] text-white py-2 rounded-xl text-[15px] font-bold">답변 등록</button>
+                        <button onClick={() => { setReplyingTo(null); setReplyText(''); }} className="px-3 bg-[#F5F6FA] text-[#6B7280] py-2 rounded-xl text-[15px] font-bold">취소</button>
                       </div>
                     </div>
                   ) : (

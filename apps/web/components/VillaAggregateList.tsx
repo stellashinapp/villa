@@ -137,7 +137,7 @@ export default function VillaAggregateList({ kind }: { kind: Kind }) {
     <div className="bg-[#F5F6FA] min-h-screen">
       <div className="px-5 pt-6 pb-4 max-w-screen-sm mx-auto">
         <div className="flex items-center gap-3">
-          <span className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: meta.bg }}>
+          <span className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: meta.bg }}>
             <Icon name={meta.icon} size={22} color={meta.color} filled />
           </span>
           <div>
@@ -151,9 +151,9 @@ export default function VillaAggregateList({ kind }: { kind: Kind }) {
         {loading ? (
           <p className="text-center text-[14px] text-[#9CA3AF] mt-10">불러오는 중…</p>
         ) : rows.length === 0 ? (
-          <div className="bg-white border border-[#F0F2F5] rounded-2xl p-8 text-center">
+          <div className="bg-white border border-[#F0F2F5] rounded-xl p-8 text-center">
             <p className="text-[15px] font-bold text-[#0F2242]">등록된 빌라가 없습니다</p>
-            <Link href="/admin/villas/add" className="inline-block mt-3 bg-[#2B2BEE] text-white px-4 py-2 rounded-2xl text-[14px] font-bold">＋ 빌라 등록</Link>
+            <Link href="/admin/villas/add" className="inline-block mt-3 bg-[#2B2BEE] text-white px-4 py-2 rounded-xl text-[14px] font-bold">＋ 빌라 등록</Link>
           </div>
         ) : (
           <>
@@ -161,7 +161,7 @@ export default function VillaAggregateList({ kind }: { kind: Kind }) {
             <div className="space-y-2.5">
               {rows.map(v => (
                 <Link key={v.id} href={`/admin/villas/${v.id}/${meta.path}`}
-                  className="block bg-white border border-[#F0F2F5] rounded-2xl p-4 shadow-sm active:scale-[0.99] transition">
+                  className="block bg-white border border-[#F0F2F5] rounded-xl p-4 shadow-sm active:scale-[0.99] transition">
                   <div className="flex items-center justify-between">
                     <div className="flex-1 min-w-0">
                       <p className="text-[16px] font-extrabold text-[#0F2242] truncate">{v.name}</p>

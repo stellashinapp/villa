@@ -47,7 +47,7 @@ export default function ResidentSettingsPage() {
 
       <div className="px-5 pt-4 pb-8 max-w-screen-sm mx-auto">
         {/* 프로필 카드 */}
-        <div className="bg-gradient-to-br from-[#2B2BEE] to-[#6B6BF5] rounded-2xl p-5 text-white shadow-md mb-4">
+        <div className="bg-gradient-to-br from-[#2B2BEE] to-[#6B6BF5] rounded-xl p-5 text-white shadow-md mb-4">
           <div className="flex items-center gap-3">
             <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center text-[24px] font-black">
               {session?.name?.[0] ?? '?'}
@@ -71,7 +71,7 @@ export default function ResidentSettingsPage() {
         {(accountBank || accountNum) && (
           <Section title="관리비 입금 계좌">
             <div className="flex items-center">
-              <span className="w-10 h-10 rounded-2xl flex items-center justify-center text-[20px] mr-3 bg-[#E9E9FD]">💳</span>
+              <span className="w-10 h-10 rounded-xl flex items-center justify-center text-[20px] mr-3 bg-[#E9E9FD]">💳</span>
               <div className="flex-1">
                 <p className="text-[14px] font-bold text-[#0F2242]">{accountBank} {accountNum}</p>
               </div>
@@ -80,9 +80,9 @@ export default function ResidentSettingsPage() {
         )}
 
         {/* 이사하기 — 강조 액션 카드 */}
-        <Link href="/resident/moveout" className="block bg-white border border-[#F0F2F5] rounded-2xl p-4 shadow-sm mb-4 active:scale-[0.99] transition">
+        <Link href="/resident/moveout" className="block bg-white border border-[#F0F2F5] rounded-xl p-4 shadow-sm mb-4 active:scale-[0.99] transition">
           <div className="flex items-center">
-            <span className="w-12 h-12 rounded-2xl flex items-center justify-center text-[24px] mr-3 bg-[#FFF0E6]">📦</span>
+            <span className="w-12 h-12 rounded-xl flex items-center justify-center text-[24px] mr-3 bg-[#FFF0E6]">📦</span>
             <div className="flex-1">
               <p className="text-[15px] font-extrabold text-[#0F2242]">이사 신청</p>
               <p className="text-[12px] text-[#6B7280] mt-0.5">이사 예정일과 정산 정보를 관리자에게 전송</p>
@@ -104,7 +104,7 @@ export default function ResidentSettingsPage() {
         </Section>
 
         <button onClick={handleLogout}
-          className="w-full mt-2 bg-white border border-[#FEE8E7] rounded-2xl py-4 text-[#FF3B30] text-[15px] font-bold">
+          className="w-full mt-2 bg-white border border-[#FEE8E7] rounded-xl py-4 text-[#FF3B30] text-[15px] font-bold">
           로그아웃
         </button>
 
@@ -118,7 +118,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   return (
     <div className="mb-4">
       <h2 className="text-[13px] font-bold text-[#6B7280] mb-2 px-1 tracking-wider">{title}</h2>
-      <div className="bg-white border border-[#F0F2F5] rounded-2xl p-4 shadow-sm">
+      <div className="bg-white border border-[#F0F2F5] rounded-xl p-4 shadow-sm">
         {children}
       </div>
     </div>

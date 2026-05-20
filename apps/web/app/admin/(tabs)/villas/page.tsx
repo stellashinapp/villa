@@ -104,7 +104,7 @@ export default function AdminVillasPage() {
           <h1 className="text-[26px] font-black text-[#0F2242] leading-tight">내 빌라</h1>
           <p className="text-[14px] text-[#6B7280] mt-1">총 {cards.length}개 등록</p>
         </div>
-        <Link href="/admin/villas/add" className="bg-[#2B2BEE] text-white text-[15px] font-bold px-3.5 py-2.5 rounded-2xl shadow-sm hover:bg-[#1C1CC9] transition">
+        <Link href="/admin/villas/add" className="bg-[#2B2BEE] text-white text-[15px] font-bold px-3.5 py-2.5 rounded-xl shadow-sm hover:bg-[#1C1CC9] transition">
           ＋ 빌라 추가
         </Link>
       </div>
@@ -112,8 +112,8 @@ export default function AdminVillasPage() {
       {loading ? <p className="text-center text-[16px] text-[#9CA3AF] mt-20">불러오는 중…</p>
         : error ? <p className="text-center text-[16px] text-[#FF3B30] mt-20">오류: {error}</p>
         : cards.length === 0 ? (
-          <Link href="/admin/villas/add" className="block bg-white border border-dashed border-[#2B2BEE]/30 rounded-2xl p-8 text-center mt-10 hover:bg-[#E9E9FD]">
-            <div className="w-12 h-12 rounded-2xl bg-[#E9E9FD] flex items-center justify-center mx-auto mb-3"><Icon name="villa" size={26} color="#2B2BEE" filled /></div>
+          <Link href="/admin/villas/add" className="block bg-white border border-dashed border-[#2B2BEE]/30 rounded-xl p-8 text-center mt-10 hover:bg-[#E9E9FD]">
+            <div className="w-12 h-12 rounded-xl bg-[#E9E9FD] flex items-center justify-center mx-auto mb-3"><Icon name="villa" size={26} color="#2B2BEE" filled /></div>
             <p className="text-[18px] font-bold text-[#0F2242]">첫 빌라를 등록해주세요</p>
             <p className="text-[15px] text-[#6B7280] mt-1">+ 빌라 추가 버튼으로 시작</p>
           </Link>
@@ -123,7 +123,7 @@ export default function AdminVillasPage() {
               <Link
                 key={v.id}
                 href={`/admin/villas/${v.id}`}
-                className="block bg-white rounded-2xl p-4 border border-[#E8EBF0] shadow-sm active:scale-[0.99] transition"
+                className="block bg-white rounded-xl p-4 border border-[#E8EBF0] shadow-sm active:scale-[0.99] transition"
               >
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex-1 min-w-0">
@@ -142,7 +142,7 @@ export default function AdminVillasPage() {
 
                 {/* 이번달 관리비 + 납부율 */}
                 {v.current_month_label ? (
-                  <div className="bg-[#E9E9FD] border border-[#2B2BEE]/15 rounded-2xl p-3.5 mt-2">
+                  <div className="bg-[#E9E9FD] border border-[#2B2BEE]/15 rounded-xl p-3.5 mt-2">
                     <div className="flex items-start justify-between">
                       <div>
                         <p className="text-[14px] text-[#6B7280] font-bold">{v.current_month_label}</p>
@@ -161,7 +161,7 @@ export default function AdminVillasPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="bg-[#F5F6FA] border border-dashed border-[#E8EBF0] rounded-2xl p-3 mt-2 text-center">
+                  <div className="bg-[#F5F6FA] border border-dashed border-[#E8EBF0] rounded-xl p-3 mt-2 text-center">
                     <p className="text-[14px] text-[#9CA3AF]">이번 달 관리비 미발행</p>
                   </div>
                 )}

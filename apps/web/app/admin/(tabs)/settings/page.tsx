@@ -62,7 +62,7 @@ export default function AdminSettingsPage() {
 
       <div className="px-5 pb-8 max-w-screen-sm mx-auto">
         {/* 프로필 카드 */}
-        <div className="bg-gradient-to-br from-[#2B2BEE] to-[#6B6BF5] rounded-2xl p-5 text-white shadow-md mb-4">
+        <div className="bg-gradient-to-br from-[#2B2BEE] to-[#6B6BF5] rounded-xl p-5 text-white shadow-md mb-4">
           <div className="flex items-center gap-3">
             <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center text-[24px] font-black">
               {profile?.name?.[0] ?? profile?.email?.[0] ?? '?'}
@@ -80,8 +80,8 @@ export default function AdminSettingsPage() {
         {isSuper && (
           <Section title="본사 콘솔">
             <a href={ADMIN_WEB_URL} target="_blank" rel="noreferrer"
-              className="flex items-center bg-white border border-[#F0F2F5] rounded-2xl p-4 shadow-sm active:scale-[0.99] transition">
-              <span className="w-12 h-12 rounded-2xl flex items-center justify-center mr-3 bg-gradient-to-br from-[#2B2BEE] to-[#6B6BF5]">
+              className="flex items-center bg-white border border-[#F0F2F5] rounded-xl p-4 shadow-sm active:scale-[0.99] transition">
+              <span className="w-12 h-12 rounded-xl flex items-center justify-center mr-3 bg-gradient-to-br from-[#2B2BEE] to-[#6B6BF5]">
                 <Icon name="villa" size={24} color="#FFFFFF" filled />
               </span>
               <div className="flex-1">
@@ -125,7 +125,7 @@ export default function AdminSettingsPage() {
         </Section>
 
         <button onClick={logout}
-          className="w-full mt-2 bg-white border border-[#FEE8E7] rounded-2xl py-4 text-[#FF3B30] text-[15px] font-bold">
+          className="w-full mt-2 bg-white border border-[#FEE8E7] rounded-xl py-4 text-[#FF3B30] text-[15px] font-bold">
           로그아웃
         </button>
 
@@ -139,7 +139,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   return (
     <div className="mb-4">
       <h2 className="text-[13px] font-bold text-[#6B7280] mb-2 px-1 tracking-wider">{title}</h2>
-      <div className="bg-white border border-[#F0F2F5] rounded-2xl p-4 shadow-sm">
+      <div className="bg-white border border-[#F0F2F5] rounded-xl p-4 shadow-sm">
         {children}
       </div>
     </div>

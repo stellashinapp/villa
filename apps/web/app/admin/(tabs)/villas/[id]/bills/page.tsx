@@ -245,31 +245,31 @@ export default function AdminVillaBillsPage() {
           <h1 className="text-[26px] font-black text-[#0F2242]">관리비 고지</h1>
           <p className="text-[15px] text-[#6B7280] mt-0.5">일괄 고지 · 세대별 차등고지</p>
         </div>
-        <button onClick={() => setShowNew(!showNew)} className="bg-[#2B2BEE] text-white text-[15px] font-bold px-3.5 py-2.5 rounded-2xl hover:bg-[#1C1CC9] transition">
+        <button onClick={() => setShowNew(!showNew)} className="bg-[#2B2BEE] text-white text-[15px] font-bold px-3.5 py-2.5 rounded-xl hover:bg-[#1C1CC9] transition">
           {showNew ? '취소' : '＋ 새 고지'}
         </button>
       </div>
 
       {showNew && (
-        <form onSubmit={createMonth} className="mb-4 bg-white border border-[#E8EBF0] rounded-2xl p-4 shadow-sm space-y-3">
+        <form onSubmit={createMonth} className="mb-4 bg-white border border-[#E8EBF0] rounded-xl p-4 shadow-sm space-y-3">
           <div>
             <label className="block text-[14px] font-bold text-[#0F2242] mb-1.5">청구 월 *</label>
             <input value={newYM} onChange={e => setNewYM(e.target.value)} placeholder="2026-06" maxLength={7}
-              className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-3 py-2.5 text-[15px] outline-none focus:border-[#2B2BEE] focus:ring-2 focus:ring-[#2B2BEE]/15 transition" required />
+              className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-[15px] outline-none focus:border-[#2B2BEE] focus:ring-2 focus:ring-[#2B2BEE]/15 transition" required />
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="block text-[14px] font-bold text-[#0F2242] mb-1.5">라벨 (선택)</label>
               <input value={newLabel} onChange={e => setNewLabel(e.target.value)} placeholder="예: 6월 관리비"
-                className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-3 py-2.5 text-[15px] outline-none focus:border-[#2B2BEE] focus:ring-2 focus:ring-[#2B2BEE]/15 transition" />
+                className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-[15px] outline-none focus:border-[#2B2BEE] focus:ring-2 focus:ring-[#2B2BEE]/15 transition" />
             </div>
             <div>
               <label className="block text-[14px] font-bold text-[#0F2242] mb-1.5">납부 기한</label>
               <input type="date" value={newDue} onChange={e => setNewDue(e.target.value)}
-                className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-3 py-2.5 text-[15px] outline-none focus:border-[#2B2BEE] focus:ring-2 focus:ring-[#2B2BEE]/15 transition" />
+                className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-[15px] outline-none focus:border-[#2B2BEE] focus:ring-2 focus:ring-[#2B2BEE]/15 transition" />
             </div>
           </div>
-          <button type="submit" disabled={submitting} className="w-full bg-[#2B2BEE] text-white py-2.5 rounded-2xl text-[15px] font-bold hover:bg-[#1C1CC9] disabled:opacity-50 transition">
+          <button type="submit" disabled={submitting} className="w-full bg-[#2B2BEE] text-white py-2.5 rounded-xl text-[15px] font-bold hover:bg-[#1C1CC9] disabled:opacity-50 transition">
             {submitting ? '생성 중…' : '고지 작성 시작'}
           </button>
         </form>
@@ -277,8 +277,8 @@ export default function AdminVillaBillsPage() {
 
       {loading ? <p className="text-center text-[15px] text-[#9CA3AF] mt-10">불러오는 중…</p>
         : months.length === 0 ? (
-          <div className="bg-white border border-[#F0F2F5] rounded-2xl p-8 text-center mt-2">
-            <div className="w-12 h-12 rounded-2xl bg-[#E9E9FD] flex items-center justify-center mx-auto mb-2"><Icon name="bills" size={26} color="#2B2BEE" filled /></div>
+          <div className="bg-white border border-[#F0F2F5] rounded-xl p-8 text-center mt-2">
+            <div className="w-12 h-12 rounded-xl bg-[#E9E9FD] flex items-center justify-center mx-auto mb-2"><Icon name="bills" size={26} color="#2B2BEE" filled /></div>
             <p className="text-[16px] font-bold text-[#0F2242]">등록된 관리비 고지가 없습니다</p>
             <p className="text-[14px] text-[#9CA3AF] mt-1">＋ 새 고지로 시작하세요</p>
           </div>
@@ -296,7 +296,7 @@ export default function AdminVillaBillsPage() {
               const editable = m.status === 'draft';
 
               return (
-                <div key={m.id} className="bg-white border border-[#E8EBF0] rounded-2xl p-4 shadow-sm">
+                <div key={m.id} className="bg-white border border-[#E8EBF0] rounded-xl p-4 shadow-sm">
                   <div className="flex items-center gap-2 mb-2 flex-wrap">
                     <h3 className="text-[18px] font-extrabold text-[#0F2242]">{m.label ?? m.year_month}</h3>
                     <span className="text-[14px] text-[#9CA3AF]">({m.year_month})</span>
@@ -309,14 +309,14 @@ export default function AdminVillaBillsPage() {
                     <div className="grid grid-cols-2 gap-2 mb-3">
                       <button
                         onClick={() => setBillingMode(m.id, 'equal')}
-                        className={`text-left rounded-2xl p-3 border-[1.5px] transition ${mode === 'equal' ? 'border-[#2B2BEE] bg-[#E9E9FD]' : 'border-[#E8EBF0] bg-white'}`}
+                        className={`text-left rounded-xl p-3 border-[1.5px] transition ${mode === 'equal' ? 'border-[#2B2BEE] bg-[#E9E9FD]' : 'border-[#E8EBF0] bg-white'}`}
                       >
                         <p className={`text-[14px] font-extrabold ${mode === 'equal' ? 'text-[#2B2BEE]' : 'text-[#6B7280]'}`}>일괄 고지</p>
                         <p className={`text-[11px] mt-1 leading-tight ${mode === 'equal' ? 'text-[#2B2BEE]/80' : 'text-[#9CA3AF]'}`}>항목 입력 → 세대수로 균등 분배</p>
                       </button>
                       <button
                         onClick={() => setBillingMode(m.id, 'per_unit')}
-                        className={`text-left rounded-2xl p-3 border-[1.5px] transition ${mode === 'per_unit' ? 'border-[#2B2BEE] bg-[#E9E9FD]' : 'border-[#E8EBF0] bg-white'}`}
+                        className={`text-left rounded-xl p-3 border-[1.5px] transition ${mode === 'per_unit' ? 'border-[#2B2BEE] bg-[#E9E9FD]' : 'border-[#E8EBF0] bg-white'}`}
                       >
                         <p className={`text-[14px] font-extrabold ${mode === 'per_unit' ? 'text-[#2B2BEE]' : 'text-[#6B7280]'}`}>세대별 차등고지</p>
                         <p className={`text-[11px] mt-1 leading-tight ${mode === 'per_unit' ? 'text-[#2B2BEE]/80' : 'text-[#9CA3AF]'}`}>호실마다 다른 금액 직접 입력</p>
@@ -326,7 +326,7 @@ export default function AdminVillaBillsPage() {
 
                   {/* 고지완료 요약 카드 */}
                   {m.status !== 'draft' && (
-                    <div className="bg-[#E9E9FD] rounded-2xl p-3 mb-3 border border-[#2B2BEE]/15">
+                    <div className="bg-[#E9E9FD] rounded-xl p-3 mb-3 border border-[#2B2BEE]/15">
                       <div className="flex items-end justify-between mb-3">
                         <div>
                           <p className="text-[28px] font-black text-[#2B2BEE]">완납률 {payRate}%</p>
@@ -339,10 +339,10 @@ export default function AdminVillaBillsPage() {
                       </div>
                       {m.status === 'published' && (
                         <>
-                          <button onClick={() => sendBillNotice(m)} className="w-full bg-[#2B2BEE] text-white py-2.5 rounded-2xl text-[14px] font-bold hover:bg-[#1C1CC9] transition mb-2">
+                          <button onClick={() => sendBillNotice(m)} className="w-full bg-[#2B2BEE] text-white py-2.5 rounded-xl text-[14px] font-bold hover:bg-[#1C1CC9] transition mb-2">
                             관리비 고지 발송 ({units.length}세대)
                           </button>
-                          <button onClick={() => setExpandedMonth(isExpanded ? null : m.id)} className="w-full bg-white border border-[#E8EBF0] text-[#2B2BEE] py-2.5 rounded-2xl text-[14px] font-bold">
+                          <button onClick={() => setExpandedMonth(isExpanded ? null : m.id)} className="w-full bg-white border border-[#E8EBF0] text-[#2B2BEE] py-2.5 rounded-xl text-[14px] font-bold">
                             {isExpanded ? '세대별 납부 닫기' : '세대별 납부 상세보기'}
                           </button>
                         </>
@@ -352,14 +352,14 @@ export default function AdminVillaBillsPage() {
 
                   {/* 세대별 납부 현황 (published + expanded) */}
                   {m.status === 'published' && isExpanded && (
-                    <div className="bg-[#F5F6FA] rounded-2xl p-3 mb-3 space-y-1.5 max-h-80 overflow-y-auto">
+                    <div className="bg-[#F5F6FA] rounded-xl p-3 mb-3 space-y-1.5 max-h-80 overflow-y-auto">
                       <p className="text-[13px] font-bold text-[#6B7280] mb-2">세대별 납부 현황</p>
                       {units.map(u => {
                         const res = residents.find(r => r.unit_id === u.id);
                         const pay = paidForUnit(m.id, u.id);
                         const isPaid = pay?.is_paid;
                         return (
-                          <div key={u.id} className="flex items-center justify-between bg-white rounded-2xl p-2.5 border border-[#E8EBF0]">
+                          <div key={u.id} className="flex items-center justify-between bg-white rounded-xl p-2.5 border border-[#E8EBF0]">
                             <div className="flex items-center gap-2">
                               <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded-full ${isPaid ? 'bg-[#E8F8EC] text-[#2ECC71]' : 'bg-[#FEE8E7] text-[#FF3B30]'}`}>
                                 {isPaid ? '납부' : '미납'}
@@ -420,13 +420,13 @@ export default function AdminVillaBillsPage() {
                           {isAddingItem ? (
                             <form onSubmit={e => addItem(m.id, e)} className="flex gap-2">
                               <select value={itemName} onChange={e => setItemName(e.target.value)}
-                                className="flex-1 bg-white border border-[#E8EBF0] rounded-2xl px-2.5 py-2 text-[15px] outline-none focus:border-[#2B2BEE]">
+                                className="flex-1 bg-white border border-[#E8EBF0] rounded-xl px-2.5 py-2 text-[15px] outline-none focus:border-[#2B2BEE]">
                                 <option value="">항목 선택</option>
                                 {BILL_ITEM_PRESETS.map(p => <option key={p} value={p}>{p}</option>)}
                               </select>
                               <input type="number" value={itemAmount} onChange={e => setItemAmount(e.target.value)} placeholder="금액" min={1}
-                                className="w-24 bg-white border border-[#E8EBF0] rounded-2xl px-2.5 py-2 text-[15px] outline-none focus:border-[#2B2BEE]" />
-                              <button type="submit" className="bg-[#2B2BEE] text-white px-3 py-2 rounded-2xl text-[14px] font-bold">＋</button>
+                                className="w-24 bg-white border border-[#E8EBF0] rounded-xl px-2.5 py-2 text-[15px] outline-none focus:border-[#2B2BEE]" />
+                              <button type="submit" className="bg-[#2B2BEE] text-white px-3 py-2 rounded-xl text-[14px] font-bold">＋</button>
                               <button type="button" onClick={() => { setEditingItemMonth(null); setItemName(''); setItemAmount(''); }} className="px-2 text-[#6B7280] text-[14px]">취소</button>
                             </form>
                           ) : (
@@ -443,8 +443,8 @@ export default function AdminVillaBillsPage() {
                       {editable && (
                         <div className="flex gap-2 mb-3">
                           <input value={bulkAmount} onChange={e => setBulkAmount(e.target.value)} inputMode="numeric" placeholder="모든 세대 일괄 적용 (₩)"
-                            className="flex-1 bg-white border border-[#E8EBF0] rounded-2xl px-3 py-2.5 text-[15px] outline-none focus:border-[#2B2BEE] focus:ring-2 focus:ring-[#2B2BEE]/15 transition" />
-                          <button onClick={() => applyBulk(m)} className="bg-[#2B2BEE] text-white px-4 rounded-2xl text-[14px] font-bold hover:bg-[#1C1CC9] transition">적용</button>
+                            className="flex-1 bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-[15px] outline-none focus:border-[#2B2BEE] focus:ring-2 focus:ring-[#2B2BEE]/15 transition" />
+                          <button onClick={() => applyBulk(m)} className="bg-[#2B2BEE] text-white px-4 rounded-xl text-[14px] font-bold hover:bg-[#1C1CC9] transition">적용</button>
                         </div>
                       )}
                       <p className="text-[13px] font-bold text-[#6B7280] mb-2">세대별 금액</p>
@@ -453,7 +453,7 @@ export default function AdminVillaBillsPage() {
                           const res = residents.find(r => r.unit_id === u.id);
                           const val = unitDraft[m.id]?.[u.ho_number] ?? '';
                           return (
-                            <div key={u.id} className="flex items-center gap-2 bg-white rounded-2xl p-2.5 border border-[#E8EBF0]">
+                            <div key={u.id} className="flex items-center gap-2 bg-white rounded-xl p-2.5 border border-[#E8EBF0]">
                               <div className="flex-1 min-w-0">
                                 <p className="text-[14px] font-extrabold text-[#0F2242]">{u.ho_number}</p>
                                 <p className="text-[11px] text-[#9CA3AF]">{res?.name ?? '미등록'}</p>
@@ -466,7 +466,7 @@ export default function AdminVillaBillsPage() {
                                     placeholder="0"
                                     onChange={e => setUnitDraft(d => ({ ...d, [m.id]: { ...d[m.id], [u.ho_number]: e.target.value } }))}
                                     onBlur={e => persistUnitAmount(m, u.ho_number, e.target.value)}
-                                    className="w-28 text-right bg-white border border-[#E8EBF0] rounded-2xl px-3 py-2 text-[15px] outline-none focus:border-[#2B2BEE]"
+                                    className="w-28 text-right bg-white border border-[#E8EBF0] rounded-xl px-3 py-2 text-[15px] outline-none focus:border-[#2B2BEE]"
                                   />
                                   <span className="text-[13px] text-[#6B7280]">원</span>
                                 </>
@@ -487,12 +487,12 @@ export default function AdminVillaBillsPage() {
                   {/* 상태 전환 버튼 */}
                   {m.status === 'draft' && (
                     <div className="flex gap-2 mt-4">
-                      <button onClick={() => changeStatus(m, 'published')} className="flex-1 bg-[#2B2BEE] text-white py-2.5 rounded-2xl text-[14px] font-bold hover:bg-[#1C1CC9] transition">고지 발송</button>
-                      <button onClick={() => removeMonth(m.id)} className="px-3 bg-white border border-[#FF3B30]/30 text-[#FF3B30] py-2.5 rounded-2xl text-[14px] font-bold">삭제</button>
+                      <button onClick={() => changeStatus(m, 'published')} className="flex-1 bg-[#2B2BEE] text-white py-2.5 rounded-xl text-[14px] font-bold hover:bg-[#1C1CC9] transition">고지 발송</button>
+                      <button onClick={() => removeMonth(m.id)} className="px-3 bg-white border border-[#FF3B30]/30 text-[#FF3B30] py-2.5 rounded-xl text-[14px] font-bold">삭제</button>
                     </div>
                   )}
                   {m.status === 'published' && (
-                    <button onClick={() => changeStatus(m, 'closed')} className="w-full mt-3 bg-white border border-[#E8EBF0] text-[#6B7280] py-2.5 rounded-2xl text-[14px] font-bold">마감 처리</button>
+                    <button onClick={() => changeStatus(m, 'closed')} className="w-full mt-3 bg-white border border-[#E8EBF0] text-[#6B7280] py-2.5 rounded-xl text-[14px] font-bold">마감 처리</button>
                   )}
                   {m.status === 'closed' && (
                     <p className="text-[13px] text-[#9CA3AF] mt-3 text-center">이 회차는 마감되었습니다</p>

@@ -60,7 +60,7 @@ export default function MoveoutShell() {
         <div className="text-6xl mb-5">📦</div>
         <h2 className="text-2xl font-extrabold mb-3 text-center">이주 신청 완료</h2>
 
-        <div className="bg-white border border-[#E8EBF0] rounded-2xl p-5 mb-4 w-full shadow-sm">
+        <div className="bg-white border border-[#E8EBF0] rounded-xl p-5 mb-4 w-full shadow-sm">
           <div className="flex items-center gap-2 mb-3">
             <div className="w-2 h-2 rounded-full bg-[#2B2BEE] animate-pulse" />
             <p className="text-[15px] font-bold text-[#2B2BEE]">관리자 확정 대기 중</p>
@@ -79,14 +79,14 @@ export default function MoveoutShell() {
           </ul>
         </div>
 
-        <div className="bg-[#FFF8EE] border border-[rgba(243,156,18,0.3)] rounded-2xl p-4 mb-6 w-full">
+        <div className="bg-[#FFF8EE] border border-[rgba(243,156,18,0.3)] rounded-xl p-4 mb-6 w-full">
           <p className="text-[14px] text-[#0F2242] leading-relaxed">
             ⚠️ 신청 취소가 필요하시면 빌라 관리자에게 직접 연락주세요.<br />
             관리자가 아직 확정하지 않은 상태에서만 취소 가능합니다.
           </p>
         </div>
 
-        <Link href="/resident/bills" className="w-full bg-[#2B2BEE] text-white rounded-2xl py-3.5 font-bold text-center text-[17px]">
+        <Link href="/resident/bills" className="w-full bg-[#2B2BEE] text-white rounded-xl py-3.5 font-bold text-center text-[17px]">
           청구서 화면으로
         </Link>
       </div>
@@ -111,7 +111,7 @@ export default function MoveoutShell() {
                 type="date"
                 value={moveOutDate}
                 onChange={e => setMoveOutDate(e.target.value)}
-                className="w-full bg-white border border-border rounded-2xl px-4 py-3 text-base outline-none focus:border-pri"
+                className="w-full bg-white border border-border rounded-xl px-4 py-3 text-base outline-none focus:border-pri"
               />
             </div>
             <div>
@@ -121,20 +121,20 @@ export default function MoveoutShell() {
                 onChange={e => setReason(e.target.value)}
                 rows={3}
                 placeholder="간단한 메모"
-                className="w-full bg-white border border-border rounded-2xl px-4 py-3 text-base outline-none focus:border-pri resize-none"
+                className="w-full bg-white border border-border rounded-xl px-4 py-3 text-base outline-none focus:border-pri resize-none"
               />
             </div>
             {error && (
-              <div className="bg-errL text-err border border-err/30 rounded-2xl px-3 py-2 text-sm">{error}</div>
+              <div className="bg-errL text-err border border-err/30 rounded-xl px-3 py-2 text-sm">{error}</div>
             )}
-            <div className="bg-warnL border border-warn/30 rounded-2xl px-3 py-3 text-xs text-warn leading-relaxed">
+            <div className="bg-warnL border border-warn/30 rounded-xl px-3 py-3 text-xs text-warn leading-relaxed">
               ⚠ 이주 신청을 보내면 관리자가 확정 후 이주 처리됩니다.<br/>
               이후 청구서·민원 작성이 불가능해지므로 신중히 결정해 주세요.
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-warn text-white rounded-2xl py-3.5 text-base font-bold disabled:opacity-50"
+              className="w-full bg-warn text-white rounded-xl py-3.5 text-base font-bold disabled:opacity-50"
             >
               {loading ? '신청 중…' : '이주 신청 보내기'}
             </button>

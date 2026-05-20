@@ -82,15 +82,15 @@ export default function ResidentReportPage() {
 
       <div className="px-5 pt-4 pb-8 max-w-screen-sm mx-auto">
         <h2 className="text-[15px] font-extrabold text-[#0F2242] mb-3">관리자에게 신고/건의</h2>
-        <form onSubmit={submit} className="bg-[#E9E9FD] rounded-2xl p-4 space-y-3 mb-6">
+        <form onSubmit={submit} className="bg-[#E9E9FD] rounded-xl p-4 space-y-3 mb-6">
           <textarea value={text} onChange={e => setText(e.target.value)} placeholder="내용을 입력하세요" rows={4} maxLength={500}
-            className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-4 py-3 text-[15px] text-[#0F2242] outline-none focus:border-[#2B2BEE] focus:ring-2 focus:ring-[#2B2BEE]/15 transition resize-none" required />
+            className="w-full bg-white border border-[#E8EBF0] rounded-xl px-4 py-3 text-[15px] text-[#0F2242] outline-none focus:border-[#2B2BEE] focus:ring-2 focus:ring-[#2B2BEE]/15 transition resize-none" required />
           <button type="button" disabled
-            className="inline-flex items-center gap-1.5 bg-white border border-[#E8EBF0] text-[#9CA3AF] text-[13px] font-bold px-3 py-2 rounded-2xl">
+            className="inline-flex items-center gap-1.5 bg-white border border-[#E8EBF0] text-[#9CA3AF] text-[13px] font-bold px-3 py-2 rounded-xl">
             <Icon name="camera" size={15} color="#9CA3AF" /> 사진 첨부
           </button>
           <button type="submit" disabled={submitting}
-            className="w-full bg-[#2B2BEE] text-white py-3.5 rounded-2xl text-[15px] font-bold hover:bg-[#1C1CC9] disabled:opacity-50 transition">
+            className="w-full bg-[#2B2BEE] text-white py-3.5 rounded-xl text-[15px] font-bold hover:bg-[#1C1CC9] disabled:opacity-50 transition">
             {submitting ? '전송 중…' : '보내기'}
           </button>
         </form>
@@ -100,8 +100,8 @@ export default function ResidentReportPage() {
         {loading ? <p className="text-center text-[14px] text-[#9CA3AF] mt-10">불러오는 중…</p>
           : error ? <p className="text-center text-[14px] text-[#FF3B30] mt-10">오류: {error}</p>
           : messages.length === 0 ? (
-            <div className="bg-white rounded-2xl p-8 border border-[#F0F2F5] text-center">
-              <div className="w-12 h-12 rounded-2xl bg-[#E9E9FD] flex items-center justify-center mx-auto mb-2"><Icon name="mailOpen" size={26} color="#2B2BEE" filled /></div>
+            <div className="bg-white rounded-xl p-8 border border-[#F0F2F5] text-center">
+              <div className="w-12 h-12 rounded-xl bg-[#E9E9FD] flex items-center justify-center mx-auto mb-2"><Icon name="mailOpen" size={26} color="#2B2BEE" filled /></div>
               <p className="text-[15px] font-bold text-[#0F2242]">신고·건의 내역이 없습니다</p>
               <p className="text-[13px] text-[#9CA3AF] mt-1">불편 사항이 있으면 위에서 보내주세요</p>
             </div>
@@ -111,7 +111,7 @@ export default function ResidentReportPage() {
                 const replies = m.message_replies ?? [];
                 const replied = replies.some(r => r.author_type === 'admin');
                 return (
-                  <div key={m.id} className="bg-white rounded-2xl p-4 border border-[#F0F2F5] shadow-sm">
+                  <div key={m.id} className="bg-white rounded-xl p-4 border border-[#F0F2F5] shadow-sm">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-[14px] font-bold text-[#0F2242]">{fmtDate(m.created_at)} 보냄</span>
                       <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ml-auto ${
@@ -124,7 +124,7 @@ export default function ResidentReportPage() {
                     {replies.length > 0 && (
                       <div className="mt-3 space-y-2">
                         {replies.map(r => (
-                          <div key={r.id} className="bg-[#F5F6FA] rounded-2xl px-3 py-2.5 flex items-start gap-1.5">
+                          <div key={r.id} className="bg-[#F5F6FA] rounded-xl px-3 py-2.5 flex items-start gap-1.5">
                             <span className="text-[#2B2BEE] text-[14px] mt-0.5">↳</span>
                             <p className="text-[13px] text-[#0F2242] leading-relaxed whitespace-pre-wrap flex-1">{r.text}</p>
                           </div>

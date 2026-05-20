@@ -63,15 +63,15 @@ export default function ResidentNoticesPage() {
         {loading ? <p className="text-center text-[14px] text-[#9CA3AF] mt-20">불러오는 중…</p>
           : error ? <p className="text-center text-[14px] text-[#FF3B30] mt-20">오류: {error}</p>
           : notices.length === 0 ? (
-            <div className="bg-white rounded-2xl p-8 border border-[#F0F2F5] text-center">
-              <div className="w-12 h-12 rounded-2xl bg-[#E9E9FD] flex items-center justify-center mx-auto mb-2"><Icon name="notice" size={26} color="#2B2BEE" filled /></div>
+            <div className="bg-white rounded-xl p-8 border border-[#F0F2F5] text-center">
+              <div className="w-12 h-12 rounded-xl bg-[#E9E9FD] flex items-center justify-center mx-auto mb-2"><Icon name="notice" size={26} color="#2B2BEE" filled /></div>
               <p className="text-[15px] font-bold text-[#0F2242]">공지사항이 없습니다</p>
               <p className="text-[13px] text-[#9CA3AF] mt-1">새 공지가 등록되면 알려드립니다</p>
             </div>
           ) : (
             <div className="space-y-3">
               {notices.map(n => (
-                <article key={n.id} className="bg-white rounded-2xl p-5 shadow-sm border border-[#F0F2F5]">
+                <article key={n.id} className="bg-white rounded-xl p-5 shadow-sm border border-[#F0F2F5]">
                   <div className="flex items-center gap-2 mb-2">
                     {n.is_pinned && (
                       <span className="bg-[#E9E9FD] text-[#2B2BEE] text-[10px] font-extrabold px-2 py-0.5 rounded-full">

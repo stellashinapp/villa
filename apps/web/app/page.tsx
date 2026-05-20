@@ -62,14 +62,14 @@ export default function HomePage() {
         <div className="space-y-3">
           <Link
             href="/admin/login"
-            className="block bg-gradient-to-br from-[#2B2BEE] to-[#6B6BF5] text-white rounded-2xl py-4 text-center shadow-md active:scale-[0.98] transition-transform"
+            className="block bg-gradient-to-br from-[#2B2BEE] to-[#6B6BF5] text-white rounded-xl py-4 text-center shadow-md active:scale-[0.98] transition-transform"
           >
             <span className="text-[16px] font-extrabold">관리자로 시작</span>
           </Link>
 
           <Link
             href="/resident/login"
-            className="block bg-[#0F2242] text-white rounded-2xl py-4 text-center shadow-md active:scale-[0.98] transition-transform"
+            className="block bg-[#0F2242] text-white rounded-xl py-4 text-center shadow-md active:scale-[0.98] transition-transform"
           >
             <span className="text-[16px] font-extrabold">입주민으로 시작</span>
           </Link>

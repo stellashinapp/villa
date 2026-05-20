@@ -187,7 +187,7 @@ export default function AdminHomeShell() {
         {featuredVilla?.current_month_label ? (
           <Link
             href={`/admin/villas/${featuredVilla.id}`}
-            className="block bg-gradient-to-br from-[#2B2BEE] to-[#6B6BF5] rounded-2xl p-5 text-white shadow-md mb-5 active:scale-[0.99] transition"
+            className="block bg-gradient-to-br from-[#2B2BEE] to-[#6B6BF5] rounded-xl p-5 text-white shadow-md mb-5 active:scale-[0.99] transition"
           >
             <p className="text-[11px] font-bold opacity-80 tracking-wider mb-1">{featuredVilla.current_month_label}</p>
             <h3 className="text-[20px] font-black mb-1">{featuredVilla.name}</h3>
@@ -205,7 +205,7 @@ export default function AdminHomeShell() {
         ) : agg.totalVillas === 0 ? (
           <Link
             href="/admin/villas/add"
-            className="block bg-gradient-to-br from-[#2B2BEE] to-[#6B6BF5] rounded-2xl p-5 text-white shadow-md mb-5 active:scale-[0.99] transition"
+            className="block bg-gradient-to-br from-[#2B2BEE] to-[#6B6BF5] rounded-xl p-5 text-white shadow-md mb-5 active:scale-[0.99] transition"
           >
             <p className="text-[12px] font-bold opacity-80 tracking-wider mb-1">START</p>
             <h3 className="text-[20px] font-black mb-2">첫 빌라를 등록하세요</h3>
@@ -213,16 +213,16 @@ export default function AdminHomeShell() {
             <p className="text-[14px] font-bold mt-3 underline">＋ 빌라 등록 시작 →</p>
           </Link>
         ) : (
-          <div className="bg-white rounded-2xl p-5 border border-[#F0F2F5] shadow-sm mb-5 text-center">
+          <div className="bg-white rounded-xl p-5 border border-[#F0F2F5] shadow-sm mb-5 text-center">
             <p className="text-[14px] text-[#6B7280] mb-3">이번 달 발행된 관리비가 없습니다</p>
-            <Link href="/admin/bills" className="block w-full bg-[#2B2BEE] text-white rounded-2xl py-3 text-[15px] font-bold hover:bg-[#1C1CC9] transition">
+            <Link href="/admin/bills" className="block w-full bg-[#2B2BEE] text-white rounded-xl py-3 text-[15px] font-bold hover:bg-[#1C1CC9] transition">
               관리비 발행
             </Link>
           </div>
         )}
 
         {/* 8-그리드 빠른 액션 (아파트아이 스타일) */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#F0F2F5] mb-5">
+        <div className="bg-white rounded-xl p-4 shadow-sm border border-[#F0F2F5] mb-5">
           <div className="grid grid-cols-4 gap-y-4">
             <QuickAction href="/admin/bills" disabled={agg.totalVillas === 0} bg="#E9E9FD" color="#2B2BEE" icon="bills" label="관리비" badge={agg.unpaidCurrentMonth > 0 ? '미납' : undefined} />
             <QuickAction href="/admin/notices" disabled={agg.totalVillas === 0} bg="#E9E9FD" color="#2B2BEE" icon="notice" label="공지작성" />
@@ -239,7 +239,7 @@ export default function AdminHomeShell() {
         {(agg.pendingApplications > 0 || agg.pendingMoveouts > 0 || agg.unreadMessages > 0) && (
           <>
             <h3 className="text-[13px] font-bold text-[#0F2242] mb-2 px-1">오늘 처리 필요</h3>
-            <div className="bg-white rounded-2xl shadow-sm border border-[#F0F2F5] mb-5 overflow-hidden">
+            <div className="bg-white rounded-xl shadow-sm border border-[#F0F2F5] mb-5 overflow-hidden">
               {agg.pendingApplications > 0 && (
                 <AlertRow href="/admin/applications" icon="residents" title="가입 신청 대기" desc="입주민 가입 신청을 확인해주세요" count={agg.pendingApplications} accent="#2B2BEE" />
               )}
@@ -263,7 +263,7 @@ export default function AdminHomeShell() {
             <div className="space-y-2.5 mb-5">
               {villas.slice(1).map(v => (
                 <Link key={v.id} href={`/admin/villas/${v.id}`}
-                  className="block bg-white rounded-2xl p-4 border border-[#F0F2F5] shadow-sm active:scale-[0.99] transition">
+                  className="block bg-white rounded-xl p-4 border border-[#F0F2F5] shadow-sm active:scale-[0.99] transition">
                   <div className="flex items-center justify-between">
                     <div className="flex-1 min-w-0">
                       <p className="text-[15px] font-extrabold text-[#0F2242] truncate">{v.name}</p>
@@ -286,7 +286,7 @@ export default function AdminHomeShell() {
 
         {/* 구독 카드 — 최하단 (QA 1) */}
         <h3 className="text-[13px] font-bold text-[#0F2242] mb-2 px-1">구독</h3>
-        <Link href="/admin/settings" className={`block rounded-2xl p-4 shadow-sm mb-5 ${
+        <Link href="/admin/settings" className={`block rounded-xl p-4 shadow-sm mb-5 ${
           sub?.status === 'active' ? 'bg-gradient-to-br from-[#2B2BEE] to-[#6B6BF5] text-white'
           : sub?.status === 'past_due' ? 'bg-[#FEE8E7] border border-[#FF3B30]/30'
           : sub?.status === 'trialing' ? 'bg-[#E9E9FD] border border-[#2B2BEE]/30'
@@ -313,7 +313,7 @@ function QuickAction({ href, bg, color, icon, label, badge, disabled }: {
   if (disabled) {
     return (
       <div className="flex flex-col items-center opacity-40 cursor-not-allowed">
-        <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-1.5" style={{ background: bg }}>
+        <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-1.5" style={{ background: bg }}>
           <Icon name={icon} size={24} color={color} filled />
         </div>
         <p className="text-[11px] text-[#1A1A1A] font-semibold">{label}</p>
@@ -322,7 +322,7 @@ function QuickAction({ href, bg, color, icon, label, badge, disabled }: {
   }
   return (
     <Link href={href} className="flex flex-col items-center active:scale-[0.95] transition">
-      <div className="relative w-12 h-12 rounded-2xl flex items-center justify-center mb-1.5" style={{ background: bg }}>
+      <div className="relative w-12 h-12 rounded-xl flex items-center justify-center mb-1.5" style={{ background: bg }}>
         <Icon name={icon} size={24} color={color} filled />
         {badge && (
           <span className="absolute -top-1 -right-1 bg-[#FF3B30] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full min-w-[16px] h-[16px] flex items-center justify-center">
@@ -340,7 +340,7 @@ function AlertRow({ href, icon, title, desc, count, accent }: {
 }) {
   return (
     <Link href={href} className="flex items-center px-4 py-3.5 border-b border-[#F0F2F5] last:border-b-0 active:bg-[#FAFBFC]">
-      <span className="w-10 h-10 rounded-2xl flex items-center justify-center mr-3 flex-shrink-0" style={{ background: accent + '20' }}>
+      <span className="w-10 h-10 rounded-xl flex items-center justify-center mr-3 flex-shrink-0" style={{ background: accent + '20' }}>
         <Icon name={icon} size={20} color={accent} filled />
       </span>
       <div className="flex-1 min-w-0">

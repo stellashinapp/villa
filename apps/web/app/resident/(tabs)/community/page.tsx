@@ -95,25 +95,25 @@ export default function ResidentCommunityPage() {
 
       <div className="px-5 pt-4 pb-8 max-w-screen-sm mx-auto">
         <h2 className="text-[15px] font-extrabold text-[#0F2242] mb-3">새 글 쓰기</h2>
-        <form onSubmit={submitPost} className="bg-[#E9E9FD] rounded-2xl p-4 space-y-3 mb-6">
+        <form onSubmit={submitPost} className="bg-[#E9E9FD] rounded-xl p-4 space-y-3 mb-6">
           <input value={title} onChange={e => setTitle(e.target.value)} placeholder="제목" maxLength={50}
-            className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-4 py-3 text-[15px] text-[#0F2242] outline-none focus:border-[#2B2BEE] focus:ring-2 focus:ring-[#2B2BEE]/15 transition" required />
+            className="w-full bg-white border border-[#E8EBF0] rounded-xl px-4 py-3 text-[15px] text-[#0F2242] outline-none focus:border-[#2B2BEE] focus:ring-2 focus:ring-[#2B2BEE]/15 transition" required />
           <textarea value={body} onChange={e => setBody(e.target.value)} placeholder="내용을 입력하세요" rows={4} maxLength={1000}
-            className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-4 py-3 text-[15px] text-[#0F2242] outline-none focus:border-[#2B2BEE] focus:ring-2 focus:ring-[#2B2BEE]/15 transition resize-none" required />
+            className="w-full bg-white border border-[#E8EBF0] rounded-xl px-4 py-3 text-[15px] text-[#0F2242] outline-none focus:border-[#2B2BEE] focus:ring-2 focus:ring-[#2B2BEE]/15 transition resize-none" required />
           <button type="button" disabled
-            className="inline-flex items-center gap-1.5 bg-white border border-[#E8EBF0] text-[#9CA3AF] text-[13px] font-bold px-3 py-2 rounded-2xl">
+            className="inline-flex items-center gap-1.5 bg-white border border-[#E8EBF0] text-[#9CA3AF] text-[13px] font-bold px-3 py-2 rounded-xl">
             <Icon name="camera" size={15} color="#9CA3AF" /> 사진 첨부
           </button>
           <button type="submit" disabled={submitting}
-            className="w-full bg-[#2B2BEE] text-white py-3.5 rounded-2xl text-[15px] font-bold hover:bg-[#1C1CC9] disabled:opacity-50 transition">
+            className="w-full bg-[#2B2BEE] text-white py-3.5 rounded-xl text-[15px] font-bold hover:bg-[#1C1CC9] disabled:opacity-50 transition">
             {submitting ? '등록 중…' : '글 등록'}
           </button>
         </form>
 
         {loading ? <p className="text-center text-[14px] text-[#9CA3AF] mt-10">불러오는 중…</p>
           : posts.length === 0 ? (
-            <div className="bg-white rounded-2xl p-8 border border-[#F0F2F5] text-center">
-              <div className="w-12 h-12 rounded-2xl bg-[#E9E9FD] flex items-center justify-center mx-auto mb-2"><Icon name="community" size={26} color="#2B2BEE" filled /></div>
+            <div className="bg-white rounded-xl p-8 border border-[#F0F2F5] text-center">
+              <div className="w-12 h-12 rounded-xl bg-[#E9E9FD] flex items-center justify-center mx-auto mb-2"><Icon name="community" size={26} color="#2B2BEE" filled /></div>
               <p className="text-[15px] font-bold text-[#0F2242]">아직 글이 없습니다</p>
               <p className="text-[13px] text-[#9CA3AF] mt-1">첫 글을 남겨보세요</p>
             </div>
@@ -124,7 +124,7 @@ export default function ResidentCommunityPage() {
                 const author = post.residents?.name ?? '익명';
                 const comments = post.comments ?? [];
                 return (
-                  <article key={post.id} className="bg-white rounded-2xl p-4 shadow-sm border border-[#F0F2F5]">
+                  <article key={post.id} className="bg-white rounded-xl p-4 shadow-sm border border-[#F0F2F5]">
                     <div className="flex items-center gap-2 mb-2">
                       {isNew(post.created_at) && (
                         <span className="bg-[#2B2BEE] text-white text-[10px] font-extrabold px-2 py-0.5 rounded">NEW</span>
@@ -134,7 +134,7 @@ export default function ResidentCommunityPage() {
                     </div>
                     <h3 className="text-[16px] font-extrabold text-[#0F2242] mb-1.5">{post.title}</h3>
                     <p className="text-[14px] text-[#6B7280] leading-relaxed whitespace-pre-wrap">{post.body}</p>
-                    {post.image_url && <img src={post.image_url} alt="" className="mt-3 rounded-2xl max-h-64 object-cover w-full" />}
+                    {post.image_url && <img src={post.image_url} alt="" className="mt-3 rounded-xl max-h-64 object-cover w-full" />}
 
                     <div className="flex gap-4 mt-3 pt-3 border-t border-[#F0F2F5] text-[12px] text-[#FF3B30]">
                       <span>❤️ {post.likes ?? 0}</span>
@@ -160,9 +160,9 @@ export default function ResidentCommunityPage() {
                     {replyOpen === post.id && (
                       <div className="mt-3 flex gap-2">
                         <input value={replyText} onChange={e => setReplyText(e.target.value)} placeholder="답글 입력" maxLength={200}
-                          className="flex-1 bg-white border border-[#E8EBF0] rounded-2xl px-3 py-2.5 text-[14px] outline-none focus:border-[#2B2BEE]" />
+                          className="flex-1 bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-[14px] outline-none focus:border-[#2B2BEE]" />
                         <button onClick={() => submitComment(post.id)}
-                          className="bg-[#2B2BEE] text-white text-[13px] font-bold px-4 rounded-2xl">
+                          className="bg-[#2B2BEE] text-white text-[13px] font-bold px-4 rounded-xl">
                           등록
                         </button>
                       </div>

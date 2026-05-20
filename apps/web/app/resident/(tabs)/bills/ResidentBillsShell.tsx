@@ -173,7 +173,7 @@ export default function ResidentBillsShell() {
       <div className="px-5 pt-4 pb-8 max-w-screen-sm mx-auto">
         {/* 특이사항 — 항시 노출 */}
         {villa?.special_notes && (
-          <div className="bg-[#E9E9FD] border border-[#2B2BEE]/15 rounded-2xl px-4 py-3 mb-3">
+          <div className="bg-[#E9E9FD] border border-[#2B2BEE]/15 rounded-xl px-4 py-3 mb-3">
             <p className="text-[12px] font-bold text-[#2B2BEE] mb-1">빌라 안내</p>
             <p className="text-[13px] text-[#0F2242] leading-relaxed whitespace-pre-wrap">{villa.special_notes}</p>
           </div>
@@ -181,7 +181,7 @@ export default function ResidentBillsShell() {
 
         {/* 관리자 연락처 — 노출 설정 시 */}
         {adminContact && (
-          <a href={`tel:${adminContact.admin_phone}`} className="flex items-center justify-between bg-white border border-[#F0F2F5] rounded-2xl px-4 py-3 mb-3 shadow-sm">
+          <a href={`tel:${adminContact.admin_phone}`} className="flex items-center justify-between bg-white border border-[#F0F2F5] rounded-xl px-4 py-3 mb-3 shadow-sm">
             <div>
               <p className="text-[11px] text-[#9CA3AF]">관리자</p>
               <p className="text-[14px] font-bold text-[#0F2242]">{adminContact.admin_name}</p>
@@ -191,7 +191,7 @@ export default function ResidentBillsShell() {
         )}
 
         {currentMonth ? (
-          <div className="bg-gradient-to-br from-[#2B2BEE] to-[#5454F0] rounded-2xl px-5 py-6 text-white shadow-md text-center">
+          <div className="bg-gradient-to-br from-[#2B2BEE] to-[#5454F0] rounded-xl px-5 py-6 text-white shadow-md text-center">
             <p className="text-[13px] font-bold opacity-90">{ymLabel(currentMonth.year_month)} 관리비</p>
             <p className="mt-2">
               <span className="text-[40px] font-black tracking-tight align-middle">{fmt(myAmt)}</span>
@@ -202,7 +202,7 @@ export default function ResidentBillsShell() {
             <button
               onClick={() => !currentPay?.is_paid && setShowPayModal(true)}
               disabled={!!currentPay?.is_paid}
-              className={`mt-5 w-full rounded-2xl py-3.5 text-[15px] font-extrabold transition ${
+              className={`mt-5 w-full rounded-xl py-3.5 text-[15px] font-extrabold transition ${
                 currentPay?.is_paid
                   ? 'bg-transparent border border-white/40 text-white'
                   : 'bg-white text-[#2B2BEE] hover:bg-[#F5F6FA]'
@@ -216,8 +216,8 @@ export default function ResidentBillsShell() {
             )}
           </div>
         ) : (
-          <div className="bg-white rounded-2xl p-8 border border-[#F0F2F5] text-center">
-            <div className="w-12 h-12 rounded-2xl bg-[#E9E9FD] flex items-center justify-center mx-auto mb-2"><Icon name="bills" size={26} color="#2B2BEE" filled /></div>
+          <div className="bg-white rounded-xl p-8 border border-[#F0F2F5] text-center">
+            <div className="w-12 h-12 rounded-xl bg-[#E9E9FD] flex items-center justify-center mx-auto mb-2"><Icon name="bills" size={26} color="#2B2BEE" filled /></div>
             <p className="text-[14px] font-bold text-[#0F2242]">이번 달 청구서가 없습니다</p>
             <p className="text-[12px] text-[#9CA3AF] mt-1">관리자가 청구서를 발행하면 여기에 표시됩니다</p>
           </div>
@@ -230,7 +230,7 @@ export default function ResidentBillsShell() {
               {currentMonth.bill_items.map(it => {
                 const perUnit = Math.round(it.amount / totalUnits);
                 return (
-                  <div key={it.id} className="bg-white rounded-2xl px-4 py-3.5 border border-[#F0F2F5] shadow-sm flex items-center justify-between">
+                  <div key={it.id} className="bg-white rounded-xl px-4 py-3.5 border border-[#F0F2F5] shadow-sm flex items-center justify-between">
                     <span className="text-[14px] font-bold text-[#0F2242]">{it.name}</span>
                     <div className="text-right">
                       <p className="text-[15px] font-extrabold text-[#0F2242]">{fmt(it.amount)}원</p>
@@ -251,7 +251,7 @@ export default function ResidentBillsShell() {
                 const amt = myAmount(m);
                 const pay = paymentFor(m.id);
                 return (
-                  <div key={m.id} className="bg-white rounded-2xl px-4 py-3.5 border border-[#F0F2F5] shadow-sm flex items-center justify-between">
+                  <div key={m.id} className="bg-white rounded-xl px-4 py-3.5 border border-[#F0F2F5] shadow-sm flex items-center justify-between">
                     <div>
                       <p className="text-[15px] font-extrabold text-[#0F2242]">{fmt(amt)}원</p>
                       <p className="text-[12px] text-[#9CA3AF] mt-0.5">{ymLabel(m.year_month)}</p>
@@ -298,7 +298,7 @@ function PaymentModal({
 }) {
   return (
     <div className="fixed inset-0 z-[100] flex items-end justify-center bg-[#0F2242]/40">
-      <div className="bg-white w-full max-w-screen-sm rounded-t-3xl px-5 pt-3 pb-7 animate-[slideUp_.2s_ease-out]">
+      <div className="bg-white w-full max-w-screen-sm rounded-t-2xl px-5 pt-3 pb-7 animate-[slideUp_.2s_ease-out]">
         <div className="w-10 h-1 bg-[#E8EBF0] rounded-full mx-auto mb-4" />
         <h3 className="text-[18px] font-extrabold text-[#0F2242]">관리비 납부</h3>
         <p className="text-[14px] text-[#6B7280] mt-2 leading-relaxed">
@@ -309,17 +309,17 @@ function PaymentModal({
         <p className="text-[13px] font-bold text-[#0F2242] mt-4 mb-2">결제 수단</p>
         <div className="grid grid-cols-2 gap-2">
           <button onClick={() => onMethod('card')}
-            className={`rounded-2xl py-3 text-[14px] font-bold border-[1.5px] transition ${method === 'card' ? 'border-[#2B2BEE] bg-[#E9E9FD] text-[#2B2BEE]' : 'border-[#E8EBF0] bg-white text-[#6B7280]'}`}>
+            className={`rounded-xl py-3 text-[14px] font-bold border-[1.5px] transition ${method === 'card' ? 'border-[#2B2BEE] bg-[#E9E9FD] text-[#2B2BEE]' : 'border-[#E8EBF0] bg-white text-[#6B7280]'}`}>
             카드
           </button>
           <button onClick={() => onMethod('transfer')}
-            className={`rounded-2xl py-3 text-[14px] font-bold border-[1.5px] transition ${method === 'transfer' ? 'border-[#2B2BEE] bg-[#E9E9FD] text-[#2B2BEE]' : 'border-[#E8EBF0] bg-white text-[#6B7280]'}`}>
+            className={`rounded-xl py-3 text-[14px] font-bold border-[1.5px] transition ${method === 'transfer' ? 'border-[#2B2BEE] bg-[#E9E9FD] text-[#2B2BEE]' : 'border-[#E8EBF0] bg-white text-[#6B7280]'}`}>
             실시간 계좌이체
           </button>
         </div>
 
         {/* 매월 자동납부 (카드 빌링) */}
-        <label className="flex items-start gap-3 mt-3 bg-[#F5F6FA] rounded-2xl p-3 cursor-pointer">
+        <label className="flex items-start gap-3 mt-3 bg-[#F5F6FA] rounded-xl p-3 cursor-pointer">
           <input type="checkbox" checked={autoPay} onChange={e => onAutoPay(e.target.checked)} className="mt-0.5 w-5 h-5 flex-shrink-0 accent-[#2B2BEE]" />
           <span>
             <span className="block text-[14px] font-bold text-[#0F2242]">매월 자동납부 {hasBillingKey && <span className="text-[#2ECC71]">· 등록됨</span>}</span>
@@ -334,14 +334,14 @@ function PaymentModal({
           <button
             onClick={onClose}
             disabled={loading}
-            className="bg-white border border-[#E8EBF0] text-[#0F2242] rounded-2xl py-3.5 text-[15px] font-bold hover:bg-[#F9FAFB] transition disabled:opacity-50"
+            className="bg-white border border-[#E8EBF0] text-[#0F2242] rounded-xl py-3.5 text-[15px] font-bold hover:bg-[#F9FAFB] transition disabled:opacity-50"
           >
             취소
           </button>
           <button
             onClick={onConfirm}
             disabled={loading}
-            className="bg-[#2B2BEE] text-white rounded-2xl py-3.5 text-[15px] font-bold hover:bg-[#1C1CC9] transition disabled:opacity-50"
+            className="bg-[#2B2BEE] text-white rounded-xl py-3.5 text-[15px] font-bold hover:bg-[#1C1CC9] transition disabled:opacity-50"
           >
             {loading ? '처리 중…' : `${fmt(amount)}원 납부`}
           </button>
