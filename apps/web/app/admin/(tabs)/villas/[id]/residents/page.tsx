@@ -19,13 +19,17 @@ type Resident = {
   units: { ho_number: string } | null;
 };
 
+type UnpaidBill = { label: string; amount: number };
+
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
-  active: { label: '거주중', color: 'bg-[rgba(46,204,113,0.12)] text-[#2ECC71]' },
-  pending: { label: '승인대기', color: 'bg-[rgba(243,156,18,0.12)] text-[#F39C12]' },
-  pending_moveout: { label: '이사대기', color: 'bg-[rgba(255,107,53,0.12)] text-[#FF6B35]' },
-  moved_out: { label: '이사완료', color: 'bg-[#F5F6FA] text-[#6B7280]' },
-  rejected: { label: '거절됨', color: 'bg-[rgba(231,76,60,0.12)] text-[#E74C3C]' },
+  active: { label: '거주중', color: 'bg-[#E8F8EC] text-[#2ECC71]' },
+  pending: { label: '승인대기', color: 'bg-[#EEF2FF] text-[#3766EE]' },
+  pending_moveout: { label: '이사대기', color: 'bg-[#EEF2FF] text-[#3766EE]' },
+  moved_out: { label: '이사완료', color: 'bg-[#F5F6FA] text-[#9CA3AF]' },
+  rejected: { label: '거절됨', color: 'bg-[#FEE8E7] text-[#FF3B30]' },
 };
+
+function fmt(n: number) { return n.toLocaleString('ko-KR'); }
 
 export default function AdminVillaResidentsPage() {
   const params = useParams<{ id: string }>();
@@ -33,7 +37,8 @@ export default function AdminVillaResidentsPage() {
   const [residents, setResidents] = useState<Resident[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<string>('all');
+  // 입주 관리 / 이주 관리 1차 모드
+  const [mode, setMode] = useState<'movein' | 'moveout'>('movein');
 
   // 직접 입주민 추가 폼
   const [showAdd, setShowAdd] = useState(false);
@@ -45,6 +50,12 @@ export default function AdminVillaResidentsPage() {
   const [addSubmitting, setAddSubmitting] = useState(false);
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
   const [inviteName, setInviteName] = useState('');
+
+  // 이주 확정 모달 (관리비 정산 확인)
+  const [moveoutTarget, setMoveoutTarget] = useState<Resident | null>(null);
+  const [unpaidBills, setUnpaidBills] = useState<UnpaidBill[] | null>(null);
+  const [settlementLoading, setSettlementLoading] = useState(false);
+  const [moveoutProcessing, setMoveoutProcessing] = useState(false);
 
   function randToken(): string {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -62,7 +73,6 @@ export default function AdminVillaResidentsPage() {
     setAddSubmitting(true);
 
     if (addMode === 'direct') {
-      // 즉시 등록 — 입주민 행 바로 active
       const { error } = await supabase.from('residents').insert({
         unit_id: addUnitId,
         name: addName.trim(),
@@ -78,7 +88,6 @@ export default function AdminVillaResidentsPage() {
       setShowAdd(false);
       await load();
     } else {
-      // 초대링크 발급
       const { data: { user } } = await supabase.auth.getUser();
       const { data: adminRow } = await supabase.from('admins').select('id').eq('auth_id', user?.id).maybeSingle();
       const adminId = (adminRow as { id: string } | null)?.id ?? null;
@@ -169,18 +178,54 @@ export default function AdminVillaResidentsPage() {
     await load();
   }
 
-  async function confirmMoveout(r: Resident) {
-    if (!confirm(`${r.name} 이사 처리하시겠습니까?`)) return;
+  // 이주 확정 시작 — 해당 세대 관리비 정산(미납) 확인
+  async function openMoveout(r: Resident) {
+    setMoveoutTarget(r);
+    setUnpaidBills(null);
+    if (!r.unit_id) { setUnpaidBills([]); return; }
+    setSettlementLoading(true);
+    const { data } = await supabase
+      .from('payments')
+      .select('amount, is_paid, bill_months!inner(label, year_month, villa_id, status)')
+      .eq('unit_id', r.unit_id)
+      .eq('is_paid', false);
+    const rows = (data ?? []) as unknown as { amount: number; bill_months: { label: string | null; year_month: string; status: string } }[];
+    const unpaid: UnpaidBill[] = rows
+      .filter(x => x.bill_months.status !== 'draft')
+      .map(x => ({ label: x.bill_months.label ?? `${x.bill_months.year_month} 관리비`, amount: x.amount }));
+    setUnpaidBills(unpaid);
+    setSettlementLoading(false);
+  }
+
+  // 이주 확정 실행 — 상태 변경 + 번호 즉시 삭제(마스킹)
+  async function doMoveout() {
+    const r = moveoutTarget;
+    if (!r) return;
+    setMoveoutProcessing(true);
+    const tombstone = `탈퇴-${r.id.slice(0, 8)}`;
     const { error } = await supabase.from('residents').update({
       status: 'moved_out',
+      move_out_date: new Date().toISOString().slice(0, 10),
+      phone: tombstone,
     }).eq('id', r.id);
-    if (error) { alert('실패: ' + error.message); return; }
+    setMoveoutProcessing(false);
+    if (error) { alert('이사 처리 실패: ' + error.message); return; }
+    setMoveoutTarget(null);
+    setUnpaidBills(null);
     await load();
   }
 
-  const filtered = filter === 'all' ? residents : residents.filter(r => r.status === filter);
+  // 모드별 상태 그룹
+  const moveinStatuses = ['pending', 'active', 'rejected'];
+  const moveoutStatuses = ['pending_moveout', 'moved_out'];
+  const visible = residents.filter(r =>
+    mode === 'movein' ? moveinStatuses.includes(r.status) : moveoutStatuses.includes(r.status));
+
   const counts: Record<string, number> = {};
   residents.forEach(r => { counts[r.status] = (counts[r.status] || 0) + 1; });
+  const moveinCount = residents.filter(r => moveinStatuses.includes(r.status)).length;
+  const moveoutCount = residents.filter(r => moveoutStatuses.includes(r.status)).length;
+  const unpaidTotal = (unpaidBills ?? []).reduce((s, b) => s + b.amount, 0);
 
   return (
     <div className="px-5 pt-6 pb-8 max-w-screen-sm mx-auto">
@@ -188,18 +233,30 @@ export default function AdminVillaResidentsPage() {
       <div className="flex justify-between items-end mt-3 mb-4">
         <div>
           <h1 className="text-[26px] font-black text-[#0F2242]">입주민</h1>
-          <p className="text-[16px] text-[#6B7280] mt-0.5">총 {residents.length}명 (호실 {units.length}개)</p>
+          <p className="text-[15px] text-[#6B7280] mt-0.5">총 {residents.length}명 · 호실 {units.length}개</p>
         </div>
-        <button onClick={() => setShowAdd(!showAdd)} className="bg-[#3766EE] text-white text-[16px] font-bold px-3.5 py-2.5 rounded-xl">
+        <button onClick={() => setShowAdd(!showAdd)} className="bg-[#3766EE] text-white text-[15px] font-bold px-3.5 py-2.5 rounded-xl hover:bg-[#1F3DC2] transition">
           {showAdd ? '취소' : '＋ 입주민 추가'}
         </button>
       </div>
 
-      {/* 직접 추가 폼 (QA Page 5) + 초대링크 (QA Page 11) */}
+      {/* 입주 관리 / 이주 관리 1차 토글 */}
+      <div className="grid grid-cols-2 gap-2 mb-4">
+        <button onClick={() => setMode('movein')}
+          className={`rounded-xl py-3 text-[15px] font-extrabold border-[1.5px] transition ${mode === 'movein' ? 'bg-[#3766EE] text-white border-[#3766EE]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'}`}>
+          이사 온 사람 <span className={mode === 'movein' ? 'text-white/80' : 'text-[#9CA3AF]'}>· {moveinCount}</span>
+        </button>
+        <button onClick={() => setMode('moveout')}
+          className={`rounded-xl py-3 text-[15px] font-extrabold border-[1.5px] transition ${mode === 'moveout' ? 'bg-[#3766EE] text-white border-[#3766EE]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'}`}>
+          이주 (이사 가는 사람) <span className={mode === 'moveout' ? 'text-white/80' : 'text-[#9CA3AF]'}>· {moveoutCount}</span>
+        </button>
+      </div>
+
+      {/* 직접 추가 폼 + 초대링크 */}
       {showAdd && !inviteUrl && (
         <form onSubmit={submitAdd} className="mb-4 bg-white border border-[#E8EBF0] rounded-2xl p-4 shadow-sm space-y-3">
           <div>
-            <label className="block text-[15px] font-bold text-[#6B7280] mb-1.5">추가 방식</label>
+            <label className="block text-[14px] font-bold text-[#0F2242] mb-1.5">추가 방식</label>
             <div className="grid grid-cols-2 gap-2">
               <button type="button" onClick={() => setAddMode('invite')}
                 className={`py-2.5 rounded-xl text-[14px] font-bold border ${addMode === 'invite' ? 'bg-[#3766EE] text-white border-[#3766EE]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'}`}>
@@ -218,37 +275,36 @@ export default function AdminVillaResidentsPage() {
           </div>
           <div className="grid grid-cols-2 gap-2.5">
             <div>
-              <label className="block text-[15px] font-bold text-[#6B7280] mb-1.5">이름 *</label>
+              <label className="block text-[14px] font-bold text-[#0F2242] mb-1.5">이름 *</label>
               <input value={addName} onChange={e => setAddName(e.target.value)} placeholder="예: 홍길동" maxLength={20}
-                className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-[16px] outline-none focus:border-[#3766EE]" required />
+                className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-[15px] outline-none focus:border-[#3766EE]" required />
             </div>
             <div>
-              <label className="block text-[15px] font-bold text-[#6B7280] mb-1.5">호실 *</label>
+              <label className="block text-[14px] font-bold text-[#0F2242] mb-1.5">호실 *</label>
               <select value={addUnitId} onChange={e => setAddUnitId(e.target.value)}
-                className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-[16px] outline-none focus:border-[#3766EE]" required>
+                className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-[15px] outline-none focus:border-[#3766EE]" required>
                 <option value="">선택</option>
                 {units.map(u => <option key={u.id} value={u.id}>{u.ho_number}</option>)}
               </select>
             </div>
           </div>
           <div>
-            <label className="block text-[15px] font-bold text-[#6B7280] mb-1.5">휴대전화 *</label>
+            <label className="block text-[14px] font-bold text-[#0F2242] mb-1.5">휴대전화 *</label>
             <input value={addPhone} onChange={e => setAddPhone(e.target.value)} placeholder="01012345678" inputMode="tel"
-              className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-[16px] outline-none focus:border-[#3766EE]" required />
+              className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-[15px] outline-none focus:border-[#3766EE]" required />
           </div>
           <label className="flex items-center gap-2 text-[15px] text-[#0F2242] cursor-pointer">
-            <input type="checkbox" checked={addIsOwner} onChange={e => setAddIsOwner(e.target.checked)} className="w-4 h-4" />
+            <input type="checkbox" checked={addIsOwner} onChange={e => setAddIsOwner(e.target.checked)} className="w-4 h-4 accent-[#3766EE]" />
             소유주 (건물주)
           </label>
-          <button type="submit" disabled={addSubmitting} className="w-full bg-[#3766EE] text-white py-2.5 rounded-xl text-[16px] font-bold disabled:opacity-50">
+          <button type="submit" disabled={addSubmitting} className="w-full bg-[#3766EE] text-white py-2.5 rounded-xl text-[15px] font-bold disabled:opacity-50 hover:bg-[#1F3DC2] transition">
             {addSubmitting ? '처리 중…' : addMode === 'invite' ? '초대링크 발급' : '즉시 등록'}
           </button>
         </form>
       )}
 
-      {/* 초대링크 발급 결과 */}
       {inviteUrl && (
-        <div className="mb-4 bg-[#EEF1FB] border border-[#3766EE]/30 rounded-2xl p-4 shadow-sm space-y-3">
+        <div className="mb-4 bg-[#EEF2FF] border border-[#3766EE]/30 rounded-2xl p-4 shadow-sm space-y-3">
           <div className="text-center">
             <div className="text-3xl mb-1">💌</div>
             <p className="text-[15px] font-bold text-[#0F2242]">{inviteName}님 초대링크 발급 완료</p>
@@ -265,62 +321,51 @@ export default function AdminVillaResidentsPage() {
               📋 링크 복사
             </button>
           </div>
-          <button onClick={resetInvite} className="w-full text-[13px] text-[#6B7280] font-bold py-2">
-            완료
-          </button>
+          <button onClick={resetInvite} className="w-full text-[13px] text-[#6B7280] font-bold py-2">완료</button>
         </div>
       )}
 
-      {/* 상태 필터 */}
-      <div className="flex gap-1.5 overflow-x-auto mb-4 pb-1">
-        {[
-          { v: 'all', label: '전체', n: residents.length },
-          { v: 'pending', label: '승인대기', n: counts.pending ?? 0 },
-          { v: 'active', label: '거주중', n: counts.active ?? 0 },
-          { v: 'pending_moveout', label: '이사대기', n: counts.pending_moveout ?? 0 },
-          { v: 'moved_out', label: '이사완료', n: counts.moved_out ?? 0 },
-          { v: 'rejected', label: '거절', n: counts.rejected ?? 0 },
-        ].map(f => (
-          <button key={f.v} onClick={() => setFilter(f.v)}
-            className={`px-3 py-1.5 rounded-full text-[14px] font-bold border whitespace-nowrap ${
-              filter === f.v ? 'bg-[#3766EE] text-white border-[#3766EE]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'
-            }`}>
-            {f.label} {f.n > 0 && <span className={filter === f.v ? 'text-white/80' : 'text-[#9CA3AF]'}>· {f.n}</span>}
-          </button>
-        ))}
-      </div>
+      {/* 모드 안내 */}
+      <p className="text-[13px] text-[#6B7280] mb-3">
+        {mode === 'movein'
+          ? '신규 신청(승인대기) · 거주중 입주민을 관리합니다.'
+          : '이사 신청(이사대기) · 이사 완료된 세대를 관리합니다. 이사 확정 시 관리비 정산을 먼저 확인하세요.'}
+      </p>
 
-      {loading ? <p className="text-center text-sm text-[#9CA3AF] mt-10">불러오는 중…</p>
-        : filtered.length === 0 ? (
-          <div className="text-center mt-10">
-            <p className="text-[17px] font-bold text-[#0F2242]">해당 상태의 입주민이 없습니다</p>
+      {loading ? <p className="text-center text-[14px] text-[#9CA3AF] mt-10">불러오는 중…</p>
+        : visible.length === 0 ? (
+          <div className="bg-white border border-[#F0F2F5] rounded-2xl p-8 text-center">
+            <p className="text-[15px] font-bold text-[#0F2242]">{mode === 'movein' ? '입주민이 없습니다' : '이주 내역이 없습니다'}</p>
           </div>
         ) : (
           <div className="space-y-2.5">
-            {filtered.map(r => {
+            {visible.map(r => {
               const meta = STATUS_LABEL[r.status] ?? { label: r.status, color: 'bg-[#F5F6FA] text-[#6B7280]' };
+              const isMovedOut = r.status === 'moved_out';
               return (
-                <div key={r.id} className="bg-white border border-[#E8EBF0] rounded-xl p-4 shadow-sm">
+                <div key={r.id} className="bg-white border border-[#E8EBF0] rounded-2xl p-4 shadow-sm">
                   <div className="flex items-center gap-2 mb-2">
                     <h3 className="text-[17px] font-extrabold text-[#0F2242]">{r.name}</h3>
-                    <span className={`text-[12px] font-bold px-2 py-0.5 rounded ${meta.color}`}>{meta.label}</span>
-                    {r.is_owner && <span className="text-[12px] font-bold px-2 py-0.5 rounded bg-[rgba(55,102,238,0.12)] text-[#3766EE]">소유주</span>}
+                    <span className={`text-[12px] font-bold px-2 py-0.5 rounded-full ${meta.color}`}>{meta.label}</span>
+                    {r.is_owner && <span className="text-[12px] font-bold px-2 py-0.5 rounded-full bg-[#EEF2FF] text-[#3766EE]">소유주</span>}
                     <span className="ml-auto text-[14px] text-[#6B7280]">{r.units?.ho_number ?? '-'}</span>
                   </div>
-                  <p className="text-[14px] text-[#6B7280]">{r.phone}</p>
-                  {r.reject_reason && <p className="text-[14px] text-[#E74C3C] mt-1">거절 사유: {r.reject_reason}</p>}
+                  <p className="text-[14px] text-[#6B7280]">{isMovedOut ? '번호 삭제됨' : r.phone}</p>
+                  {r.reject_reason && <p className="text-[14px] text-[#FF3B30] mt-1">거절 사유: {r.reject_reason}</p>}
                   {r.applied_at && <p className="text-[13px] text-[#9CA3AF] mt-1">신청: {new Date(r.applied_at).toLocaleDateString('ko-KR')}</p>}
 
-                  {/* 액션 */}
                   <div className="flex gap-2 mt-3">
                     {r.status === 'pending' && (
                       <>
-                        <button onClick={() => approve(r)} className="flex-1 bg-[#3766EE] text-white py-2 rounded-xl text-[14px] font-bold">승인</button>
-                        <button onClick={() => reject(r)} className="flex-1 bg-white border border-[#E74C3C]/30 text-[#E74C3C] py-2 rounded-xl text-[14px] font-bold">거절</button>
+                        <button onClick={() => approve(r)} className="flex-1 bg-[#3766EE] text-white py-2 rounded-xl text-[14px] font-bold hover:bg-[#1F3DC2] transition">승인</button>
+                        <button onClick={() => reject(r)} className="flex-1 bg-white border border-[#FF3B30]/30 text-[#FF3B30] py-2 rounded-xl text-[14px] font-bold">거절</button>
                       </>
                     )}
                     {r.status === 'pending_moveout' && (
-                      <button onClick={() => confirmMoveout(r)} className="flex-1 bg-[#3766EE] text-white py-2 rounded-xl text-[14px] font-bold">이사 확정</button>
+                      <button onClick={() => openMoveout(r)} className="flex-1 bg-[#3766EE] text-white py-2 rounded-xl text-[14px] font-bold hover:bg-[#1F3DC2] transition">이사 확정 (정산 확인)</button>
+                    )}
+                    {r.status === 'active' && mode === 'moveout' && (
+                      <button onClick={() => openMoveout(r)} className="flex-1 bg-white border border-[#3766EE]/30 text-[#3766EE] py-2 rounded-xl text-[14px] font-bold">이사 처리</button>
                     )}
                   </div>
                 </div>
@@ -329,6 +374,71 @@ export default function AdminVillaResidentsPage() {
           </div>
         )
       }
+
+      {/* 이주 확정 모달 — 관리비 정산 확인 + 번호 삭제 안내 */}
+      {moveoutTarget && (
+        <div className="fixed inset-0 z-[100] flex items-end justify-center bg-[#0F2242]/40">
+          <div className="bg-white w-full max-w-screen-sm rounded-t-3xl px-5 pt-3 pb-7 max-h-[88vh] overflow-y-auto">
+            <div className="w-10 h-1 bg-[#E8EBF0] rounded-full mx-auto mb-4" />
+            <h3 className="text-[18px] font-extrabold text-[#0F2242]">
+              {moveoutTarget.name} · {moveoutTarget.units?.ho_number} 이사 확정
+            </h3>
+
+            {/* 관리비 정산 리스트 */}
+            <p className="text-[13px] font-bold text-[#6B7280] mt-4 mb-2">관리비 정산 확인</p>
+            {settlementLoading ? (
+              <p className="text-[14px] text-[#9CA3AF] py-3">정산 내역 확인 중…</p>
+            ) : (unpaidBills && unpaidBills.length > 0) ? (
+              <div className="bg-[#FEE8E7] border border-[#FF3B30]/20 rounded-2xl p-4 mb-3">
+                <p className="text-[14px] font-bold text-[#FF3B30] mb-2">아직 정산 안 된 관리비 {unpaidBills.length}건</p>
+                <ul className="space-y-1.5 mb-2">
+                  {unpaidBills.map((b, i) => (
+                    <li key={i} className="flex justify-between text-[14px]">
+                      <span className="text-[#0F2242]">{b.label}</span>
+                      <span className="font-bold text-[#0F2242]">₩{fmt(b.amount)}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="flex justify-between pt-2 border-t border-[#FF3B30]/20">
+                  <span className="text-[14px] font-bold text-[#FF3B30]">미정산 합계</span>
+                  <span className="text-[16px] font-black text-[#FF3B30]">₩{fmt(unpaidTotal)}</span>
+                </div>
+                <p className="text-[12px] text-[#6B7280] mt-2">미정산 금액이 있습니다. 정산 완료 여부를 확인 후 진행하세요.</p>
+              </div>
+            ) : (
+              <div className="bg-[#E8F8EC] border border-[#2ECC71]/25 rounded-2xl p-4 mb-3">
+                <p className="text-[14px] font-bold text-[#2ECC71]">✓ 미정산 관리비가 없습니다</p>
+                <p className="text-[12px] text-[#6B7280] mt-1">모든 세대 관리비가 정산 완료되었습니다.</p>
+              </div>
+            )}
+
+            {/* 번호 삭제 + 복구 불가 안내 */}
+            <div className="bg-[#EEF2FF] border border-[#3766EE]/15 rounded-2xl p-4 mb-4">
+              <p className="text-[13px] text-[#0F2242] leading-relaxed">
+                이사 확정 시 <strong className="text-[#3766EE]">전화번호가 즉시 삭제</strong>됩니다 (개인정보 보호).<br />
+                되돌리려면 입주민이 <strong className="text-[#3766EE]">다시 가입</strong>해야 합니다.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => { setMoveoutTarget(null); setUnpaidBills(null); }}
+                disabled={moveoutProcessing}
+                className="bg-white border border-[#E8EBF0] text-[#0F2242] rounded-xl py-3.5 text-[15px] font-bold disabled:opacity-50"
+              >
+                취소
+              </button>
+              <button
+                onClick={doMoveout}
+                disabled={moveoutProcessing || settlementLoading}
+                className="bg-[#3766EE] text-white rounded-xl py-3.5 text-[15px] font-bold hover:bg-[#1F3DC2] disabled:opacity-50 transition"
+              >
+                {moveoutProcessing ? '처리 중…' : '이사 확정 · 번호 삭제'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
