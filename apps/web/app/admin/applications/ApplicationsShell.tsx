@@ -108,7 +108,7 @@ export default function ApplicationsShell() {
 
       {/* 입주 신청 */}
       <section className="mb-6">
-        <h2 className="text-xs font-bold text-t3 tracking-widest mb-3">📮 입주 신청 ({applications.length})</h2>
+        <h2 className="text-xs font-bold text-t3 tracking-widest mb-3">입주 신청 ({applications.length})</h2>
         {applications.length === 0 ? (
           <div className="bg-white border border-border rounded-2xl p-6 text-center text-sm text-t3">대기 중인 입주 신청 없음</div>
         ) : (
@@ -150,7 +150,7 @@ export default function ApplicationsShell() {
 
       {/* 이주 신청 */}
       <section>
-        <h2 className="text-xs font-bold text-t3 tracking-widest mb-3">📦 이주 신청 ({moveouts.length})</h2>
+        <h2 className="text-xs font-bold text-t3 tracking-widest mb-3">이주 신청 ({moveouts.length})</h2>
         {moveouts.length === 0 ? (
           <div className="bg-white border border-border rounded-2xl p-6 text-center text-sm text-t3">대기 중인 이주 신청 없음</div>
         ) : (

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import Icon from '@/components/Icon';
 import { BILL_ITEM_PRESETS } from '@villatolk/shared';
 
 type BillItem = { id: string; name: string; amount: number };
@@ -241,7 +242,7 @@ export default function AdminVillaBillsPage() {
       <Link href={`/admin/villas/${villaId}`} className="hidden md:inline-block text-[15px] text-[#6B7280]">← 빌라 상세</Link>
       <div className="flex justify-between items-end mt-3 mb-5">
         <div>
-          {villaName && <p className="text-[13px] font-bold text-[#6C2FF2] mb-0.5">🏠 {villaName}</p>}
+          {villaName && <p className="text-[13px] font-bold text-[#6C2FF2] mb-0.5">{villaName}</p>}
           <h1 className="text-[26px] font-black text-[#0F2242]">관리비 고지</h1>
           <p className="text-[15px] text-[#6B7280] mt-0.5">일괄 고지 · 세대별 차등고지</p>
         </div>
@@ -278,7 +279,7 @@ export default function AdminVillaBillsPage() {
       {loading ? <p className="text-center text-[15px] text-[#9CA3AF] mt-10">불러오는 중…</p>
         : months.length === 0 ? (
           <div className="bg-white border border-[#F0F2F5] rounded-2xl p-8 text-center mt-2">
-            <div className="text-4xl mb-2">🧾</div>
+            <div className="w-12 h-12 rounded-2xl bg-[#F1ECFE] flex items-center justify-center mx-auto mb-2"><Icon name="bills" size={26} color="#6C2FF2" filled /></div>
             <p className="text-[16px] font-bold text-[#0F2242]">등록된 관리비 고지가 없습니다</p>
             <p className="text-[14px] text-[#9CA3AF] mt-1">＋ 새 고지로 시작하세요</p>
           </div>
@@ -340,7 +341,7 @@ export default function AdminVillaBillsPage() {
                       {m.status === 'published' && (
                         <>
                           <button onClick={() => sendBillNotice(m)} className="w-full bg-[#6C2FF2] text-white py-2.5 rounded-2xl text-[14px] font-bold hover:bg-[#5320C9] transition mb-2">
-                            📢 관리비 고지 발송 ({units.length}세대)
+                            관리비 고지 발송 ({units.length}세대)
                           </button>
                           <button onClick={() => setExpandedMonth(isExpanded ? null : m.id)} className="w-full bg-white border border-[#E8EBF0] text-[#6C2FF2] py-2.5 rounded-2xl text-[14px] font-bold">
                             {isExpanded ? '세대별 납부 닫기' : '세대별 납부 상세보기'}

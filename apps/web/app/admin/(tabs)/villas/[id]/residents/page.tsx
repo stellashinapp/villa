@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import AdminTopBar from '@/components/AdminTopBar';
+import Icon from '@/components/Icon';
 
 type Unit = { id: string; ho_number: string };
 type Resident = {
@@ -264,11 +265,11 @@ export default function AdminVillaResidentsPage() {
             <div className="grid grid-cols-2 gap-2">
               <button type="button" onClick={() => setAddMode('invite')}
                 className={`py-2.5 rounded-2xl text-[14px] font-bold border ${addMode === 'invite' ? 'bg-[#6C2FF2] text-white border-[#6C2FF2]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'}`}>
-                💌 초대링크 (권장)
+                초대링크 (권장)
               </button>
               <button type="button" onClick={() => setAddMode('direct')}
                 className={`py-2.5 rounded-2xl text-[14px] font-bold border ${addMode === 'direct' ? 'bg-[#6C2FF2] text-white border-[#6C2FF2]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'}`}>
-                ⚡ 즉시 등록
+                즉시 등록
               </button>
             </div>
             <p className="text-[12px] text-[#9CA3AF] mt-1.5">
@@ -310,7 +311,7 @@ export default function AdminVillaResidentsPage() {
       {inviteUrl && (
         <div className="mb-4 bg-[#F1ECFE] border border-[#6C2FF2]/30 rounded-2xl p-4 shadow-sm space-y-3">
           <div className="text-center">
-            <div className="text-3xl mb-1">💌</div>
+            <div className="w-12 h-12 rounded-2xl bg-[#F1ECFE] flex items-center justify-center mx-auto mb-1"><Icon name="message" size={24} color="#6C2FF2" filled /></div>
             <p className="text-[15px] font-bold text-[#0F2242]">{inviteName}님 초대링크 발급 완료</p>
             <p className="text-[13px] text-[#6B7280] mt-1">14일간 유효합니다</p>
           </div>
@@ -319,10 +320,10 @@ export default function AdminVillaResidentsPage() {
           </div>
           <div className="grid grid-cols-2 gap-2">
             <button onClick={shareViaKakao} className="bg-[#FEE500] text-[#000000] py-3 rounded-2xl text-[14px] font-bold">
-              💬 카카오톡 공유
+              카카오톡 공유
             </button>
             <button onClick={copyInvite} className="bg-white border border-[#E8EBF0] text-[#0F2242] py-3 rounded-2xl text-[14px] font-bold">
-              📋 링크 복사
+              링크 복사
             </button>
           </div>
           <button onClick={resetInvite} className="w-full text-[13px] text-[#6B7280] font-bold py-2">완료</button>

@@ -241,13 +241,13 @@ export default function AdminHomeShell() {
             <h3 className="text-[13px] font-bold text-[#0F2242] mb-2 px-1">오늘 처리 필요</h3>
             <div className="bg-white rounded-2xl shadow-sm border border-[#F0F2F5] mb-5 overflow-hidden">
               {agg.pendingApplications > 0 && (
-                <AlertRow href="/admin/applications" emoji="📮" title="가입 신청 대기" desc="입주민 가입 신청을 확인해주세요" count={agg.pendingApplications} accent="#6C2FF2" />
+                <AlertRow href="/admin/applications" icon="residents" title="가입 신청 대기" desc="입주민 가입 신청을 확인해주세요" count={agg.pendingApplications} accent="#6C2FF2" />
               )}
               {agg.pendingMoveouts > 0 && (
-                <AlertRow href="/admin/residents" emoji="📦" title="이주 확정 대기" desc="입주민 이사 요청을 확정해주세요" count={agg.pendingMoveouts} accent="#6C2FF2" />
+                <AlertRow href="/admin/residents" icon="box" title="이주 확정 대기" desc="입주민 이사 요청을 확정해주세요" count={agg.pendingMoveouts} accent="#6C2FF2" />
               )}
               {agg.unreadMessages > 0 && (
-                <AlertRow href="/admin/inbox" emoji="✉️" title="미답변 메시지" desc="입주민 민원에 답변해주세요" count={agg.unreadMessages} accent="#FF3B30" />
+                <AlertRow href="/admin/inbox" icon="message" title="미답변 메시지" desc="입주민 민원에 답변해주세요" count={agg.unreadMessages} accent="#FF3B30" />
               )}
             </div>
           </>
@@ -335,12 +335,14 @@ function QuickAction({ href, bg, color, icon, label, badge, disabled }: {
   );
 }
 
-function AlertRow({ href, emoji, title, desc, count, accent }: {
-  href: string; emoji: string; title: string; desc: string; count: number; accent: string;
+function AlertRow({ href, icon, title, desc, count, accent }: {
+  href: string; icon: IconName; title: string; desc: string; count: number; accent: string;
 }) {
   return (
     <Link href={href} className="flex items-center px-4 py-3.5 border-b border-[#F0F2F5] last:border-b-0 active:bg-[#FAFBFC]">
-      <span className="w-10 h-10 rounded-2xl flex items-center justify-center text-[20px] mr-3 flex-shrink-0" style={{ background: accent + '20' }}>{emoji}</span>
+      <span className="w-10 h-10 rounded-2xl flex items-center justify-center mr-3 flex-shrink-0" style={{ background: accent + '20' }}>
+        <Icon name={icon} size={20} color={accent} filled />
+      </span>
       <div className="flex-1 min-w-0">
         <p className="text-[14px] font-bold text-[#0F2242]">{title}</p>
         <p className="text-[12px] text-[#6B7280] mt-0.5">{desc}</p>

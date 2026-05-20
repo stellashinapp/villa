@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import Icon from '@/components/Icon';
 
 type VillaRow = {
   id: string;
@@ -112,7 +113,7 @@ export default function AdminVillasPage() {
         : error ? <p className="text-center text-[16px] text-[#FF3B30] mt-20">오류: {error}</p>
         : cards.length === 0 ? (
           <Link href="/admin/villas/add" className="block bg-white border border-dashed border-[#6C2FF2]/30 rounded-2xl p-8 text-center mt-10 hover:bg-[#F1ECFE]">
-            <div className="text-4xl mb-3">🏘️</div>
+            <div className="w-12 h-12 rounded-2xl bg-[#F1ECFE] flex items-center justify-center mx-auto mb-3"><Icon name="villa" size={26} color="#6C2FF2" filled /></div>
             <p className="text-[18px] font-bold text-[#0F2242]">첫 빌라를 등록해주세요</p>
             <p className="text-[15px] text-[#6B7280] mt-1">+ 빌라 추가 버튼으로 시작</p>
           </Link>
@@ -166,7 +167,7 @@ export default function AdminVillasPage() {
                 )}
 
                 {(v.account_bank || v.account_number) && (
-                  <p className="text-[13px] text-[#9CA3AF] mt-2">💳 {v.account_bank} {v.account_number}</p>
+                  <p className="flex items-center gap-1 text-[13px] text-[#9CA3AF] mt-2"><Icon name="card" size={14} color="#9CA3AF" />{v.account_bank} {v.account_number}</p>
                 )}
               </Link>
             ))}

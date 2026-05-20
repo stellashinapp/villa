@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import Icon from '@/components/Icon';
 
 type Profile = { id: string; name: string | null; phone: string | null; email: string; role: string | null };
 type Subscription = {
@@ -80,8 +81,8 @@ export default function AdminSettingsPage() {
           <Section title="본사 콘솔">
             <a href={ADMIN_WEB_URL} target="_blank" rel="noreferrer"
               className="flex items-center bg-white border border-[#F0F2F5] rounded-2xl p-4 shadow-sm active:scale-[0.99] transition">
-              <span className="w-12 h-12 rounded-2xl flex items-center justify-center text-[24px] mr-3 bg-gradient-to-br from-[#6C2FF2] to-[#9D6BF7] text-white">
-                🏢
+              <span className="w-12 h-12 rounded-2xl flex items-center justify-center mr-3 bg-gradient-to-br from-[#6C2FF2] to-[#9D6BF7]">
+                <Icon name="villa" size={24} color="#FFFFFF" filled />
               </span>
               <div className="flex-1">
                 <p className="text-[15px] font-extrabold text-[#0F2242]">앤뉴 본사 콘솔</p>

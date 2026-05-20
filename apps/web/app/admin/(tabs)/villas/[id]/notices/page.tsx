@@ -105,7 +105,7 @@ export default function AdminVillaNoticesPage() {
             {notices.map(n => (
               <div key={n.id} className={`bg-white rounded-2xl p-4 border shadow-sm ${n.is_pinned ? 'border-[#6C2FF2] border-[1.5px]' : 'border-[#E8EBF0]'}`}>
                 <div className="flex items-center gap-2 mb-2">
-                  {n.is_pinned && <span className="bg-[rgba(108,47,242,0.12)] text-[#6C2FF2] text-[12px] font-extrabold px-2 py-0.5 rounded">📌 고정</span>}
+                  {n.is_pinned && <span className="bg-[rgba(108,47,242,0.12)] text-[#6C2FF2] text-[12px] font-extrabold px-2 py-0.5 rounded">고정</span>}
                   <span className="text-[14px] text-[#9CA3AF]">{new Date(n.created_at).toLocaleDateString('ko-KR')}</span>
                   <button onClick={() => togglePin(n)} className="ml-auto text-[14px] text-[#6C2FF2] font-bold hover:underline">
                     {n.is_pinned ? '고정 해제' : '고정'}
