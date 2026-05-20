@@ -22,6 +22,7 @@ import {
   IoWarningOutline, IoWarning,
   IoCreateOutline, IoCreate,
   IoCubeOutline, IoCube,
+  IoPersonAddOutline, IoPersonAdd,
 } from 'react-icons/io5';
 
 export type IconName =
@@ -43,7 +44,8 @@ export type IconName =
   | 'search'
   | 'alert'
   | 'edit'
-  | 'box';
+  | 'box'
+  | 'personAdd';
 
 const MAP: Record<IconName, { outline: typeof IoHomeOutline; filled: typeof IoHome }> = {
   home: { outline: IoHomeOutline, filled: IoHome },
@@ -65,6 +67,7 @@ const MAP: Record<IconName, { outline: typeof IoHomeOutline; filled: typeof IoHo
   alert: { outline: IoWarningOutline, filled: IoWarning },
   edit: { outline: IoCreateOutline, filled: IoCreate },
   box: { outline: IoCubeOutline, filled: IoCube },
+  personAdd: { outline: IoPersonAddOutline, filled: IoPersonAdd },
 };
 
 export default function Icon({

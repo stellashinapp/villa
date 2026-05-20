@@ -230,7 +230,7 @@ export default function AdminHomeShell() {
             <QuickAction href="/admin/inbox" bg="#E9E9FD" color="#2B2BEE" icon="message" label="민원" badge={agg.unreadMessages > 0 ? String(agg.unreadMessages) : undefined} />
             <QuickAction href="/admin/parking" disabled={agg.totalVillas === 0} bg="#E9E9FD" color="#2B2BEE" icon="parking" label="주차" />
             <QuickAction href="/admin/villas" bg="#E9E9FD" color="#2B2BEE" icon="villa" label="빌라" />
-            <QuickAction href="/admin/applications" bg="#E9E9FD" color="#2B2BEE" icon="residents" label="가입신청" badge={agg.pendingApplications > 0 ? String(agg.pendingApplications) : undefined} />
+            <QuickAction href="/admin/applications" bg="#E9E9FD" color="#2B2BEE" icon="personAdd" label="가입신청" badge={agg.pendingApplications > 0 ? String(agg.pendingApplications) : undefined} />
             <QuickAction href="/admin/settings" bg="#F5F6FA" color="#6B7280" icon="settings" label="설정" />
           </div>
         </div>
