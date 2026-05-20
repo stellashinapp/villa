@@ -99,14 +99,11 @@ export default function ApplicationsShell() {
   const moveouts = rows.filter(r => r.status === 'pending_moveout');
 
   return (
-    <div className="max-w-md mx-auto px-5 py-6 pb-24">
-      <header className="mb-6">
-        <div className="flex items-center gap-2 text-xs text-t3">
-          <Link href="/admin" className="hover:text-t1">← 홈</Link>
-          <span>/</span>
-          <span className="text-t1 font-semibold">신청 대기</span>
-        </div>
-        <h1 className="text-xl font-extrabold text-t1 mt-2">입주·이주 신청</h1>
+    <div className="max-w-screen-sm mx-auto px-5 pt-6 pb-24">
+      <header className="mb-5">
+        <Link href="/admin" className="hidden md:inline-block text-[14px] text-[#6B7280] hover:text-[#0F2242] mb-1">← 홈</Link>
+        <h1 className="text-[26px] font-black text-[#0F2242] leading-tight">입주·이주 신청</h1>
+        <p className="text-[14px] text-[#6B7280] mt-1">대기 중인 가입·이주 요청을 확인하세요</p>
       </header>
 
       {/* 입주 신청 */}

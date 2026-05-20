@@ -62,8 +62,8 @@ export default function MoveoutShell() {
 
         <div className="bg-white border border-[#E8EBF0] rounded-2xl p-5 mb-4 w-full shadow-sm">
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-2 h-2 rounded-full bg-[#F39C12] animate-pulse" />
-            <p className="text-[15px] font-bold text-[#F39C12]">관리자 확정 대기 중</p>
+            <div className="w-2 h-2 rounded-full bg-[#6C2FF2] animate-pulse" />
+            <p className="text-[15px] font-bold text-[#6C2FF2]">관리자 확정 대기 중</p>
           </div>
           <p className="text-[15px] text-[#0F2242] leading-relaxed mb-2">
             <strong>{resident.villaName}</strong> 관리자에게<br />
@@ -74,7 +74,7 @@ export default function MoveoutShell() {
           </p>
           <ul className="text-[14px] text-[#6B7280] leading-relaxed mt-1.5 space-y-1 pl-4">
             <li>• 청구서·민원·공지 조회가 종료됩니다</li>
-            <li>• 다음 로그인 시 자동으로 <strong className="text-[#E74C3C]">회원 탈퇴 처리</strong> 됩니다</li>
+            <li>• 다음 로그인 시 자동으로 <strong className="text-[#FF3B30]">회원 탈퇴 처리</strong> 됩니다</li>
             <li>• 본인의 개인정보는 안전하게 삭제됩니다</li>
           </ul>
         </div>
@@ -86,7 +86,7 @@ export default function MoveoutShell() {
           </p>
         </div>
 
-        <Link href="/resident/bills" className="w-full bg-[#3766EE] text-white rounded-2xl py-3.5 font-bold text-center text-[17px]">
+        <Link href="/resident/bills" className="w-full bg-[#6C2FF2] text-white rounded-2xl py-3.5 font-bold text-center text-[17px]">
           청구서 화면으로
         </Link>
       </div>

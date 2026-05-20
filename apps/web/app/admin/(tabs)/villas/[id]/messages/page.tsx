@@ -93,7 +93,7 @@ export default function AdminVillaMessagesPage() {
                 <div key={m.id} className="bg-white border border-[#E8EBF0] rounded-2xl p-4 shadow-sm">
                   <div className="flex items-center gap-2 mb-2 flex-wrap">
                     <span className="text-[14px] font-bold">{cat.emoji} {cat.label}</span>
-                    <span className={`text-[13px] font-bold px-2 py-0.5 rounded ${replied ? 'bg-[rgba(46,204,113,0.12)] text-[#2ECC71]' : 'bg-[rgba(231,76,60,0.12)] text-[#E74C3C]'}`}>
+                    <span className={`text-[13px] font-bold px-2 py-0.5 rounded ${replied ? 'bg-[rgba(46,204,113,0.12)] text-[#2ECC71]' : 'bg-[rgba(231,76,60,0.12)] text-[#FF3B30]'}`}>
                       {replied ? '답변완료' : '미답변'}
                     </span>
                     <span className="text-[13px] text-[#6B7280] font-semibold">
@@ -108,7 +108,7 @@ export default function AdminVillaMessagesPage() {
                       {adminReplies.map(r => (
                         <div key={r.id} className="bg-[#F5F6FA] rounded-2xl p-3">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="text-[13px] font-bold text-[#3766EE]">관리자{r.author_name && ` · ${r.author_name}`}</span>
+                            <span className="text-[13px] font-bold text-[#6C2FF2]">관리자{r.author_name && ` · ${r.author_name}`}</span>
                             <span className="text-[13px] text-[#9CA3AF] ml-auto">{new Date(r.created_at).toLocaleDateString('ko-KR')}</span>
                           </div>
                           <p className="text-[15px] text-[#0F2242] leading-[20px] whitespace-pre-wrap">{r.text}</p>
@@ -120,14 +120,14 @@ export default function AdminVillaMessagesPage() {
                   {replyingTo === m.id ? (
                     <div className="mt-3 pt-3 border-t border-[#E8EBF0]">
                       <textarea value={replyText} onChange={e => setReplyText(e.target.value)} placeholder="답변 내용" rows={3}
-                        className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-3 py-2 text-sm outline-none focus:border-[#3766EE] resize-none" />
+                        className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-3 py-2 text-sm outline-none focus:border-[#6C2FF2] resize-none" />
                       <div className="flex gap-2 mt-2">
-                        <button onClick={() => submitReply(m.id)} className="flex-1 bg-[#3766EE] text-white py-2 rounded-2xl text-[15px] font-bold">답변 등록</button>
+                        <button onClick={() => submitReply(m.id)} className="flex-1 bg-[#6C2FF2] text-white py-2 rounded-2xl text-[15px] font-bold">답변 등록</button>
                         <button onClick={() => { setReplyingTo(null); setReplyText(''); }} className="px-3 bg-[#F5F6FA] text-[#6B7280] py-2 rounded-2xl text-[15px] font-bold">취소</button>
                       </div>
                     </div>
                   ) : (
-                    <button onClick={() => { setReplyingTo(m.id); setReplyText(''); }} className="mt-3 text-[14px] font-bold text-[#3766EE] hover:underline">
+                    <button onClick={() => { setReplyingTo(m.id); setReplyText(''); }} className="mt-3 text-[14px] font-bold text-[#6C2FF2] hover:underline">
                       {replied ? '추가 답변' : '답변하기'} →
                     </button>
                   )}

@@ -33,12 +33,12 @@ export default async function AdminLoginPage({
             회원가입 (관리자 전용)
           </Link>
 
-          <div className="mt-6 bg-[#EEF2FF] border border-[#3766EE]/15 rounded-2xl px-4 py-3 text-center">
+          <div className="mt-6 bg-[#F1ECFE] border border-[#6C2FF2]/15 rounded-2xl px-4 py-3 text-center">
             <p className="text-[12px] text-[#6B7280] mb-1">데모 계정</p>
             <p className="text-[13px] text-[#0F2242] font-bold">
-              아이디: <span className="text-[#3766EE]">admin1@villatolk.test</span>
+              아이디: <span className="text-[#6C2FF2]">admin1@villatolk.test</span>
               {' / '}
-              비밀번호: <span className="text-[#3766EE]">test1234!</span>
+              비밀번호: <span className="text-[#6C2FF2]">test1234!</span>
             </p>
           </div>
         </div>

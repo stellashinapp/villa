@@ -73,12 +73,12 @@ export default function ResidentNoticesPage() {
                 <article key={n.id} className="bg-white rounded-2xl p-5 shadow-sm border border-[#F0F2F5]">
                   <div className="flex items-center gap-2 mb-2">
                     {n.is_pinned && (
-                      <span className="bg-[#FFF0E6] text-[#FF6B35] text-[10px] font-extrabold px-2 py-0.5 rounded-full">
+                      <span className="bg-[#F1ECFE] text-[#6C2FF2] text-[10px] font-extrabold px-2 py-0.5 rounded-full">
                         📌 고정
                       </span>
                     )}
                     {isNew(n.created_at) && (
-                      <span className="bg-[#3766EE] text-white text-[10px] font-extrabold px-2 py-0.5 rounded">
+                      <span className="bg-[#6C2FF2] text-white text-[10px] font-extrabold px-2 py-0.5 rounded">
                         NEW
                       </span>
                     )}

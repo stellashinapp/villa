@@ -119,7 +119,7 @@ export default function InviteAcceptPage() {
         <div className="text-5xl mb-3">⚠️</div>
         <h2 className="text-[20px] font-extrabold text-[#0F2242] mb-2">초대 링크 오류</h2>
         <p className="text-[14px] text-[#6B7280] text-center mb-6">{error}</p>
-        <Link href="/" className="bg-[#3766EE] text-white px-6 py-3 rounded-2xl font-bold">홈으로</Link>
+        <Link href="/" className="bg-[#6C2FF2] text-white px-6 py-3 rounded-2xl font-bold">홈으로</Link>
       </div>
     );
   }
@@ -129,7 +129,7 @@ export default function InviteAcceptPage() {
       <div className="max-w-sm mx-auto">
         <div className="text-center mb-6">
           <div className="text-5xl mb-3">💌</div>
-          <p className="text-[13px] text-[#3766EE] font-bold tracking-[0.16em] mb-1">VILLATOLK</p>
+          <p className="text-[13px] text-[#6C2FF2] font-bold tracking-[0.16em] mb-1">VILLATOLK</p>
           <h1 className="text-[22px] font-extrabold text-[#0F2242]">{inv.name}님, 환영합니다</h1>
         </div>
 
@@ -161,13 +161,13 @@ export default function InviteAcceptPage() {
             placeholder="마지막 4자리"
             maxLength={11}
             inputMode="tel"
-            className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-3 py-3 text-[16px] outline-none focus:border-[#3766EE]"
+            className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-3 py-3 text-[16px] outline-none focus:border-[#6C2FF2]"
             required
           />
           <button
             type="submit"
             disabled={accepting}
-            className="w-full bg-[#3766EE] text-white py-3.5 rounded-2xl text-[16px] font-bold disabled:opacity-50"
+            className="w-full bg-[#6C2FF2] text-white py-3.5 rounded-2xl text-[16px] font-bold disabled:opacity-50"
           >
             {accepting ? '가입 처리 중…' : '✓ 가입 완료 (자동 로그인)'}
           </button>

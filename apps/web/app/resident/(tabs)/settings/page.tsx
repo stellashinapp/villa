@@ -47,7 +47,7 @@ export default function ResidentSettingsPage() {
 
       <div className="px-5 pt-4 pb-8 max-w-screen-sm mx-auto">
         {/* 프로필 카드 */}
-        <div className="bg-gradient-to-br from-[#3766EE] to-[#5B86FF] rounded-2xl p-5 text-white shadow-md mb-4">
+        <div className="bg-gradient-to-br from-[#6C2FF2] to-[#9D6BF7] rounded-2xl p-5 text-white shadow-md mb-4">
           <div className="flex items-center gap-3">
             <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center text-[24px] font-black">
               {session?.name?.[0] ?? '?'}
@@ -71,7 +71,7 @@ export default function ResidentSettingsPage() {
         {(accountBank || accountNum) && (
           <Section title="관리비 입금 계좌">
             <div className="flex items-center">
-              <span className="w-10 h-10 rounded-2xl flex items-center justify-center text-[20px] mr-3 bg-[#EEF2FF]">💳</span>
+              <span className="w-10 h-10 rounded-2xl flex items-center justify-center text-[20px] mr-3 bg-[#F1ECFE]">💳</span>
               <div className="flex-1">
                 <p className="text-[14px] font-bold text-[#0F2242]">{accountBank} {accountNum}</p>
               </div>
@@ -100,7 +100,7 @@ export default function ResidentSettingsPage() {
         {/* 앱 정보 */}
         <Section title="앱 정보">
           <Row label="앱 버전" value="v1.0.0" />
-          <Row label="고객센터" value="villatolk@andnew.kr" valueClassName="text-[#3766EE]" />
+          <Row label="고객센터" value="villatolk@andnew.kr" valueClassName="text-[#6C2FF2]" />
         </Section>
 
         <button onClick={handleLogout}

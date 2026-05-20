@@ -28,7 +28,7 @@ export default function ResidentPageHeader({
     <header className="bg-white px-5 pt-4 pb-4 border-b border-[#F0F2F5]">
       <div className="max-w-screen-sm mx-auto flex items-start justify-between">
         <div>
-          <p className="text-[13px] font-bold text-[#3766EE]">{villaName}</p>
+          <p className="text-[13px] font-bold text-[#6C2FF2]">{villaName}</p>
           <h1 className="text-[24px] font-black text-[#0F2242] mt-1 leading-tight">{title}</h1>
           <p className="text-[13px] text-[#6B7280] mt-1">{ho} {name}님</p>
         </div>

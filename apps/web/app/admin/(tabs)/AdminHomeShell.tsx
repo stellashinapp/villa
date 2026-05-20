@@ -151,7 +151,7 @@ export default function AdminHomeShell() {
       <header className="bg-white px-5 pt-3 pb-3 sticky top-0 z-30 border-b border-[#F0F2F5]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <span className="text-[#3766EE] text-[20px] font-black">✦</span>
+            <span className="text-[#6C2FF2] text-[20px] font-black">✦</span>
             <h1 className="text-[18px] font-black text-[#0F2242]">빌라톡</h1>
           </div>
           <div className="flex items-center gap-3">
@@ -187,7 +187,7 @@ export default function AdminHomeShell() {
         {featuredVilla?.current_month_label ? (
           <Link
             href={`/admin/villas/${featuredVilla.id}`}
-            className="block bg-gradient-to-br from-[#3766EE] to-[#5B86FF] rounded-2xl p-5 text-white shadow-md mb-5 active:scale-[0.99] transition"
+            className="block bg-gradient-to-br from-[#6C2FF2] to-[#9D6BF7] rounded-2xl p-5 text-white shadow-md mb-5 active:scale-[0.99] transition"
           >
             <p className="text-[11px] font-bold opacity-80 tracking-wider mb-1">{featuredVilla.current_month_label}</p>
             <h3 className="text-[20px] font-black mb-1">{featuredVilla.name}</h3>
@@ -205,7 +205,7 @@ export default function AdminHomeShell() {
         ) : agg.totalVillas === 0 ? (
           <Link
             href="/admin/villas/add"
-            className="block bg-gradient-to-br from-[#3766EE] to-[#5B86FF] rounded-2xl p-5 text-white shadow-md mb-5 active:scale-[0.99] transition"
+            className="block bg-gradient-to-br from-[#6C2FF2] to-[#9D6BF7] rounded-2xl p-5 text-white shadow-md mb-5 active:scale-[0.99] transition"
           >
             <p className="text-[12px] font-bold opacity-80 tracking-wider mb-1">START</p>
             <h3 className="text-[20px] font-black mb-2">첫 빌라를 등록하세요</h3>
@@ -215,7 +215,7 @@ export default function AdminHomeShell() {
         ) : (
           <div className="bg-white rounded-2xl p-5 border border-[#F0F2F5] shadow-sm mb-5 text-center">
             <p className="text-[14px] text-[#6B7280] mb-3">이번 달 발행된 관리비가 없습니다</p>
-            <Link href="/admin/bills" className="block w-full bg-[#3766EE] text-white rounded-2xl py-3 text-[15px] font-bold hover:bg-[#1F3DC2] transition">
+            <Link href="/admin/bills" className="block w-full bg-[#6C2FF2] text-white rounded-2xl py-3 text-[15px] font-bold hover:bg-[#5320C9] transition">
               관리비 발행
             </Link>
           </div>
@@ -224,13 +224,13 @@ export default function AdminHomeShell() {
         {/* 8-그리드 빠른 액션 (아파트아이 스타일) */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#F0F2F5] mb-5">
           <div className="grid grid-cols-4 gap-y-4">
-            <QuickAction href="/admin/bills" disabled={agg.totalVillas === 0} bg="#EEF2FF" color="#3766EE" icon="bills" label="관리비" badge={agg.unpaidCurrentMonth > 0 ? '미납' : undefined} />
-            <QuickAction href="/admin/notices" disabled={agg.totalVillas === 0} bg="#EEF2FF" color="#3766EE" icon="notice" label="공지작성" />
-            <QuickAction href="/admin/residents" disabled={agg.totalVillas === 0} bg="#EEF2FF" color="#3766EE" icon="residents" label="입주민" badge={agg.pendingApplications > 0 ? 'NEW' : undefined} />
-            <QuickAction href="/admin/inbox" bg="#EEF2FF" color="#3766EE" icon="message" label="민원" badge={agg.unreadMessages > 0 ? String(agg.unreadMessages) : undefined} />
-            <QuickAction href="/admin/parking" disabled={agg.totalVillas === 0} bg="#EEF2FF" color="#3766EE" icon="parking" label="주차" />
-            <QuickAction href="/admin/villas" bg="#EEF2FF" color="#3766EE" icon="villa" label="빌라" />
-            <QuickAction href="/admin/applications" bg="#EEF2FF" color="#3766EE" icon="residents" label="가입신청" badge={agg.pendingApplications > 0 ? String(agg.pendingApplications) : undefined} />
+            <QuickAction href="/admin/bills" disabled={agg.totalVillas === 0} bg="#F1ECFE" color="#6C2FF2" icon="bills" label="관리비" badge={agg.unpaidCurrentMonth > 0 ? '미납' : undefined} />
+            <QuickAction href="/admin/notices" disabled={agg.totalVillas === 0} bg="#F1ECFE" color="#6C2FF2" icon="notice" label="공지작성" />
+            <QuickAction href="/admin/residents" disabled={agg.totalVillas === 0} bg="#F1ECFE" color="#6C2FF2" icon="residents" label="입주민" badge={agg.pendingApplications > 0 ? 'NEW' : undefined} />
+            <QuickAction href="/admin/inbox" bg="#F1ECFE" color="#6C2FF2" icon="message" label="민원" badge={agg.unreadMessages > 0 ? String(agg.unreadMessages) : undefined} />
+            <QuickAction href="/admin/parking" disabled={agg.totalVillas === 0} bg="#F1ECFE" color="#6C2FF2" icon="parking" label="주차" />
+            <QuickAction href="/admin/villas" bg="#F1ECFE" color="#6C2FF2" icon="villa" label="빌라" />
+            <QuickAction href="/admin/applications" bg="#F1ECFE" color="#6C2FF2" icon="residents" label="가입신청" badge={agg.pendingApplications > 0 ? String(agg.pendingApplications) : undefined} />
             <QuickAction href="/admin/settings" bg="#F5F6FA" color="#6B7280" icon="settings" label="설정" />
           </div>
         </div>
@@ -241,10 +241,10 @@ export default function AdminHomeShell() {
             <h3 className="text-[13px] font-bold text-[#0F2242] mb-2 px-1">오늘 처리 필요</h3>
             <div className="bg-white rounded-2xl shadow-sm border border-[#F0F2F5] mb-5 overflow-hidden">
               {agg.pendingApplications > 0 && (
-                <AlertRow href="/admin/applications" emoji="📮" title="가입 신청 대기" desc="입주민 가입 신청을 확인해주세요" count={agg.pendingApplications} accent="#3766EE" />
+                <AlertRow href="/admin/applications" emoji="📮" title="가입 신청 대기" desc="입주민 가입 신청을 확인해주세요" count={agg.pendingApplications} accent="#6C2FF2" />
               )}
               {agg.pendingMoveouts > 0 && (
-                <AlertRow href="/admin/residents" emoji="📦" title="이주 확정 대기" desc="입주민 이사 요청을 확정해주세요" count={agg.pendingMoveouts} accent="#3766EE" />
+                <AlertRow href="/admin/residents" emoji="📦" title="이주 확정 대기" desc="입주민 이사 요청을 확정해주세요" count={agg.pendingMoveouts} accent="#6C2FF2" />
               )}
               {agg.unreadMessages > 0 && (
                 <AlertRow href="/admin/inbox" emoji="✉️" title="미답변 메시지" desc="입주민 민원에 답변해주세요" count={agg.unreadMessages} accent="#FF3B30" />
@@ -258,7 +258,7 @@ export default function AdminHomeShell() {
           <>
             <div className="flex items-center justify-between mb-2 px-1">
               <h3 className="text-[13px] font-bold text-[#0F2242]">내 빌라 ({villas.length})</h3>
-              <Link href="/admin/villas/add" className="text-[13px] text-[#3766EE] font-bold">＋ 추가</Link>
+              <Link href="/admin/villas/add" className="text-[13px] text-[#6C2FF2] font-bold">＋ 추가</Link>
             </div>
             <div className="space-y-2.5 mb-5">
               {villas.slice(1).map(v => (
@@ -272,7 +272,7 @@ export default function AdminHomeShell() {
                     {v.current_month_label && (
                       <div className="text-right">
                         <p className="text-[15px] font-extrabold text-[#0F2242]">₩{fmt(v.per_unit_amount)}</p>
-                        <p className={`text-[11px] font-bold mt-0.5 ${v.pay_rate >= 80 ? 'text-[#2ECC71]' : v.pay_rate >= 50 ? 'text-[#3766EE]' : 'text-[#FF3B30]'}`}>
+                        <p className={`text-[11px] font-bold mt-0.5 ${v.pay_rate >= 80 ? 'text-[#2ECC71]' : v.pay_rate >= 50 ? 'text-[#6C2FF2]' : 'text-[#FF3B30]'}`}>
                           납부율 {v.pay_rate}%
                         </p>
                       </div>
@@ -287,15 +287,15 @@ export default function AdminHomeShell() {
         {/* 구독 카드 — 최하단 (QA 1) */}
         <h3 className="text-[13px] font-bold text-[#0F2242] mb-2 px-1">구독</h3>
         <Link href="/admin/settings" className={`block rounded-2xl p-4 shadow-sm mb-5 ${
-          sub?.status === 'active' ? 'bg-gradient-to-br from-[#3766EE] to-[#5B86FF] text-white'
+          sub?.status === 'active' ? 'bg-gradient-to-br from-[#6C2FF2] to-[#9D6BF7] text-white'
           : sub?.status === 'past_due' ? 'bg-[#FEE8E7] border border-[#FF3B30]/30'
-          : sub?.status === 'trialing' ? 'bg-[#EEF2FF] border border-[#3766EE]/30'
+          : sub?.status === 'trialing' ? 'bg-[#F1ECFE] border border-[#6C2FF2]/30'
           : 'bg-white border border-[#F0F2F5]'
         }`}>
           <div className="flex items-center justify-between">
             <div>
               <p className={`text-[11px] font-bold tracking-widest ${sub?.status === 'active' ? 'opacity-80' : 'text-[#6B7280]'}`}>구독 상태</p>
-              <p className={`text-[18px] font-extrabold mt-0.5 ${sub?.status === 'past_due' ? 'text-[#FF3B30]' : sub?.status === 'trialing' ? 'text-[#3766EE]' : ''}`}>{subLabel}</p>
+              <p className={`text-[18px] font-extrabold mt-0.5 ${sub?.status === 'past_due' ? 'text-[#FF3B30]' : sub?.status === 'trialing' ? 'text-[#6C2FF2]' : ''}`}>{subLabel}</p>
               {sub?.card_last4 && <p className={`text-[12px] mt-1 ${sub?.status === 'active' ? 'opacity-90' : 'text-[#6B7280]'}`}>{sub.card_brand} ····{sub.card_last4}</p>}
               {!sub && <p className="text-[12px] text-[#6B7280] mt-1">카드 등록 시 무료 체험 시작</p>}
             </div>

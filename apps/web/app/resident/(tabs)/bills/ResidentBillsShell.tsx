@@ -172,8 +172,8 @@ export default function ResidentBillsShell() {
       <div className="px-5 pt-4 pb-8 max-w-screen-sm mx-auto">
         {/* 특이사항 — 항시 노출 */}
         {villa?.special_notes && (
-          <div className="bg-[#EEF2FF] border border-[#3766EE]/15 rounded-2xl px-4 py-3 mb-3">
-            <p className="text-[12px] font-bold text-[#3766EE] mb-1">📌 빌라 안내</p>
+          <div className="bg-[#F1ECFE] border border-[#6C2FF2]/15 rounded-2xl px-4 py-3 mb-3">
+            <p className="text-[12px] font-bold text-[#6C2FF2] mb-1">📌 빌라 안내</p>
             <p className="text-[13px] text-[#0F2242] leading-relaxed whitespace-pre-wrap">{villa.special_notes}</p>
           </div>
         )}
@@ -185,12 +185,12 @@ export default function ResidentBillsShell() {
               <p className="text-[11px] text-[#9CA3AF]">관리자</p>
               <p className="text-[14px] font-bold text-[#0F2242]">{adminContact.admin_name}</p>
             </div>
-            <span className="text-[13px] font-bold text-[#3766EE]">📞 {adminContact.admin_phone}</span>
+            <span className="text-[13px] font-bold text-[#6C2FF2]">📞 {adminContact.admin_phone}</span>
           </a>
         )}
 
         {currentMonth ? (
-          <div className="bg-gradient-to-br from-[#3766EE] to-[#4D7AEF] rounded-2xl px-5 py-6 text-white shadow-md text-center">
+          <div className="bg-gradient-to-br from-[#6C2FF2] to-[#8B54F0] rounded-2xl px-5 py-6 text-white shadow-md text-center">
             <p className="text-[13px] font-bold opacity-90">{ymLabel(currentMonth.year_month)} 관리비</p>
             <p className="mt-2">
               <span className="text-[40px] font-black tracking-tight align-middle">{fmt(myAmt)}</span>
@@ -204,7 +204,7 @@ export default function ResidentBillsShell() {
               className={`mt-5 w-full rounded-2xl py-3.5 text-[15px] font-extrabold transition ${
                 currentPay?.is_paid
                   ? 'bg-transparent border border-white/40 text-white'
-                  : 'bg-white text-[#3766EE] hover:bg-[#F5F6FA]'
+                  : 'bg-white text-[#6C2FF2] hover:bg-[#F5F6FA]'
               }`}
             >
               {currentPay?.is_paid ? '✅ 납부 완료' : '💳 납부하기'}
@@ -308,18 +308,18 @@ function PaymentModal({
         <p className="text-[13px] font-bold text-[#0F2242] mt-4 mb-2">결제 수단</p>
         <div className="grid grid-cols-2 gap-2">
           <button onClick={() => onMethod('card')}
-            className={`rounded-2xl py-3 text-[14px] font-bold border-[1.5px] transition ${method === 'card' ? 'border-[#3766EE] bg-[#EEF2FF] text-[#3766EE]' : 'border-[#E8EBF0] bg-white text-[#6B7280]'}`}>
+            className={`rounded-2xl py-3 text-[14px] font-bold border-[1.5px] transition ${method === 'card' ? 'border-[#6C2FF2] bg-[#F1ECFE] text-[#6C2FF2]' : 'border-[#E8EBF0] bg-white text-[#6B7280]'}`}>
             💳 카드
           </button>
           <button onClick={() => onMethod('transfer')}
-            className={`rounded-2xl py-3 text-[14px] font-bold border-[1.5px] transition ${method === 'transfer' ? 'border-[#3766EE] bg-[#EEF2FF] text-[#3766EE]' : 'border-[#E8EBF0] bg-white text-[#6B7280]'}`}>
+            className={`rounded-2xl py-3 text-[14px] font-bold border-[1.5px] transition ${method === 'transfer' ? 'border-[#6C2FF2] bg-[#F1ECFE] text-[#6C2FF2]' : 'border-[#E8EBF0] bg-white text-[#6B7280]'}`}>
             🏦 실시간 계좌이체
           </button>
         </div>
 
         {/* 매월 자동납부 (카드 빌링) */}
         <label className="flex items-start gap-3 mt-3 bg-[#F5F6FA] rounded-2xl p-3 cursor-pointer">
-          <input type="checkbox" checked={autoPay} onChange={e => onAutoPay(e.target.checked)} className="mt-0.5 w-5 h-5 flex-shrink-0 accent-[#3766EE]" />
+          <input type="checkbox" checked={autoPay} onChange={e => onAutoPay(e.target.checked)} className="mt-0.5 w-5 h-5 flex-shrink-0 accent-[#6C2FF2]" />
           <span>
             <span className="block text-[14px] font-bold text-[#0F2242]">매월 자동납부 {hasBillingKey && <span className="text-[#2ECC71]">· 등록됨</span>}</span>
             <span className="block text-[12px] text-[#6B7280] mt-0.5">카드를 등록하면 매월 관리비가 자동으로 결제됩니다.</span>
@@ -327,7 +327,7 @@ function PaymentModal({
         </label>
 
         {account && <p className="text-[12px] text-[#9CA3AF] mt-3">또는 직접 이체: {account}</p>}
-        {!isTossLive && <p className="text-[12px] text-[#3766EE] mt-2">⚠ 현재 테스트 모드 — 운영키 셋업 후 실제 결제됩니다.</p>}
+        {!isTossLive && <p className="text-[12px] text-[#6C2FF2] mt-2">⚠ 현재 테스트 모드 — 운영키 셋업 후 실제 결제됩니다.</p>}
 
         <div className="grid grid-cols-2 gap-3 mt-4">
           <button
@@ -340,7 +340,7 @@ function PaymentModal({
           <button
             onClick={onConfirm}
             disabled={loading}
-            className="bg-[#3766EE] text-white rounded-2xl py-3.5 text-[15px] font-bold hover:bg-[#1F3DC2] transition disabled:opacity-50"
+            className="bg-[#6C2FF2] text-white rounded-2xl py-3.5 text-[15px] font-bold hover:bg-[#5320C9] transition disabled:opacity-50"
           >
             {loading ? '처리 중…' : `${fmt(amount)}원 납부`}
           </button>

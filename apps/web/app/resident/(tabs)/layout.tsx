@@ -50,8 +50,8 @@ export default function ResidentTabsLayout({ children }: { children: React.React
             const active = pathname === tab.href || pathname.startsWith(tab.href + '/');
             return (
               <Link key={tab.href} href={tab.href} className="flex-1 flex flex-col items-center justify-center gap-1">
-                <Icon name={tab.icon} size={24} color={active ? '#3766EE' : '#A8B1C2'} filled={active} />
-                <span className={`text-[11px] font-bold ${active ? 'text-[#3766EE]' : 'text-[#A8B1C2]'}`}>
+                <Icon name={tab.icon} size={24} color={active ? '#6C2FF2' : '#A8B1C2'} filled={active} />
+                <span className={`text-[11px] font-bold ${active ? 'text-[#6C2FF2]' : 'text-[#A8B1C2]'}`}>
                   {tab.label}
                 </span>
               </Link>

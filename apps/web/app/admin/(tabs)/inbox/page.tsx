@@ -124,9 +124,8 @@ export default function AdminInboxPage() {
 
   return (
     <div className="px-5 pt-6 pb-8 max-w-screen-sm mx-auto">
-      <p className="text-[13px] text-[#3766EE] font-bold tracking-[0.16em] mb-1.5">ADMIN INBOX</p>
-      <h1 className="text-[24px] font-black text-[#0F2242]">메시지</h1>
-      <p className="text-[15px] text-[#6B7280] mt-0.5">
+      <h1 className="text-[26px] font-black text-[#0F2242] leading-tight">메시지</h1>
+      <p className="text-[14px] text-[#6B7280] mt-1">
         입주민 신고/민원 — 총 {messages.length}건, 미답변 {messages.filter(m => m.message_replies.filter(r => r.author_type === 'admin').length === 0).length}건
       </p>
 
@@ -134,7 +133,7 @@ export default function AdminInboxPage() {
         <p className="text-center text-sm text-[#9CA3AF] mt-20">불러오는 중…</p>
       ) : error ? (
         <div className="text-center mt-20">
-          <p className="text-[17px] font-bold text-[#E74C3C] mb-1">오류</p>
+          <p className="text-[17px] font-bold text-[#FF3B30] mb-1">오류</p>
           <p className="text-[15px] text-[#9CA3AF]">{error}</p>
         </div>
       ) : messages.length === 0 ? (
@@ -159,7 +158,7 @@ export default function AdminInboxPage() {
                     className={`text-[13px] font-bold px-2 py-0.5 rounded ${
                       replied
                         ? 'bg-[rgba(46,204,113,0.12)] text-[#2ECC71]'
-                        : 'bg-[rgba(231,76,60,0.12)] text-[#E74C3C]'
+                        : 'bg-[rgba(231,76,60,0.12)] text-[#FF3B30]'
                     }`}
                   >
                     {replied ? '답변완료' : '미답변'}
@@ -180,7 +179,7 @@ export default function AdminInboxPage() {
                     {adminReplies.map(r => (
                       <div key={r.id} className="bg-[#F5F6FA] rounded-2xl p-3">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-[13px] font-bold text-[#3766EE]">
+                          <span className="text-[13px] font-bold text-[#6C2FF2]">
                             관리자 {r.author_name && `· ${r.author_name}`}
                           </span>
                           <span className="text-[13px] text-[#9CA3AF] ml-auto">
@@ -200,13 +199,13 @@ export default function AdminInboxPage() {
                       onChange={e => setReplyText(e.target.value)}
                       placeholder="답변 내용을 입력하세요"
                       rows={3}
-                      className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-3 py-2 text-sm text-[#0F2242] outline-none focus:border-[#3766EE] resize-none"
+                      className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-3 py-2 text-sm text-[#0F2242] outline-none focus:border-[#6C2FF2] resize-none"
                     />
                     <div className="flex gap-2 mt-2">
                       <button
                         onClick={() => submitReply(m.id)}
                         disabled={submitting}
-                        className="flex-1 bg-[#3766EE] text-white py-2 rounded-2xl text-[15px] font-bold disabled:opacity-50"
+                        className="flex-1 bg-[#6C2FF2] text-white py-2 rounded-2xl text-[15px] font-bold disabled:opacity-50"
                       >
                         {submitting ? '등록 중…' : '답변 등록'}
                       </button>
@@ -221,7 +220,7 @@ export default function AdminInboxPage() {
                 ) : (
                   <button
                     onClick={() => { setReplyingTo(m.id); setReplyText(''); }}
-                    className="mt-3 text-[14px] font-bold text-[#3766EE] hover:underline"
+                    className="mt-3 text-[14px] font-bold text-[#6C2FF2] hover:underline"
                   >
                     {replied ? '추가 답변' : '답변하기'} →
                   </button>
