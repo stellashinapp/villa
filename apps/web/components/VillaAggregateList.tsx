@@ -17,6 +17,7 @@ type VillaRow = {
   metricMain: string;   // 큰 값 (예: ₩146,667 / 8명 / 3건 / 5대)
   metricSub: string;    // 보조 (예: 납부율 100% / 대기 2명 / 최근: ... / -)
   highlight?: boolean;  // 주의 표시 (미납/대기 등)
+  pill?: boolean;       // metricMain 을 타원 배지로 표시 (예: 미발행)
 };
 
 const META: Record<Kind, { title: string; sub: string; icon: IconName; color: string; bg: string; path: string }> = {
@@ -74,7 +75,7 @@ export default function VillaAggregateList({ kind }: { kind: Kind }) {
         }
         built = villas.map(v => {
           const b = byVilla[v.id];
-          if (!b) return { id: v.id, name: v.name, total_units: v.total_units, metricMain: '미발행', metricSub: '이번 달 관리비 없음', highlight: true };
+          if (!b) return { id: v.id, name: v.name, total_units: v.total_units, metricMain: '미발행', metricSub: '이번 달 관리비 없음', highlight: true, pill: true };
           const perUnit = v.total_units > 0 ? Math.round(b.total / v.total_units) : 0;
           const paid = paidByBm[b.bmId] ?? 0;
           const rate = v.total_units > 0 ? Math.round((paid / v.total_units) * 100) : 0;
@@ -159,7 +160,11 @@ export default function VillaAggregateList({ kind }: { kind: Kind }) {
                       <p className="text-[12px] text-[#9CA3AF] mt-0.5 truncate">{v.metricSub}</p>
                     </div>
                     <div className="text-right ml-3 flex items-center gap-2">
-                      <span className={`text-[17px] font-black ${v.highlight ? 'text-[#FF3B30]' : 'text-[#2B2BEE]'}`}>{v.metricMain}</span>
+                      {v.pill ? (
+                        <span className="text-[13px] font-bold px-2.5 py-1 rounded-full bg-[#FEE8E7] text-[#FF3B30]">{v.metricMain}</span>
+                      ) : (
+                        <span className={`text-[17px] font-black ${v.highlight ? 'text-[#FF3B30]' : 'text-[#2B2BEE]'}`}>{v.metricMain}</span>
+                      )}
                       <span className="text-[18px] text-[#9CA3AF]">›</span>
                     </div>
                   </div>
