@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import ResidentPageHeader from '@/components/ResidentPageHeader';
+import Icon from '@/components/Icon';
 import { requestPayment, registerBillingKey, isTossLive, type PaymentMethod } from '@/lib/payments';
 
 type Resident = {
@@ -173,7 +174,7 @@ export default function ResidentBillsShell() {
         {/* 특이사항 — 항시 노출 */}
         {villa?.special_notes && (
           <div className="bg-[#F1ECFE] border border-[#6C2FF2]/15 rounded-2xl px-4 py-3 mb-3">
-            <p className="text-[12px] font-bold text-[#6C2FF2] mb-1">📌 빌라 안내</p>
+            <p className="text-[12px] font-bold text-[#6C2FF2] mb-1">빌라 안내</p>
             <p className="text-[13px] text-[#0F2242] leading-relaxed whitespace-pre-wrap">{villa.special_notes}</p>
           </div>
         )}
@@ -185,7 +186,7 @@ export default function ResidentBillsShell() {
               <p className="text-[11px] text-[#9CA3AF]">관리자</p>
               <p className="text-[14px] font-bold text-[#0F2242]">{adminContact.admin_name}</p>
             </div>
-            <span className="text-[13px] font-bold text-[#6C2FF2]">📞 {adminContact.admin_phone}</span>
+            <span className="flex items-center gap-1 text-[13px] font-bold text-[#6C2FF2]"><Icon name="phone" size={15} color="#6C2FF2" filled />{adminContact.admin_phone}</span>
           </a>
         )}
 
@@ -207,7 +208,7 @@ export default function ResidentBillsShell() {
                   : 'bg-white text-[#6C2FF2] hover:bg-[#F5F6FA]'
               }`}
             >
-              {currentPay?.is_paid ? '✅ 납부 완료' : '💳 납부하기'}
+              {currentPay?.is_paid ? '납부 완료' : '납부하기'}
             </button>
 
             {accountLine && (
@@ -216,7 +217,7 @@ export default function ResidentBillsShell() {
           </div>
         ) : (
           <div className="bg-white rounded-2xl p-8 border border-[#F0F2F5] text-center">
-            <div className="text-4xl mb-2">📭</div>
+            <div className="w-12 h-12 rounded-2xl bg-[#F1ECFE] flex items-center justify-center mx-auto mb-2"><Icon name="bills" size={26} color="#6C2FF2" filled /></div>
             <p className="text-[14px] font-bold text-[#0F2242]">이번 달 청구서가 없습니다</p>
             <p className="text-[12px] text-[#9CA3AF] mt-1">관리자가 청구서를 발행하면 여기에 표시됩니다</p>
           </div>
@@ -309,11 +310,11 @@ function PaymentModal({
         <div className="grid grid-cols-2 gap-2">
           <button onClick={() => onMethod('card')}
             className={`rounded-2xl py-3 text-[14px] font-bold border-[1.5px] transition ${method === 'card' ? 'border-[#6C2FF2] bg-[#F1ECFE] text-[#6C2FF2]' : 'border-[#E8EBF0] bg-white text-[#6B7280]'}`}>
-            💳 카드
+            카드
           </button>
           <button onClick={() => onMethod('transfer')}
             className={`rounded-2xl py-3 text-[14px] font-bold border-[1.5px] transition ${method === 'transfer' ? 'border-[#6C2FF2] bg-[#F1ECFE] text-[#6C2FF2]' : 'border-[#E8EBF0] bg-white text-[#6B7280]'}`}>
-            🏦 실시간 계좌이체
+            실시간 계좌이체
           </button>
         </div>
 

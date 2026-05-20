@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import AdminTopBar from '@/components/AdminTopBar';
 
 type Unit = { id: string; ho_number: string };
 type Resident = {
@@ -230,29 +231,30 @@ export default function AdminVillaResidentsPage() {
   const unpaidTotal = (unpaidBills ?? []).reduce((s, b) => s + b.amount, 0);
 
   return (
-    <div className="px-5 pt-6 pb-8 max-w-screen-sm mx-auto">
-      <Link href={`/admin/villas/${villaId}`} className="hidden md:inline-block text-[15px] text-[#6B7280]">← 빌라 상세</Link>
-      <div className="flex justify-between items-end mt-3 mb-4">
-        <div>
-          <h1 className="text-[26px] font-black text-[#0F2242]">입주민</h1>
-          <p className="text-[15px] text-[#6B7280] mt-0.5">총 {residents.length}명 · 호실 {units.length}개</p>
-        </div>
-        <button onClick={() => setShowAdd(!showAdd)} className="bg-[#6C2FF2] text-white text-[15px] font-bold px-3.5 py-2.5 rounded-2xl hover:bg-[#5320C9] transition">
-          {showAdd ? '취소' : '＋ 입주민 추가'}
-        </button>
-      </div>
+    <>
+      <AdminTopBar
+        title="입주민"
+        subtitle={`총 ${residents.length}명 · 호실 ${units.length}개`}
+        right={
+          <button onClick={() => setShowAdd(!showAdd)} className="bg-white text-[#6C2FF2] text-[14px] font-bold px-3.5 py-2.5 rounded-xl hover:bg-white/90 transition">
+            {showAdd ? '취소' : '＋ 추가'}
+          </button>
+        }
+      />
+      <div className="px-5 pt-4 pb-8 max-w-screen-sm mx-auto">
+        <Link href={`/admin/villas/${villaId}`} className="hidden md:inline-block text-[14px] text-[#6B7280] mb-3">← 빌라 상세</Link>
 
-      {/* 입주 관리 / 이주 관리 1차 토글 */}
-      <div className="grid grid-cols-2 gap-2 mb-4">
-        <button onClick={() => setMode('movein')}
-          className={`rounded-2xl py-3 text-[15px] font-extrabold border-[1.5px] transition ${mode === 'movein' ? 'bg-[#6C2FF2] text-white border-[#6C2FF2]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'}`}>
-          이사 온 사람 <span className={mode === 'movein' ? 'text-white/80' : 'text-[#9CA3AF]'}>· {moveinCount}</span>
-        </button>
-        <button onClick={() => setMode('moveout')}
-          className={`rounded-2xl py-3 text-[15px] font-extrabold border-[1.5px] transition ${mode === 'moveout' ? 'bg-[#6C2FF2] text-white border-[#6C2FF2]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'}`}>
-          이주 (이사 가는 사람) <span className={mode === 'moveout' ? 'text-white/80' : 'text-[#9CA3AF]'}>· {moveoutCount}</span>
-        </button>
-      </div>
+        {/* 입주 / 이주 토글 (세그먼트) */}
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          <button onClick={() => setMode('movein')}
+            className={`rounded-xl py-2.5 text-[14px] font-bold transition ${mode === 'movein' ? 'bg-[#6C2FF2] text-white' : 'bg-white text-[#6B7280] border border-[#E8EBF0]'}`}>
+            이사 온 사람 · {moveinCount}
+          </button>
+          <button onClick={() => setMode('moveout')}
+            className={`rounded-xl py-2.5 text-[14px] font-bold transition ${mode === 'moveout' ? 'bg-[#6C2FF2] text-white' : 'bg-white text-[#6B7280] border border-[#E8EBF0]'}`}>
+            이사 가는 사람 · {moveoutCount}
+          </button>
+        </div>
 
       {/* 직접 추가 폼 + 초대링크 */}
       {showAdd && !inviteUrl && (
@@ -441,6 +443,7 @@ export default function AdminVillaResidentsPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }

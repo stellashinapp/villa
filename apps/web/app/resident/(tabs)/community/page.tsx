@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import ResidentPageHeader from '@/components/ResidentPageHeader';
+import Icon from '@/components/Icon';
 
 type Comment = {
   id: string; text: string; created_at: string;
@@ -100,8 +101,8 @@ export default function ResidentCommunityPage() {
           <textarea value={body} onChange={e => setBody(e.target.value)} placeholder="내용을 입력하세요" rows={4} maxLength={1000}
             className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-4 py-3 text-[15px] text-[#0F2242] outline-none focus:border-[#6C2FF2] focus:ring-2 focus:ring-[#6C2FF2]/15 transition resize-none" required />
           <button type="button" disabled
-            className="bg-white border border-[#E8EBF0] text-[#9CA3AF] text-[13px] font-bold px-3 py-2 rounded-2xl">
-            📷 사진 첨부
+            className="inline-flex items-center gap-1.5 bg-white border border-[#E8EBF0] text-[#9CA3AF] text-[13px] font-bold px-3 py-2 rounded-2xl">
+            <Icon name="camera" size={15} color="#9CA3AF" /> 사진 첨부
           </button>
           <button type="submit" disabled={submitting}
             className="w-full bg-[#6C2FF2] text-white py-3.5 rounded-2xl text-[15px] font-bold hover:bg-[#5320C9] disabled:opacity-50 transition">
@@ -112,7 +113,7 @@ export default function ResidentCommunityPage() {
         {loading ? <p className="text-center text-[14px] text-[#9CA3AF] mt-10">불러오는 중…</p>
           : posts.length === 0 ? (
             <div className="bg-white rounded-2xl p-8 border border-[#F0F2F5] text-center">
-              <div className="text-4xl mb-2">💬</div>
+              <div className="w-12 h-12 rounded-2xl bg-[#F1ECFE] flex items-center justify-center mx-auto mb-2"><Icon name="community" size={26} color="#6C2FF2" filled /></div>
               <p className="text-[15px] font-bold text-[#0F2242]">아직 글이 없습니다</p>
               <p className="text-[13px] text-[#9CA3AF] mt-1">첫 글을 남겨보세요</p>
             </div>

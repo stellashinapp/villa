@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import ResidentPageHeader from '@/components/ResidentPageHeader';
+import Icon from '@/components/Icon';
 
 type ParkingEntry = {
   id: string; unit_id: string | null; plate_number: string;
@@ -165,7 +166,7 @@ export default function ResidentParkingPage() {
 
             {list.length === 0 && (
               <div className="bg-white rounded-2xl p-8 border border-[#F0F2F5] text-center">
-                <div className="text-4xl mb-2">🚗</div>
+                <div className="w-12 h-12 rounded-2xl bg-[#F1ECFE] flex items-center justify-center mx-auto mb-2"><Icon name="parking" size={26} color="#6C2FF2" filled /></div>
                 <p className="text-[13px] text-[#9CA3AF]">등록된 차량이 없습니다</p>
               </div>
             )}
@@ -183,11 +184,10 @@ function VehicleCard({
   variant: 'mine' | 'resident' | 'visitor';
   onRemove?: () => void;
 }) {
-  const iconBg = variant === 'visitor' ? '#E0F7F4' : variant === 'mine' ? '#FFF4D6' : '#F1ECFE';
   return (
     <div className="bg-white rounded-2xl px-4 py-3 border border-[#F0F2F5] shadow-sm flex items-center">
-      <span className="w-11 h-11 rounded-2xl flex items-center justify-center text-[22px] mr-3 flex-shrink-0" style={{ background: iconBg }}>
-        🚗
+      <span className="w-11 h-11 rounded-2xl flex items-center justify-center mr-3 flex-shrink-0 bg-[#F1ECFE]">
+        <Icon name="parking" size={22} color="#6C2FF2" filled />
       </span>
       <div className="flex-1 min-w-0">
         <p className="text-[15px] font-extrabold text-[#0F2242]">{v.plate_number}</p>
@@ -201,7 +201,7 @@ function VehicleCard({
         <span className="text-[11px] font-bold bg-[#F1ECFE] text-[#6C2FF2] px-2 py-1 rounded-full">내 차량</span>
       )}
       {variant === 'visitor' && (
-        <span className="text-[11px] font-bold bg-[#E0F7F4] text-[#16A085] px-2 py-1 rounded-full">방문자</span>
+        <span className="text-[11px] font-bold bg-[#F5F6FA] text-[#6B7280] px-2 py-1 rounded-full">방문자</span>
       )}
       {onRemove && (
         <button onClick={onRemove} className="text-[11px] text-[#FF3B30] font-bold ml-2 px-2">삭제</button>
