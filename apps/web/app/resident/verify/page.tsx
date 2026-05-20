@@ -48,8 +48,7 @@ export default function ResidentVerifyPage() {
   return (
     <div className="min-h-screen bg-[#F5F6FA] flex flex-col">
       <header className="bg-white px-5 pt-4 pb-4 border-b border-[#F0F2F5]">
-        <div className="max-w-screen-sm mx-auto flex items-center gap-3">
-          <Link href="/resident/login" className="w-9 h-9 rounded-2xl bg-[#F5F6FA] flex items-center justify-center text-[16px] text-[#0F2242]">←</Link>
+        <div className="max-w-screen-sm mx-auto">
           <h1 className="text-[18px] font-extrabold text-[#0F2242]">본인 확인</h1>
         </div>
       </header>

@@ -70,7 +70,6 @@ export default function AdminVillaMessagesPage() {
 
   return (
     <div className="px-5 pt-6 pb-8 max-w-screen-sm mx-auto">
-      <Link href={`/admin/villas/${villaId}`} className="hidden md:inline-block text-[14px] text-[#6B7280]">← 빌라 상세</Link>
       <div className="mt-3 mb-5">
         <h1 className="text-[24px] font-black text-[#0F2242]">메시지</h1>
         <p className="text-[15px] text-[#6B7280] mt-0.5">

@@ -179,8 +179,6 @@ export default function AdminVillaDetailPage() {
 
   return (
     <div className="px-5 pt-6 pb-8 max-w-screen-sm mx-auto">
-      <Link href="/admin/villas" className="hidden md:inline-block text-[15px] text-[#6B7280] hover:text-[#0F2242]">← 빌라 목록</Link>
-
       {/* 이름/주소 + 편집 */}
       <div className="mt-3 mb-5">
         {editingBasic ? (

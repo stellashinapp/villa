@@ -96,8 +96,7 @@ export default function MoveoutShell() {
   return (
     <div className="min-h-screen flex flex-col">
       <div className="bg-navy text-white px-5 pt-12 pb-8">
-        <Link href="/resident/bills" className="text-xs text-white/60">← 청구서</Link>
-        <h1 className="text-xl font-extrabold mt-6">이주 신청</h1>
+        <h1 className="text-xl font-extrabold">이주 신청</h1>
         <p className="text-xs text-white/60 mt-2">
           {resident.villaName} {resident.ho}호 {resident.name}님
         </p>

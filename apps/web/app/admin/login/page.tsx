@@ -11,11 +11,6 @@ export default async function AdminLoginPage({
   const sp = await searchParams;
   return (
     <div className="min-h-screen bg-[#F5F6FA] flex flex-col">
-      <div className="px-5 pt-4">
-        <Link href="/" className="text-[14px] text-[#6B7280] hover:text-[#0F2242]">
-          ← 돌아가기
-        </Link>
-      </div>
 
       <div className="flex-1 flex flex-col justify-center px-5 pb-10">
         <div className="w-full max-w-sm mx-auto">

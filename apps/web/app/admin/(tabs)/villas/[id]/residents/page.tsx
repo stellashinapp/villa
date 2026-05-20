@@ -243,7 +243,6 @@ export default function AdminVillaResidentsPage() {
         }
       />
       <div className="px-5 pt-4 pb-8 max-w-screen-sm mx-auto">
-        <Link href={`/admin/villas/${villaId}`} className="hidden md:inline-block text-[14px] text-[#6B7280] mb-3">← 빌라 상세</Link>
 
         {/* 입주 / 이주 토글 (세그먼트) */}
         <div className="grid grid-cols-2 gap-2 mb-4">
