@@ -406,26 +406,26 @@ export default function AdminVillaBillsPage() {
                       <div className="flex items-stretch mb-4">
                         <div className="flex-1">
                           <p className="text-[12px] text-[#6B7280] mb-1">완납률</p>
-                          <p className="text-[24px] font-black text-[#2B2BEE] leading-none">{payRate}%</p>
+                          <p className="text-[19px] font-bold text-[#2B2BEE] leading-none">{payRate}%</p>
                           <p className="text-[12px] text-[#6B7280] mt-1.5">{paidCount}/{units.length}세대 납부</p>
                         </div>
                         <div className="w-px bg-[#2B2BEE]/15 mx-4" />
                         <div className="flex-1 text-right">
                           <p className="text-[12px] text-[#6B7280] mb-1">총 청구액</p>
-                          <p className="text-[24px] font-black text-[#0F2242] leading-none">₩{fmt(total)}</p>
+                          <p className="text-[19px] font-bold text-[#0F2242] leading-none">₩{fmt(total)}</p>
                           <p className="text-[12px] text-[#6B7280] mt-1.5">{mode === 'per_unit' ? '세대별 차등' : `세대당 ₩${fmt(perUnit)}`}</p>
                         </div>
                       </div>
                       {m.status === 'published' && (
                         <>
-                          <button onClick={() => sendBillNotice(m)} className="w-full bg-[#2B2BEE] text-white py-2.5 rounded-xl text-[14px] font-bold hover:bg-[#1C1CC9] transition mb-2">
+                          <button onClick={() => sendBillNotice(m)} className="w-full bg-[#2B2BEE] text-white py-3 rounded-xl text-[14px] font-bold hover:bg-[#1C1CC9] transition mb-2.5">
                             관리비 고지 발송 ({units.length}세대)
                           </button>
-                          <div className="grid grid-cols-2 gap-2">
-                            <button onClick={() => setExpandedMonth(isExpanded ? null : m.id)} className="bg-white border border-[#E8EBF0] text-[#2B2BEE] py-2.5 rounded-xl text-[14px] font-bold">
+                          <div className="grid grid-cols-2 gap-2.5">
+                            <button onClick={() => setExpandedMonth(isExpanded ? null : m.id)} className="bg-white border border-[#E8EBF0] text-[#2B2BEE] py-3 rounded-xl text-[14px] font-bold">
                               {isExpanded ? '납부 닫기' : '세대별 납부'}
                             </button>
-                            <button onClick={() => downloadReport(m)} className="bg-white border border-[#E8EBF0] text-[#2B2BEE] py-2.5 rounded-xl text-[14px] font-bold">
+                            <button onClick={() => downloadReport(m)} className="bg-white border border-[#E8EBF0] text-[#2B2BEE] py-3 rounded-xl text-[14px] font-bold">
                               월간 보고서
                             </button>
                           </div>
