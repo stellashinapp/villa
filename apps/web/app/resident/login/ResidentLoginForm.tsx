@@ -69,7 +69,7 @@ export default function ResidentLoginForm() {
           value={name}
           onChange={e => setName(e.target.value)}
           placeholder="예: 김민수"
-          className="w-full bg-white border border-[#E8EBF0] rounded-xl px-4 py-3.5 text-[15px] text-[#0F2242] outline-none focus:border-[#3766EE] focus:ring-2 focus:ring-[#3766EE]/15 transition"
+          className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-4 py-3.5 text-[15px] text-[#0F2242] outline-none focus:border-[#3766EE] focus:ring-2 focus:ring-[#3766EE]/15 transition"
         />
       </div>
       <div>
@@ -80,18 +80,18 @@ export default function ResidentLoginForm() {
           value={phone}
           onChange={e => setPhone(e.target.value)}
           placeholder="01012345678"
-          className="w-full bg-white border border-[#E8EBF0] rounded-xl px-4 py-3.5 text-[15px] text-[#0F2242] outline-none focus:border-[#3766EE] focus:ring-2 focus:ring-[#3766EE]/15 transition"
+          className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-4 py-3.5 text-[15px] text-[#0F2242] outline-none focus:border-[#3766EE] focus:ring-2 focus:ring-[#3766EE]/15 transition"
         />
       </div>
       {error && (
-        <div className="bg-[#FEE8E7] text-[#FF3B30] border border-[#FF3B30]/20 rounded-xl px-3 py-2.5 text-[13px]">
+        <div className="bg-[#FEE8E7] text-[#FF3B30] border border-[#FF3B30]/20 rounded-2xl px-3 py-2.5 text-[13px]">
           {error}
         </div>
       )}
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-[#3766EE] text-white rounded-xl py-3.5 text-[15px] font-bold hover:bg-[#1F3DC2] disabled:opacity-50 transition-colors"
+        className="w-full bg-[#3766EE] text-white rounded-2xl py-3.5 text-[15px] font-bold hover:bg-[#1F3DC2] disabled:opacity-50 transition-colors"
       >
         {loading ? '확인 중…' : '로그인'}
       </button>

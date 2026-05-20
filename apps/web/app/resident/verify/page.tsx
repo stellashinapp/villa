@@ -49,13 +49,13 @@ export default function ResidentVerifyPage() {
     <div className="min-h-screen bg-[#F5F6FA] flex flex-col">
       <header className="bg-white px-5 pt-4 pb-4 border-b border-[#F0F2F5]">
         <div className="max-w-screen-sm mx-auto flex items-center gap-3">
-          <Link href="/resident/login" className="w-9 h-9 rounded-xl bg-[#F5F6FA] flex items-center justify-center text-[16px] text-[#0F2242]">←</Link>
+          <Link href="/resident/login" className="w-9 h-9 rounded-2xl bg-[#F5F6FA] flex items-center justify-center text-[16px] text-[#0F2242]">←</Link>
           <h1 className="text-[18px] font-extrabold text-[#0F2242]">본인 확인</h1>
         </div>
       </header>
 
       <div className="flex-1 px-5 pt-6 max-w-screen-sm mx-auto w-full">
-        <div className="bg-gradient-to-br from-[#3766EE] to-[#5B86FF] rounded-3xl px-6 py-7 text-white text-center shadow-md">
+        <div className="bg-gradient-to-br from-[#3766EE] to-[#5B86FF] rounded-2xl px-6 py-7 text-white text-center shadow-md">
           <p className="text-[15px] font-bold opacity-90">{s.villaName}</p>
           <p className="text-[12px] opacity-70 mt-1">{s.villaAddress}</p>
           <p className="text-[42px] font-black mt-4 leading-none">{s.ho}</p>
@@ -71,13 +71,13 @@ export default function ResidentVerifyPage() {
         <div className="grid grid-cols-2 gap-3 mt-7">
           <button
             onClick={reject}
-            className="bg-white border border-[#E8EBF0] text-[#0F2242] rounded-xl py-3.5 text-[15px] font-bold hover:bg-[#F9FAFB] transition"
+            className="bg-white border border-[#E8EBF0] text-[#0F2242] rounded-2xl py-3.5 text-[15px] font-bold hover:bg-[#F9FAFB] transition"
           >
             아니요
           </button>
           <button
             onClick={confirm}
-            className="bg-[#3766EE] text-white rounded-xl py-3.5 text-[15px] font-bold hover:bg-[#1F3DC2] transition"
+            className="bg-[#3766EE] text-white rounded-2xl py-3.5 text-[15px] font-bold hover:bg-[#1F3DC2] transition"
           >
             네, 맞습니다
           </button>

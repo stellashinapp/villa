@@ -104,7 +104,7 @@ export default function AdminVillasPage() {
           <h1 className="text-[26px] font-black text-[#0F2242]">내 빌라</h1>
           <p className="text-[16px] text-[#6B7280] mt-0.5">총 {cards.length}개 등록</p>
         </div>
-        <Link href="/admin/villas/add" className="bg-[#3766EE] text-white text-[16px] font-bold px-3.5 py-2.5 rounded-xl shadow-sm">
+        <Link href="/admin/villas/add" className="bg-[#3766EE] text-white text-[16px] font-bold px-3.5 py-2.5 rounded-2xl shadow-sm">
           ＋ 빌라 추가
         </Link>
       </div>
@@ -142,7 +142,7 @@ export default function AdminVillasPage() {
 
                 {/* 이번달 관리비 + 납부율 */}
                 {v.current_month_label ? (
-                  <div className="bg-[#EEF1FB] border border-[#3766EE]/15 rounded-xl p-3.5 mt-2">
+                  <div className="bg-[#EEF1FB] border border-[#3766EE]/15 rounded-2xl p-3.5 mt-2">
                     <div className="flex items-start justify-between">
                       <div>
                         <p className="text-[14px] text-[#6B7280] font-bold">{v.current_month_label}</p>
@@ -161,7 +161,7 @@ export default function AdminVillasPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="bg-[#F5F6FA] border border-dashed border-[#E8EBF0] rounded-xl p-3 mt-2 text-center">
+                  <div className="bg-[#F5F6FA] border border-dashed border-[#E8EBF0] rounded-2xl p-3 mt-2 text-center">
                     <p className="text-[14px] text-[#9CA3AF]">이번 달 관리비 미발행</p>
                   </div>
                 )}

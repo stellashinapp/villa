@@ -150,7 +150,7 @@ export default function AdminInboxPage() {
             const adminReplies = m.message_replies.filter(r => r.author_type === 'admin');
             const replied = adminReplies.length > 0;
             return (
-              <div key={m.id} className="bg-white rounded-xl p-4 border border-[#E8EBF0] shadow-sm">
+              <div key={m.id} className="bg-white rounded-2xl p-4 border border-[#E8EBF0] shadow-sm">
                 <div className="flex items-center gap-2 mb-2 flex-wrap">
                   <span className="text-[14px] font-bold">
                     {cat.emoji} {cat.label}
@@ -178,7 +178,7 @@ export default function AdminInboxPage() {
                 {adminReplies.length > 0 && (
                   <div className="mt-3 pt-3 border-t border-[#E8EBF0] space-y-2">
                     {adminReplies.map(r => (
-                      <div key={r.id} className="bg-[#F5F6FA] rounded-xl p-3">
+                      <div key={r.id} className="bg-[#F5F6FA] rounded-2xl p-3">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-[13px] font-bold text-[#3766EE]">
                             관리자 {r.author_name && `· ${r.author_name}`}
@@ -200,19 +200,19 @@ export default function AdminInboxPage() {
                       onChange={e => setReplyText(e.target.value)}
                       placeholder="답변 내용을 입력하세요"
                       rows={3}
-                      className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2 text-sm text-[#0F2242] outline-none focus:border-[#3766EE] resize-none"
+                      className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-3 py-2 text-sm text-[#0F2242] outline-none focus:border-[#3766EE] resize-none"
                     />
                     <div className="flex gap-2 mt-2">
                       <button
                         onClick={() => submitReply(m.id)}
                         disabled={submitting}
-                        className="flex-1 bg-[#3766EE] text-white py-2 rounded-xl text-[15px] font-bold disabled:opacity-50"
+                        className="flex-1 bg-[#3766EE] text-white py-2 rounded-2xl text-[15px] font-bold disabled:opacity-50"
                       >
                         {submitting ? '등록 중…' : '답변 등록'}
                       </button>
                       <button
                         onClick={() => { setReplyingTo(null); setReplyText(''); }}
-                        className="px-3 bg-[#F5F6FA] text-[#6B7280] py-2 rounded-xl text-[15px] font-bold"
+                        className="px-3 bg-[#F5F6FA] text-[#6B7280] py-2 rounded-2xl text-[15px] font-bold"
                       >
                         취소
                       </button>

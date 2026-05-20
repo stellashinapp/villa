@@ -144,7 +144,7 @@ export default function ResidentBillsShell() {
         )}
 
         {currentMonth ? (
-          <div className="bg-gradient-to-br from-[#3766EE] to-[#4D7AEF] rounded-3xl px-5 py-6 text-white shadow-md text-center">
+          <div className="bg-gradient-to-br from-[#3766EE] to-[#4D7AEF] rounded-2xl px-5 py-6 text-white shadow-md text-center">
             <p className="text-[13px] font-bold opacity-90">{ymLabel(currentMonth.year_month)} 관리비</p>
             <p className="mt-2">
               <span className="text-[40px] font-black tracking-tight align-middle">{fmt(myAmt)}</span>
@@ -155,7 +155,7 @@ export default function ResidentBillsShell() {
             <button
               onClick={() => !currentPay?.is_paid && setShowPayModal(true)}
               disabled={!!currentPay?.is_paid}
-              className={`mt-5 w-full rounded-xl py-3.5 text-[15px] font-extrabold transition ${
+              className={`mt-5 w-full rounded-2xl py-3.5 text-[15px] font-extrabold transition ${
                 currentPay?.is_paid
                   ? 'bg-transparent border border-white/40 text-white'
                   : 'bg-white text-[#3766EE] hover:bg-[#F5F6FA]'
@@ -256,14 +256,14 @@ function PaymentModal({
           <button
             onClick={onClose}
             disabled={loading}
-            className="bg-white border border-[#E8EBF0] text-[#0F2242] rounded-xl py-3.5 text-[15px] font-bold hover:bg-[#F9FAFB] transition disabled:opacity-50"
+            className="bg-white border border-[#E8EBF0] text-[#0F2242] rounded-2xl py-3.5 text-[15px] font-bold hover:bg-[#F9FAFB] transition disabled:opacity-50"
           >
             취소
           </button>
           <button
             onClick={onConfirm}
             disabled={loading}
-            className="bg-[#3766EE] text-white rounded-xl py-3.5 text-[15px] font-bold hover:bg-[#1F3DC2] transition disabled:opacity-50"
+            className="bg-[#3766EE] text-white rounded-2xl py-3.5 text-[15px] font-bold hover:bg-[#1F3DC2] transition disabled:opacity-50"
           >
             {loading ? '처리 중…' : '납부 확인'}
           </button>

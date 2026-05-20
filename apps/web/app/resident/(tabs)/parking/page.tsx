@@ -80,7 +80,7 @@ export default function ResidentParkingPage() {
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-[15px] font-extrabold text-[#0F2242]">내 등록 차량</h2>
           <button onClick={() => setShowForm(!showForm)}
-            className="bg-[#3766EE] text-white text-[12px] font-bold px-3 py-1.5 rounded-xl shadow-sm">
+            className="bg-[#3766EE] text-white text-[12px] font-bold px-3 py-1.5 rounded-2xl shadow-sm">
             {showForm ? '취소' : '＋ 등록'}
           </button>
         </div>
@@ -90,19 +90,19 @@ export default function ResidentParkingPage() {
             <div>
               <label className="block text-[13px] font-bold text-[#0F2242] mb-1.5">차량 번호 *</label>
               <input value={plate} onChange={e => setPlate(e.target.value)} placeholder="예: 12가 3456" maxLength={15}
-                className="w-full bg-white border border-[#E8EBF0] rounded-xl px-4 py-3 text-[15px] outline-none focus:border-[#3766EE] focus:ring-2 focus:ring-[#3766EE]/15 transition" required />
+                className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-4 py-3 text-[15px] outline-none focus:border-[#3766EE] focus:ring-2 focus:ring-[#3766EE]/15 transition" required />
             </div>
             <div>
               <label className="block text-[13px] font-bold text-[#0F2242] mb-1.5">차량 구분</label>
               <div className="grid grid-cols-2 gap-2">
                 <button type="button" onClick={() => setVehicleType('resident')}
-                  className={`py-3 rounded-xl text-[14px] font-bold border transition ${
+                  className={`py-3 rounded-2xl text-[14px] font-bold border transition ${
                     vehicleType === 'resident' ? 'bg-[#3766EE] text-white border-[#3766EE]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'
                   }`}>
                   내 차량
                 </button>
                 <button type="button" onClick={() => setVehicleType('visitor')}
-                  className={`py-3 rounded-xl text-[14px] font-bold border transition ${
+                  className={`py-3 rounded-2xl text-[14px] font-bold border transition ${
                     vehicleType === 'visitor' ? 'bg-[#3766EE] text-white border-[#3766EE]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'
                   }`}>
                   방문 차량
@@ -112,17 +112,17 @@ export default function ResidentParkingPage() {
             <div>
               <label className="block text-[13px] font-bold text-[#0F2242] mb-1.5">메모 (선택)</label>
               <input value={memo} onChange={e => setMemo(e.target.value)} placeholder="예: 소나타 흰색" maxLength={100}
-                className="w-full bg-white border border-[#E8EBF0] rounded-xl px-4 py-3 text-[15px] outline-none focus:border-[#3766EE] focus:ring-2 focus:ring-[#3766EE]/15 transition" />
+                className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-4 py-3 text-[15px] outline-none focus:border-[#3766EE] focus:ring-2 focus:ring-[#3766EE]/15 transition" />
             </div>
             {vehicleType === 'visitor' && (
               <div>
                 <label className="block text-[13px] font-bold text-[#0F2242] mb-1.5">방문 종료일</label>
                 <input type="date" value={expiresAt} onChange={e => setExpiresAt(e.target.value)}
-                  className="w-full bg-white border border-[#E8EBF0] rounded-xl px-4 py-3 text-[15px] outline-none focus:border-[#3766EE] focus:ring-2 focus:ring-[#3766EE]/15 transition" />
+                  className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-4 py-3 text-[15px] outline-none focus:border-[#3766EE] focus:ring-2 focus:ring-[#3766EE]/15 transition" />
               </div>
             )}
             <button type="submit" disabled={submitting}
-              className="w-full bg-[#3766EE] text-white py-3.5 rounded-xl text-[15px] font-bold hover:bg-[#1F3DC2] disabled:opacity-50 transition">
+              className="w-full bg-[#3766EE] text-white py-3.5 rounded-2xl text-[15px] font-bold hover:bg-[#1F3DC2] disabled:opacity-50 transition">
               {submitting ? '등록 중…' : '차량 등록'}
             </button>
           </form>
@@ -186,7 +186,7 @@ function VehicleCard({
   const iconBg = variant === 'visitor' ? '#E0F7F4' : variant === 'mine' ? '#FFF4D6' : '#EEF2FF';
   return (
     <div className="bg-white rounded-2xl px-4 py-3 border border-[#F0F2F5] shadow-sm flex items-center">
-      <span className="w-11 h-11 rounded-xl flex items-center justify-center text-[22px] mr-3 flex-shrink-0" style={{ background: iconBg }}>
+      <span className="w-11 h-11 rounded-2xl flex items-center justify-center text-[22px] mr-3 flex-shrink-0" style={{ background: iconBg }}>
         🚗
       </span>
       <div className="flex-1 min-w-0">

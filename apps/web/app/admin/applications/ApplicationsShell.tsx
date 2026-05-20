@@ -133,14 +133,14 @@ export default function ApplicationsShell() {
                   <button
                     disabled={busy === r.id}
                     onClick={() => decide(r.id, 'reject', 'application')}
-                    className="flex-1 border border-err/30 text-err rounded-xl py-2.5 text-sm font-semibold disabled:opacity-50"
+                    className="flex-1 border border-err/30 text-err rounded-2xl py-2.5 text-sm font-semibold disabled:opacity-50"
                   >
                     거부
                   </button>
                   <button
                     disabled={busy === r.id}
                     onClick={() => decide(r.id, 'approve', 'application')}
-                    className="flex-1 bg-pri text-white rounded-xl py-2.5 text-sm font-bold disabled:opacity-50"
+                    className="flex-1 bg-pri text-white rounded-2xl py-2.5 text-sm font-bold disabled:opacity-50"
                   >
                     {busy === r.id ? '처리 중…' : '승인'}
                   </button>
@@ -176,7 +176,7 @@ export default function ApplicationsShell() {
                 <button
                   disabled={busy === r.id}
                   onClick={() => decide(r.id, 'approve', 'moveout')}
-                  className="w-full bg-warn text-white rounded-xl py-2.5 text-sm font-bold disabled:opacity-50"
+                  className="w-full bg-warn text-white rounded-2xl py-2.5 text-sm font-bold disabled:opacity-50"
                 >
                   {busy === r.id ? '처리 중…' : '이주 확정 (moved_out)'}
                 </button>

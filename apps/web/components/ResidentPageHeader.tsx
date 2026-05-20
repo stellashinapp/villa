@@ -34,7 +34,7 @@ export default function ResidentPageHeader({
         </div>
         <button
           onClick={logout}
-          className="bg-[#F5F6FA] text-[#6B7280] text-[12px] font-bold px-3 py-1.5 rounded-xl hover:bg-[#EEF0F4] transition"
+          className="bg-[#F5F6FA] text-[#6B7280] text-[12px] font-bold px-3 py-1.5 rounded-2xl hover:bg-[#EEF0F4] transition"
         >
           로그아웃
         </button>

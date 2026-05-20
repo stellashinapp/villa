@@ -263,7 +263,7 @@ export default function AdminHomeShell() {
             <div className="space-y-2.5 mb-5">
               {villas.slice(1).map(v => (
                 <Link key={v.id} href={`/admin/villas/${v.id}`}
-                  className="block bg-white rounded-xl p-4 border border-[#F0F2F5] shadow-sm active:scale-[0.99] transition">
+                  className="block bg-white rounded-2xl p-4 border border-[#F0F2F5] shadow-sm active:scale-[0.99] transition">
                   <div className="flex items-center justify-between">
                     <div className="flex-1 min-w-0">
                       <p className="text-[15px] font-extrabold text-[#0F2242] truncate">{v.name}</p>

@@ -96,15 +96,15 @@ export default function ResidentCommunityPage() {
         <h2 className="text-[15px] font-extrabold text-[#0F2242] mb-3">새 글 쓰기</h2>
         <form onSubmit={submitPost} className="bg-[#EEF2FF] rounded-2xl p-4 space-y-3 mb-6">
           <input value={title} onChange={e => setTitle(e.target.value)} placeholder="제목" maxLength={50}
-            className="w-full bg-white border border-[#E8EBF0] rounded-xl px-4 py-3 text-[15px] text-[#0F2242] outline-none focus:border-[#3766EE] focus:ring-2 focus:ring-[#3766EE]/15 transition" required />
+            className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-4 py-3 text-[15px] text-[#0F2242] outline-none focus:border-[#3766EE] focus:ring-2 focus:ring-[#3766EE]/15 transition" required />
           <textarea value={body} onChange={e => setBody(e.target.value)} placeholder="내용을 입력하세요" rows={4} maxLength={1000}
-            className="w-full bg-white border border-[#E8EBF0] rounded-xl px-4 py-3 text-[15px] text-[#0F2242] outline-none focus:border-[#3766EE] focus:ring-2 focus:ring-[#3766EE]/15 transition resize-none" required />
+            className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-4 py-3 text-[15px] text-[#0F2242] outline-none focus:border-[#3766EE] focus:ring-2 focus:ring-[#3766EE]/15 transition resize-none" required />
           <button type="button" disabled
-            className="bg-white border border-[#E8EBF0] text-[#9CA3AF] text-[13px] font-bold px-3 py-2 rounded-xl">
+            className="bg-white border border-[#E8EBF0] text-[#9CA3AF] text-[13px] font-bold px-3 py-2 rounded-2xl">
             📷 사진 첨부
           </button>
           <button type="submit" disabled={submitting}
-            className="w-full bg-[#3766EE] text-white py-3.5 rounded-xl text-[15px] font-bold hover:bg-[#1F3DC2] disabled:opacity-50 transition">
+            className="w-full bg-[#3766EE] text-white py-3.5 rounded-2xl text-[15px] font-bold hover:bg-[#1F3DC2] disabled:opacity-50 transition">
             {submitting ? '등록 중…' : '글 등록'}
           </button>
         </form>
@@ -133,7 +133,7 @@ export default function ResidentCommunityPage() {
                     </div>
                     <h3 className="text-[16px] font-extrabold text-[#0F2242] mb-1.5">{post.title}</h3>
                     <p className="text-[14px] text-[#6B7280] leading-relaxed whitespace-pre-wrap">{post.body}</p>
-                    {post.image_url && <img src={post.image_url} alt="" className="mt-3 rounded-xl max-h-64 object-cover w-full" />}
+                    {post.image_url && <img src={post.image_url} alt="" className="mt-3 rounded-2xl max-h-64 object-cover w-full" />}
 
                     <div className="flex gap-4 mt-3 pt-3 border-t border-[#F0F2F5] text-[12px] text-[#FF3B30]">
                       <span>❤️ {post.likes ?? 0}</span>
@@ -159,9 +159,9 @@ export default function ResidentCommunityPage() {
                     {replyOpen === post.id && (
                       <div className="mt-3 flex gap-2">
                         <input value={replyText} onChange={e => setReplyText(e.target.value)} placeholder="답글 입력" maxLength={200}
-                          className="flex-1 bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-[14px] outline-none focus:border-[#3766EE]" />
+                          className="flex-1 bg-white border border-[#E8EBF0] rounded-2xl px-3 py-2.5 text-[14px] outline-none focus:border-[#3766EE]" />
                         <button onClick={() => submitComment(post.id)}
-                          className="bg-[#3766EE] text-white text-[13px] font-bold px-4 rounded-xl">
+                          className="bg-[#3766EE] text-white text-[13px] font-bold px-4 rounded-2xl">
                           등록
                         </button>
                       </div>

@@ -83,13 +83,13 @@ export default function ResidentReportPage() {
         <h2 className="text-[15px] font-extrabold text-[#0F2242] mb-3">관리자에게 신고/건의</h2>
         <form onSubmit={submit} className="bg-[#EEF2FF] rounded-2xl p-4 space-y-3 mb-6">
           <textarea value={text} onChange={e => setText(e.target.value)} placeholder="내용을 입력하세요" rows={4} maxLength={500}
-            className="w-full bg-white border border-[#E8EBF0] rounded-xl px-4 py-3 text-[15px] text-[#0F2242] outline-none focus:border-[#3766EE] focus:ring-2 focus:ring-[#3766EE]/15 transition resize-none" required />
+            className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-4 py-3 text-[15px] text-[#0F2242] outline-none focus:border-[#3766EE] focus:ring-2 focus:ring-[#3766EE]/15 transition resize-none" required />
           <button type="button" disabled
-            className="bg-white border border-[#E8EBF0] text-[#9CA3AF] text-[13px] font-bold px-3 py-2 rounded-xl">
+            className="bg-white border border-[#E8EBF0] text-[#9CA3AF] text-[13px] font-bold px-3 py-2 rounded-2xl">
             📷 사진 첨부
           </button>
           <button type="submit" disabled={submitting}
-            className="w-full bg-[#3766EE] text-white py-3.5 rounded-xl text-[15px] font-bold hover:bg-[#1F3DC2] disabled:opacity-50 transition">
+            className="w-full bg-[#3766EE] text-white py-3.5 rounded-2xl text-[15px] font-bold hover:bg-[#1F3DC2] disabled:opacity-50 transition">
             {submitting ? '전송 중…' : '보내기'}
           </button>
         </form>
@@ -123,7 +123,7 @@ export default function ResidentReportPage() {
                     {replies.length > 0 && (
                       <div className="mt-3 space-y-2">
                         {replies.map(r => (
-                          <div key={r.id} className="bg-[#F5F6FA] rounded-xl px-3 py-2.5 flex items-start gap-1.5">
+                          <div key={r.id} className="bg-[#F5F6FA] rounded-2xl px-3 py-2.5 flex items-start gap-1.5">
                             <span className="text-[#3766EE] text-[14px] mt-0.5">↳</span>
                             <p className="text-[13px] text-[#0F2242] leading-relaxed whitespace-pre-wrap flex-1">{r.text}</p>
                           </div>

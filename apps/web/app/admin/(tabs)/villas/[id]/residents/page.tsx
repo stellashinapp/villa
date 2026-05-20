@@ -84,6 +84,8 @@ export default function AdminVillaResidentsPage() {
       });
       setAddSubmitting(false);
       if (error) { alert('추가 실패: ' + error.message); return; }
+      const hoLabel = units.find(u => u.id === addUnitId)?.ho_number ?? '';
+      alert(`✓ ${addName.trim()}님이 입주민으로 즉시 등록되었습니다 (${hoLabel}).\n\n해당 입주민은 지금 바로 입주민 앱에서\n이름 + 전화번호로 로그인할 수 있습니다.`);
       setAddName(''); setAddPhone(''); setAddUnitId(''); setAddIsOwner(false);
       setShowAdd(false);
       await load();
@@ -235,7 +237,7 @@ export default function AdminVillaResidentsPage() {
           <h1 className="text-[26px] font-black text-[#0F2242]">입주민</h1>
           <p className="text-[15px] text-[#6B7280] mt-0.5">총 {residents.length}명 · 호실 {units.length}개</p>
         </div>
-        <button onClick={() => setShowAdd(!showAdd)} className="bg-[#3766EE] text-white text-[15px] font-bold px-3.5 py-2.5 rounded-xl hover:bg-[#1F3DC2] transition">
+        <button onClick={() => setShowAdd(!showAdd)} className="bg-[#3766EE] text-white text-[15px] font-bold px-3.5 py-2.5 rounded-2xl hover:bg-[#1F3DC2] transition">
           {showAdd ? '취소' : '＋ 입주민 추가'}
         </button>
       </div>
@@ -243,11 +245,11 @@ export default function AdminVillaResidentsPage() {
       {/* 입주 관리 / 이주 관리 1차 토글 */}
       <div className="grid grid-cols-2 gap-2 mb-4">
         <button onClick={() => setMode('movein')}
-          className={`rounded-xl py-3 text-[15px] font-extrabold border-[1.5px] transition ${mode === 'movein' ? 'bg-[#3766EE] text-white border-[#3766EE]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'}`}>
+          className={`rounded-2xl py-3 text-[15px] font-extrabold border-[1.5px] transition ${mode === 'movein' ? 'bg-[#3766EE] text-white border-[#3766EE]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'}`}>
           이사 온 사람 <span className={mode === 'movein' ? 'text-white/80' : 'text-[#9CA3AF]'}>· {moveinCount}</span>
         </button>
         <button onClick={() => setMode('moveout')}
-          className={`rounded-xl py-3 text-[15px] font-extrabold border-[1.5px] transition ${mode === 'moveout' ? 'bg-[#3766EE] text-white border-[#3766EE]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'}`}>
+          className={`rounded-2xl py-3 text-[15px] font-extrabold border-[1.5px] transition ${mode === 'moveout' ? 'bg-[#3766EE] text-white border-[#3766EE]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'}`}>
           이주 (이사 가는 사람) <span className={mode === 'moveout' ? 'text-white/80' : 'text-[#9CA3AF]'}>· {moveoutCount}</span>
         </button>
       </div>
@@ -259,30 +261,30 @@ export default function AdminVillaResidentsPage() {
             <label className="block text-[14px] font-bold text-[#0F2242] mb-1.5">추가 방식</label>
             <div className="grid grid-cols-2 gap-2">
               <button type="button" onClick={() => setAddMode('invite')}
-                className={`py-2.5 rounded-xl text-[14px] font-bold border ${addMode === 'invite' ? 'bg-[#3766EE] text-white border-[#3766EE]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'}`}>
+                className={`py-2.5 rounded-2xl text-[14px] font-bold border ${addMode === 'invite' ? 'bg-[#3766EE] text-white border-[#3766EE]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'}`}>
                 💌 초대링크 (권장)
               </button>
               <button type="button" onClick={() => setAddMode('direct')}
-                className={`py-2.5 rounded-xl text-[14px] font-bold border ${addMode === 'direct' ? 'bg-[#3766EE] text-white border-[#3766EE]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'}`}>
+                className={`py-2.5 rounded-2xl text-[14px] font-bold border ${addMode === 'direct' ? 'bg-[#3766EE] text-white border-[#3766EE]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'}`}>
                 ⚡ 즉시 등록
               </button>
             </div>
             <p className="text-[12px] text-[#9CA3AF] mt-1.5">
               {addMode === 'invite'
                 ? '입주민이 카카오톡 링크로 가입 — 본인이 정보 확인 후 활성'
-                : '관리자가 정보 입력 → 즉시 활성 (입주민 가입 안 함)'}
+                : '관리자가 정보 입력 → 입주민으로 즉시 등록·활성. 입주민은 바로 이름+전화번호로 로그인 가능합니다.'}
             </p>
           </div>
           <div className="grid grid-cols-2 gap-2.5">
             <div>
               <label className="block text-[14px] font-bold text-[#0F2242] mb-1.5">이름 *</label>
               <input value={addName} onChange={e => setAddName(e.target.value)} placeholder="예: 홍길동" maxLength={20}
-                className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-[15px] outline-none focus:border-[#3766EE]" required />
+                className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-3 py-2.5 text-[15px] outline-none focus:border-[#3766EE]" required />
             </div>
             <div>
               <label className="block text-[14px] font-bold text-[#0F2242] mb-1.5">호실 *</label>
               <select value={addUnitId} onChange={e => setAddUnitId(e.target.value)}
-                className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-[15px] outline-none focus:border-[#3766EE]" required>
+                className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-3 py-2.5 text-[15px] outline-none focus:border-[#3766EE]" required>
                 <option value="">선택</option>
                 {units.map(u => <option key={u.id} value={u.id}>{u.ho_number}</option>)}
               </select>
@@ -291,13 +293,13 @@ export default function AdminVillaResidentsPage() {
           <div>
             <label className="block text-[14px] font-bold text-[#0F2242] mb-1.5">휴대전화 *</label>
             <input value={addPhone} onChange={e => setAddPhone(e.target.value)} placeholder="01012345678" inputMode="tel"
-              className="w-full bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-[15px] outline-none focus:border-[#3766EE]" required />
+              className="w-full bg-white border border-[#E8EBF0] rounded-2xl px-3 py-2.5 text-[15px] outline-none focus:border-[#3766EE]" required />
           </div>
           <label className="flex items-center gap-2 text-[15px] text-[#0F2242] cursor-pointer">
             <input type="checkbox" checked={addIsOwner} onChange={e => setAddIsOwner(e.target.checked)} className="w-4 h-4 accent-[#3766EE]" />
             소유주 (건물주)
           </label>
-          <button type="submit" disabled={addSubmitting} className="w-full bg-[#3766EE] text-white py-2.5 rounded-xl text-[15px] font-bold disabled:opacity-50 hover:bg-[#1F3DC2] transition">
+          <button type="submit" disabled={addSubmitting} className="w-full bg-[#3766EE] text-white py-2.5 rounded-2xl text-[15px] font-bold disabled:opacity-50 hover:bg-[#1F3DC2] transition">
             {addSubmitting ? '처리 중…' : addMode === 'invite' ? '초대링크 발급' : '즉시 등록'}
           </button>
         </form>
@@ -310,14 +312,14 @@ export default function AdminVillaResidentsPage() {
             <p className="text-[15px] font-bold text-[#0F2242]">{inviteName}님 초대링크 발급 완료</p>
             <p className="text-[13px] text-[#6B7280] mt-1">14일간 유효합니다</p>
           </div>
-          <div className="bg-white border border-[#E8EBF0] rounded-xl p-3 break-all text-[12px] text-[#3766EE] font-mono">
+          <div className="bg-white border border-[#E8EBF0] rounded-2xl p-3 break-all text-[12px] text-[#3766EE] font-mono">
             {inviteUrl}
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <button onClick={shareViaKakao} className="bg-[#FEE500] text-[#000000] py-3 rounded-xl text-[14px] font-bold">
+            <button onClick={shareViaKakao} className="bg-[#FEE500] text-[#000000] py-3 rounded-2xl text-[14px] font-bold">
               💬 카카오톡 공유
             </button>
-            <button onClick={copyInvite} className="bg-white border border-[#E8EBF0] text-[#0F2242] py-3 rounded-xl text-[14px] font-bold">
+            <button onClick={copyInvite} className="bg-white border border-[#E8EBF0] text-[#0F2242] py-3 rounded-2xl text-[14px] font-bold">
               📋 링크 복사
             </button>
           </div>
@@ -357,15 +359,15 @@ export default function AdminVillaResidentsPage() {
                   <div className="flex gap-2 mt-3">
                     {r.status === 'pending' && (
                       <>
-                        <button onClick={() => approve(r)} className="flex-1 bg-[#3766EE] text-white py-2 rounded-xl text-[14px] font-bold hover:bg-[#1F3DC2] transition">승인</button>
-                        <button onClick={() => reject(r)} className="flex-1 bg-white border border-[#FF3B30]/30 text-[#FF3B30] py-2 rounded-xl text-[14px] font-bold">거절</button>
+                        <button onClick={() => approve(r)} className="flex-1 bg-[#3766EE] text-white py-2 rounded-2xl text-[14px] font-bold hover:bg-[#1F3DC2] transition">승인</button>
+                        <button onClick={() => reject(r)} className="flex-1 bg-white border border-[#FF3B30]/30 text-[#FF3B30] py-2 rounded-2xl text-[14px] font-bold">거절</button>
                       </>
                     )}
                     {r.status === 'pending_moveout' && (
-                      <button onClick={() => openMoveout(r)} className="flex-1 bg-[#3766EE] text-white py-2 rounded-xl text-[14px] font-bold hover:bg-[#1F3DC2] transition">이사 확정 (정산 확인)</button>
+                      <button onClick={() => openMoveout(r)} className="flex-1 bg-[#3766EE] text-white py-2 rounded-2xl text-[14px] font-bold hover:bg-[#1F3DC2] transition">이사 확정 (정산 확인)</button>
                     )}
                     {r.status === 'active' && mode === 'moveout' && (
-                      <button onClick={() => openMoveout(r)} className="flex-1 bg-white border border-[#3766EE]/30 text-[#3766EE] py-2 rounded-xl text-[14px] font-bold">이사 처리</button>
+                      <button onClick={() => openMoveout(r)} className="flex-1 bg-white border border-[#3766EE]/30 text-[#3766EE] py-2 rounded-2xl text-[14px] font-bold">이사 처리</button>
                     )}
                   </div>
                 </div>
@@ -424,14 +426,14 @@ export default function AdminVillaResidentsPage() {
               <button
                 onClick={() => { setMoveoutTarget(null); setUnpaidBills(null); }}
                 disabled={moveoutProcessing}
-                className="bg-white border border-[#E8EBF0] text-[#0F2242] rounded-xl py-3.5 text-[15px] font-bold disabled:opacity-50"
+                className="bg-white border border-[#E8EBF0] text-[#0F2242] rounded-2xl py-3.5 text-[15px] font-bold disabled:opacity-50"
               >
                 취소
               </button>
               <button
                 onClick={doMoveout}
                 disabled={moveoutProcessing || settlementLoading}
-                className="bg-[#3766EE] text-white rounded-xl py-3.5 text-[15px] font-bold hover:bg-[#1F3DC2] disabled:opacity-50 transition"
+                className="bg-[#3766EE] text-white rounded-2xl py-3.5 text-[15px] font-bold hover:bg-[#1F3DC2] disabled:opacity-50 transition"
               >
                 {moveoutProcessing ? '처리 중…' : '이사 확정 · 번호 삭제'}
               </button>
