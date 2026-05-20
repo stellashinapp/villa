@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import ResidentPageHeader from '@/components/ResidentPageHeader';
+import { requestPayment, registerBillingKey, isTossLive, type PaymentMethod } from '@/lib/payments';
 
 type Resident = {
   id: string; name: string; phone: string; ho: string;
@@ -48,6 +49,9 @@ export default function ResidentBillsShell() {
   const [loading, setLoading] = useState(true);
   const [showPayModal, setShowPayModal] = useState(false);
   const [paying, setPaying] = useState(false);
+  const [payMethod, setPayMethod] = useState<PaymentMethod>('card');
+  const [autoPay, setAutoPay] = useState(false);
+  const [hasBillingKey, setHasBillingKey] = useState(false);
 
   useEffect(() => {
     const raw = sessionStorage.getItem('villatolk:resident');
@@ -74,6 +78,14 @@ export default function ResidentBillsShell() {
     setPayments((ps ?? []) as Payment[]);
     const c = ((contact ?? []) as AdminContact[])[0];
     setAdminContact(c ?? null);
+
+    // 자동결제(빌링키) 등록 여부
+    const { data: bk } = await supabase.from('resident_billing_keys')
+      .select('id, auto_pay_enabled').eq('resident_id', s.id).eq('status', 'active').maybeSingle();
+    const hasBk = !!bk;
+    setHasBillingKey(hasBk);
+    setAutoPay(hasBk && (bk as { auto_pay_enabled: boolean } | null)?.auto_pay_enabled === true);
+
     setLoading(false);
   }
 
@@ -88,18 +100,52 @@ export default function ResidentBillsShell() {
   }
 
   async function confirmPay() {
-    if (!currentMonth || !unitId) return;
+    if (!currentMonth || !unitId || !resident) return;
     setPaying(true);
-    const existing = paymentFor(currentMonth.id);
-    if (existing) {
-      await supabase.from('payments').update({
-        is_paid: true, paid_at: new Date().toISOString(), method: 'bank_transfer',
-      }).eq('id', existing.id);
-    } else {
-      await supabase.from('payments').insert({
-        bill_month_id: currentMonth.id, unit_id: unitId, amount: myAmt,
-        is_paid: true, paid_at: new Date().toISOString(), method: 'bank_transfer',
+    try {
+      // 자동납부 선택 + 빌링키 미등록 → 카드 등록(빌링키 발급)
+      if (autoPay && !hasBillingKey) {
+        const bk = await registerBillingKey({ residentId: resident.id, customerName: resident.name });
+        if (!bk.ok || !bk.billingKey) { alert('카드 등록 실패: ' + (bk.message ?? '')); setPaying(false); return; }
+        await supabase.from('resident_billing_keys').upsert({
+          resident_id: resident.id, unit_id: unitId, villa_id: resident.villaId,
+          provider: 'toss', billing_key: bk.billingKey, customer_key: bk.customerKey,
+          card_company: bk.cardCompany, card_last4: bk.cardLast4, card_expiry: bk.cardExpiry,
+          auto_pay_enabled: true, status: 'active', updated_at: new Date().toISOString(),
+        }, { onConflict: 'resident_id' });
+      } else if (!autoPay && hasBillingKey) {
+        // 자동납부 해제
+        await supabase.from('resident_billing_keys').update({ auto_pay_enabled: false })
+          .eq('resident_id', resident.id);
+      }
+
+      // 이번 달 결제 처리 (① 일회성)
+      const pay = await requestPayment({
+        method: payMethod,
+        amount: myAmt,
+        orderName: `${ymLabel(currentMonth.year_month)} 관리비 - ${resident.ho}`,
+        customerName: resident.name,
       });
+      if (!pay.ok) { alert('결제 실패: ' + (pay.message ?? '')); setPaying(false); return; }
+
+      const row = {
+        is_paid: true, paid_at: new Date().toISOString(),
+        method: payMethod === 'card' ? 'card' : 'transfer',
+        pg_provider: pay.pgProvider, pg_payment_key: pay.pgPaymentKey,
+        pg_order_id: pay.pgOrderId, pg_status: 'done', auto_paid: false,
+      };
+      const existing = paymentFor(currentMonth.id);
+      if (existing) {
+        await supabase.from('payments').update(row).eq('id', existing.id);
+      } else {
+        await supabase.from('payments').insert({ bill_month_id: currentMonth.id, unit_id: unitId, amount: myAmt, ...row });
+      }
+
+      if (pay.stub) {
+        alert('✓ 납부 완료 (테스트 모드)\n\n토스페이먼츠 운영키 발급 후 실제 카드·계좌이체 결제로 전환됩니다.');
+      }
+    } catch (e) {
+      alert('처리 중 오류: ' + (e instanceof Error ? e.message : ''));
     }
     setPaying(false);
     setShowPayModal(false);
@@ -228,6 +274,11 @@ export default function ResidentBillsShell() {
           amount={myAmt}
           account={accountLine}
           loading={paying}
+          method={payMethod}
+          onMethod={setPayMethod}
+          autoPay={autoPay}
+          onAutoPay={setAutoPay}
+          hasBillingKey={hasBillingKey}
           onClose={() => setShowPayModal(false)}
           onConfirm={confirmPay}
         />
@@ -237,10 +288,12 @@ export default function ResidentBillsShell() {
 }
 
 function PaymentModal({
-  ym, amount, account, loading, onClose, onConfirm,
+  ym, amount, account, loading, method, onMethod, autoPay, onAutoPay, hasBillingKey, onClose, onConfirm,
 }: {
-  ym: string; amount: number; account: string | null;
-  loading: boolean; onClose: () => void; onConfirm: () => void;
+  ym: string; amount: number; account: string | null; loading: boolean;
+  method: PaymentMethod; onMethod: (m: PaymentMethod) => void;
+  autoPay: boolean; onAutoPay: (v: boolean) => void; hasBillingKey: boolean;
+  onClose: () => void; onConfirm: () => void;
 }) {
   return (
     <div className="fixed inset-0 z-[100] flex items-end justify-center bg-[#0F2242]/40">
@@ -248,11 +301,35 @@ function PaymentModal({
         <div className="w-10 h-1 bg-[#E8EBF0] rounded-full mx-auto mb-4" />
         <h3 className="text-[18px] font-extrabold text-[#0F2242]">관리비 납부</h3>
         <p className="text-[14px] text-[#6B7280] mt-2 leading-relaxed">
-          {ymLabel(ym)} 관리비 <span className="font-extrabold text-[#0F2242]">{fmt(amount)}원</span>을 납부합니다.
+          {ymLabel(ym)} 관리비 <span className="font-extrabold text-[#0F2242]">{fmt(amount)}원</span>
         </p>
-        {account && <p className="text-[13px] text-[#6B7280] mt-1">납부 계좌: {account}</p>}
 
-        <div className="grid grid-cols-2 gap-3 mt-5">
+        {/* 결제 수단 */}
+        <p className="text-[13px] font-bold text-[#0F2242] mt-4 mb-2">결제 수단</p>
+        <div className="grid grid-cols-2 gap-2">
+          <button onClick={() => onMethod('card')}
+            className={`rounded-2xl py-3 text-[14px] font-bold border-[1.5px] transition ${method === 'card' ? 'border-[#3766EE] bg-[#EEF2FF] text-[#3766EE]' : 'border-[#E8EBF0] bg-white text-[#6B7280]'}`}>
+            💳 카드
+          </button>
+          <button onClick={() => onMethod('transfer')}
+            className={`rounded-2xl py-3 text-[14px] font-bold border-[1.5px] transition ${method === 'transfer' ? 'border-[#3766EE] bg-[#EEF2FF] text-[#3766EE]' : 'border-[#E8EBF0] bg-white text-[#6B7280]'}`}>
+            🏦 실시간 계좌이체
+          </button>
+        </div>
+
+        {/* 매월 자동납부 (카드 빌링) */}
+        <label className="flex items-start gap-3 mt-3 bg-[#F5F6FA] rounded-2xl p-3 cursor-pointer">
+          <input type="checkbox" checked={autoPay} onChange={e => onAutoPay(e.target.checked)} className="mt-0.5 w-5 h-5 flex-shrink-0 accent-[#3766EE]" />
+          <span>
+            <span className="block text-[14px] font-bold text-[#0F2242]">매월 자동납부 {hasBillingKey && <span className="text-[#2ECC71]">· 등록됨</span>}</span>
+            <span className="block text-[12px] text-[#6B7280] mt-0.5">카드를 등록하면 매월 관리비가 자동으로 결제됩니다.</span>
+          </span>
+        </label>
+
+        {account && <p className="text-[12px] text-[#9CA3AF] mt-3">또는 직접 이체: {account}</p>}
+        {!isTossLive && <p className="text-[12px] text-[#3766EE] mt-2">⚠ 현재 테스트 모드 — 운영키 셋업 후 실제 결제됩니다.</p>}
+
+        <div className="grid grid-cols-2 gap-3 mt-4">
           <button
             onClick={onClose}
             disabled={loading}
@@ -265,7 +342,7 @@ function PaymentModal({
             disabled={loading}
             className="bg-[#3766EE] text-white rounded-2xl py-3.5 text-[15px] font-bold hover:bg-[#1F3DC2] transition disabled:opacity-50"
           >
-            {loading ? '처리 중…' : '납부 확인'}
+            {loading ? '처리 중…' : `${fmt(amount)}원 납부`}
           </button>
         </div>
       </div>
