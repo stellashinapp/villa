@@ -213,9 +213,9 @@ export default function AdminHomeShell() {
             <p className="text-[14px] font-bold mt-3 underline">＋ 빌라 등록 시작 →</p>
           </Link>
         ) : (
-          <div className="bg-white rounded-xl p-8 border border-[#F0F2F5] shadow-sm mb-5 text-center">
-            <p className="text-[16px] text-[#6B7280] mb-5">이번 달 발행된 관리비가 없습니다</p>
-            <Link href="/admin/bills" className="flex items-center justify-center w-full bg-[#2B2BEE] text-white rounded-xl py-6 text-[20px] font-extrabold hover:bg-[#1C1CC9] transition">
+          <div className="bg-gradient-to-br from-[#2B2BEE] to-[#6B6BF5] rounded-xl p-8 shadow-md mb-5 text-center">
+            <p className="text-[16px] text-white/85 mb-5">이번 달 발행된 관리비가 없습니다</p>
+            <Link href="/admin/bills" className="flex items-center justify-center w-full bg-white text-[#2B2BEE] rounded-xl py-6 text-[20px] font-extrabold hover:bg-white/90 transition">
               관리비 발행
             </Link>
           </div>
