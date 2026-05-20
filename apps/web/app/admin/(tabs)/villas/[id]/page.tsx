@@ -206,7 +206,6 @@ export default function AdminVillaDetailPage() {
           <div className="flex items-start justify-between">
             <div className="flex-1 min-w-0">
               <h1 className="text-[26px] font-black text-[#0F2242]">{villa.name}</h1>
-              <p className="text-[16px] text-[#6B7280] mt-0.5">{villa.address}</p>
             </div>
             <button onClick={startEditBasic} className="text-[15px] text-[#3766EE] font-bold ml-3 flex-shrink-0 mt-1">✏️ 편집</button>
           </div>

@@ -1,12 +1,19 @@
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-html, body { background: #F5F6FA; color: #1A1D26; }
-* { -webkit-tap-highlight-color: transparent; }
-
-/* PWA 모바일 인식 시 안전 영역 */
+/* 전체 폰트 Pretendard — font-sans(var(--font-noto)) 가 이 변수를 참조하므로 일괄 적용 */
 :root {
+  --font-noto: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
   --safe-top: env(safe-area-inset-top);
   --safe-bottom: env(safe-area-inset-bottom);
 }
+
+html, body {
+  background: #F5F6FA;
+  color: #1A1D26;
+  font-family: var(--font-noto);
+}
+* { -webkit-tap-highlight-color: transparent; }

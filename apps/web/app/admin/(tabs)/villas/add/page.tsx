@@ -45,7 +45,6 @@ export default function AdminVillaAddPage() {
   // 빌라 기본 정보
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
-  const [addressDetail, setAddressDetail] = useState('');
 
   // 자동 생성 설정
   const [aboveTotal, setAboveTotal] = useState('');
@@ -108,7 +107,7 @@ export default function AdminVillaAddPage() {
   // 3) 중복 후보 디바운스
   useEffect(() => {
     const n = name.trim();
-    const a = (address + ' ' + addressDetail).trim();
+    const a = address.trim();
     if (n.length < 2 || a.length < 5) {
       setDuplicates([]);
       return;
@@ -132,7 +131,7 @@ export default function AdminVillaAddPage() {
       setDuplicateChecking(false);
     }, 600);
     return () => clearTimeout(handle);
-  }, [name, address, addressDetail, adminId]);
+  }, [name, address, adminId]);
 
   // 4) 자동 생성 → units 갱신
   function regenerate(): UnitRow[] {
@@ -241,7 +240,7 @@ export default function AdminVillaAddPage() {
 
     setSubmitting(true);
 
-    const fullAddress = address.trim() + (addressDetail.trim() ? ' ' + addressDetail.trim() : '');
+    const fullAddress = address.trim();
 
     const { data: villaRow, error: villaErr } = await supabase
       .from('villas')
@@ -336,18 +335,6 @@ export default function AdminVillaAddPage() {
               </button>
             </div>
           </Field>
-          {address && (
-            <Field label="상세 주소 (동/호수)">
-              <input
-                type="text"
-                value={addressDetail}
-                onChange={e => setAddressDetail(e.target.value)}
-                placeholder="예: 3층"
-                maxLength={100}
-                className="input"
-              />
-            </Field>
-          )}
         </Section>
 
         {/* 호실 구성 */}

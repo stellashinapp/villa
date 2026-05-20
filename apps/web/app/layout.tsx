@@ -1,14 +1,6 @@
 import type { Metadata, Viewport } from 'next';
-import { Noto_Sans_KR } from 'next/font/google';
 import PwaRegister from '@/components/PwaRegister';
 import './globals.css';
-
-const noto = Noto_Sans_KR({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800'],
-  display: 'swap',
-  variable: '--font-noto',
-});
 
 export const metadata: Metadata = {
   title: '빌라톡',
@@ -42,7 +34,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko">
-      <body className={`${noto.variable} font-sans bg-bg text-t1 min-h-screen`}>
+      <body className="font-sans bg-bg text-t1 min-h-screen">
         {children}
         <PwaRegister />
       </body>
