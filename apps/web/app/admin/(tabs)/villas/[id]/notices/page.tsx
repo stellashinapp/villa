@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import AdminTopBar from '@/components/AdminTopBar';
 
 type Notice = {
   id: string;
@@ -66,16 +66,17 @@ export default function AdminVillaNoticesPage() {
   }
 
   return (
-    <div className="px-5 pt-6 pb-8 max-w-screen-sm mx-auto">
-      <div className="flex justify-between items-end mt-3 mb-5">
-        <div>
-          <h1 className="text-[24px] font-black text-[#0F2242]">공지사항</h1>
-          <p className="text-[15px] text-[#6B7280] mt-0.5">총 {notices.length}건</p>
-        </div>
-        <button onClick={() => setShowForm(!showForm)} className="bg-[#2B2BEE] text-white text-[15px] font-bold px-3.5 py-2 rounded-xl">
-          {showForm ? '취소' : '＋ 공지 작성'}
-        </button>
-      </div>
+    <>
+      <AdminTopBar
+        title="공지사항"
+        subtitle={`총 ${notices.length}건`}
+        right={
+          <button onClick={() => setShowForm(!showForm)} className="bg-[#2B2BEE] text-white text-[14px] font-bold px-3.5 py-2.5 rounded-xl hover:bg-[#1C1CC9] transition">
+            {showForm ? '취소' : '＋ 작성'}
+          </button>
+        }
+      />
+      <div className="px-5 pt-4 pb-8 max-w-screen-sm mx-auto">
 
       {showForm && (
         <form onSubmit={submit} className="mb-4 bg-white border border-[#E8EBF0] rounded-xl p-4 shadow-sm space-y-3">
@@ -118,6 +119,7 @@ export default function AdminVillaNoticesPage() {
           </div>
         )
       }
-    </div>
+      </div>
+    </>
   );
 }

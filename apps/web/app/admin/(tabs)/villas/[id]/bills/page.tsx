@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import Icon from '@/components/Icon';
+import AdminTopBar from '@/components/AdminTopBar';
 import { BILL_ITEM_PRESETS } from '@villatolk/shared';
 
 type BillItem = { id: string; name: string; amount: number };
@@ -238,17 +239,18 @@ export default function AdminVillaBillsPage() {
   }
 
   return (
-    <div className="px-5 pt-6 pb-8 max-w-screen-sm mx-auto">
-      <div className="flex justify-between items-end mt-3 mb-5">
-        <div>
-          {villaName && <p className="text-[13px] font-bold text-[#2B2BEE] mb-0.5">{villaName}</p>}
-          <h1 className="text-[26px] font-black text-[#0F2242]">관리비 고지</h1>
-          <p className="text-[15px] text-[#6B7280] mt-0.5">일괄 고지 · 세대별 차등고지</p>
-        </div>
-        <button onClick={() => setShowNew(!showNew)} className="bg-[#2B2BEE] text-white text-[15px] font-bold px-3.5 py-2.5 rounded-xl hover:bg-[#1C1CC9] transition">
-          {showNew ? '취소' : '＋ 새 고지'}
-        </button>
-      </div>
+    <>
+      <AdminTopBar
+        eyebrow={villaName || undefined}
+        title="관리비 고지"
+        subtitle="일괄 고지 · 세대별 차등고지"
+        right={
+          <button onClick={() => setShowNew(!showNew)} className="bg-[#2B2BEE] text-white text-[14px] font-bold px-3.5 py-2.5 rounded-xl hover:bg-[#1C1CC9] transition">
+            {showNew ? '취소' : '＋ 새 고지'}
+          </button>
+        }
+      />
+      <div className="px-5 pt-4 pb-8 max-w-screen-sm mx-auto">
 
       {showNew && (
         <form onSubmit={createMonth} className="mb-4 bg-white border border-[#E8EBF0] rounded-xl p-4 shadow-sm space-y-3">
@@ -503,6 +505,7 @@ export default function AdminVillaBillsPage() {
           </div>
         )
       }
-    </div>
+      </div>
+    </>
   );
 }

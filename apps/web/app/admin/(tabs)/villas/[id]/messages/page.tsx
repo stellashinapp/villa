@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import AdminTopBar from '@/components/AdminTopBar';
 
 type Reply = { id: string; text: string; author_type: string; author_name: string | null; created_at: string };
 type Message = {
@@ -69,13 +69,12 @@ export default function AdminVillaMessagesPage() {
   }
 
   return (
-    <div className="px-5 pt-6 pb-8 max-w-screen-sm mx-auto">
-      <div className="mt-3 mb-5">
-        <h1 className="text-[24px] font-black text-[#0F2242]">메시지</h1>
-        <p className="text-[15px] text-[#6B7280] mt-0.5">
-          총 {messages.length}건 / 미답변 {messages.filter(m => !m.message_replies.some(r => r.author_type === 'admin')).length}건
-        </p>
-      </div>
+    <>
+      <AdminTopBar
+        title="메시지"
+        subtitle={`총 ${messages.length}건 / 미답변 ${messages.filter(m => !m.message_replies.some(r => r.author_type === 'admin')).length}건`}
+      />
+      <div className="px-5 pt-4 pb-8 max-w-screen-sm mx-auto">
 
       {loading ? <p className="text-center text-sm text-[#9CA3AF] mt-10">불러오는 중…</p>
         : messages.length === 0 ? (
@@ -136,6 +135,7 @@ export default function AdminVillaMessagesPage() {
           </div>
         )
       }
-    </div>
+      </div>
+    </>
   );
 }
