@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
-import { BANK_NAMES, getBankCode } from '@villatolk/shared';
+import { BANK_NAMES, getBankCode, planFor, formatKRW } from '@villatolk/shared';
 
 type DuplicateCandidate = {
   id: string;
@@ -274,6 +274,18 @@ export default function AdminVillaAddPage() {
       setError('호실 생성 실패 (빌라는 생성됨): ' + unitsErr.message);
       setSubmitting(false);
       return;
+    }
+
+    // 구독이 있으면 이 빌라의 구독 상품 자동 추가 + 비용 증가 안내
+    const { data: subRow } = await supabase.from('subscriptions')
+      .select('id').eq('admin_id', adminId)
+      .in('status', ['trialing', 'active', 'past_due', 'pending_cancel'])
+      .order('created_at', { ascending: false }).limit(1).maybeSingle();
+    const subId = (subRow as { id: string } | null)?.id ?? null;
+    if (subId) {
+      const p = planFor(finalUnits.length);
+      await supabase.from('subscription_items').insert({ subscription_id: subId, villa_id: villaId, plan: p.plan, price: p.price });
+      alert(`"${name.trim()}" 빌라가 추가되었습니다.\n\n${p.name}(${finalUnits.length}세대) 상품 ${formatKRW(p.price)}이 구독에 추가되어\n다음 결제부터 월 요금에 합산됩니다.`);
     }
 
     router.replace(`/admin/villas/${villaId}`);

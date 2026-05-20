@@ -286,7 +286,7 @@ export default function AdminHomeShell() {
 
         {/* 구독 카드 — 최하단 (QA 1) */}
         <h3 className="text-[13px] font-bold text-[#0F2242] mb-2 px-1">구독</h3>
-        <Link href="/admin/settings" className={`block rounded-xl p-4 shadow-sm mb-5 ${
+        <Link href="/admin/subscribe" className={`block rounded-xl p-4 shadow-sm mb-5 ${
           sub?.status === 'active' ? 'bg-gradient-to-br from-[#2B2BEE] to-[#6B6BF5] text-white'
           : sub?.status === 'past_due' ? 'bg-[#FEE8E7] border border-[#FF3B30]/30'
           : sub?.status === 'trialing' ? 'bg-[#E9E9FD] border border-[#2B2BEE]/30'

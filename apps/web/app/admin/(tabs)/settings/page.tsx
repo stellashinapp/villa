@@ -106,9 +106,9 @@ export default function AdminSettingsPage() {
         <Section title="구독">
           <Row label="상태" value={subLabel} valueClassName={sub?.status === 'past_due' ? 'text-[#FF3B30]' : sub?.status === 'trialing' ? 'text-[#2B2BEE]' : ''} />
           <Row label="등록 카드" value={sub?.card_last4 ? `${sub.card_brand ?? 'CARD'} •••• ${sub.card_last4}` : '미등록'} />
-          <p className="text-[12px] text-[#9CA3AF] mt-2">
-            ⓘ 구독·결제 관리는 모바일 앱에서 가능합니다
-          </p>
+          <a href="/admin/subscribe" className="block mt-2 bg-[#2B2BEE] text-white text-center py-2.5 rounded-xl text-[14px] font-bold">
+            {sub ? '구독 관리' : '구독 시작하기'}
+          </a>
         </Section>
 
         {/* 약관 */}
