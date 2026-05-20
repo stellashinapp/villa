@@ -402,15 +402,18 @@ export default function AdminVillaBillsPage() {
 
                   {/* 고지완료 요약 카드 */}
                   {m.status !== 'draft' && (
-                    <div className="bg-[#E9E9FD] rounded-xl p-3 mb-3 border border-[#2B2BEE]/15">
-                      <div className="flex items-end justify-between mb-3">
-                        <div>
-                          <p className="text-[28px] font-black text-[#2B2BEE]">완납률 {payRate}%</p>
-                          <p className="text-[13px] text-[#6B7280] mt-0.5">{paidCount} / {units.length}세대 납부</p>
+                    <div className="bg-[#E9E9FD] rounded-xl p-4 mb-3 border border-[#2B2BEE]/15">
+                      <div className="flex items-stretch mb-4">
+                        <div className="flex-1">
+                          <p className="text-[12px] text-[#6B7280] mb-1">완납률</p>
+                          <p className="text-[24px] font-black text-[#2B2BEE] leading-none">{payRate}%</p>
+                          <p className="text-[12px] text-[#6B7280] mt-1.5">{paidCount}/{units.length}세대 납부</p>
                         </div>
-                        <div className="text-right">
-                          <p className="text-[20px] font-extrabold text-[#0F2242]">₩{fmt(total)}</p>
-                          <p className="text-[12px] text-[#6B7280] mt-0.5">{mode === 'per_unit' ? '세대별 차등' : `세대당 ₩${fmt(perUnit)}`}</p>
+                        <div className="w-px bg-[#2B2BEE]/15 mx-4" />
+                        <div className="flex-1 text-right">
+                          <p className="text-[12px] text-[#6B7280] mb-1">총 청구액</p>
+                          <p className="text-[24px] font-black text-[#0F2242] leading-none">₩{fmt(total)}</p>
+                          <p className="text-[12px] text-[#6B7280] mt-1.5">{mode === 'per_unit' ? '세대별 차등' : `세대당 ₩${fmt(perUnit)}`}</p>
                         </div>
                       </div>
                       {m.status === 'published' && (
