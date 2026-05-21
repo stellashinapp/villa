@@ -11,7 +11,7 @@ import { BILL_ITEM_PRESETS } from '@villatolk/shared';
 type BillItem = { id: string; name: string; amount: number };
 type Unit = { id: string; ho_number: string };
 type Resident = { id: string; name: string; unit_id: string };
-type Payment = { id: string; bill_month_id: string; unit_id: string; is_paid: boolean; method: string | null; paid_at: string | null };
+type Payment = { id: string; bill_month_id: string; unit_id: string; amount: number; is_paid: boolean; method: string | null; paid_at: string | null };
 
 type BillingMode = 'equal' | 'per_unit';
 
@@ -283,11 +283,20 @@ export default function AdminVillaBillsPage() {
     }
     await supabase.from('bill_months').update({ status }).eq('id', m.id);
     if (status === 'published') {
-      const existing = payments.filter(p => p.bill_month_id === m.id).map(p => p.unit_id);
+      const monthPays = payments.filter(p => p.bill_month_id === m.id);
+      const existing = monthPays.map(p => p.unit_id);
       const toInsert = units
         .filter(u => !existing.includes(u.id))
         .map(u => ({ bill_month_id: m.id, unit_id: u.id, amount: amountForUnit(m, u.ho_number), is_paid: false }));
       if (toInsert.length > 0) await supabase.from('payments').insert(toInsert);
+      // 재발행 시 기존 '미납' 세대 금액을 현재 청구액으로 갱신 (납부완료 건은 보존)
+      for (const u of units) {
+        const pay = monthPays.find(p => p.unit_id === u.id);
+        if (pay && !pay.is_paid) {
+          const amt = amountForUnit(m, u.ho_number);
+          if (pay.amount !== amt) await supabase.from('payments').update({ amount: amt }).eq('id', pay.id);
+        }
+      }
     }
     await load();
   }

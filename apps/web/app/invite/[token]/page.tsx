@@ -52,8 +52,9 @@ export default function InviteAcceptPage() {
     if (!inv) return;
     const inputDigits = phoneConfirm.replace(/\D/g, '');
     const lastFour = inv.phone.slice(-4);
-    if (!inputDigits.endsWith(lastFour)) {
-      alert(`휴대전화 마지막 4자리가 일치하지 않습니다 (관리자 등록 번호 ****-${lastFour})`);
+    // 정확히 4자리 + 완전 일치만 통과 (endsWith 는 전체번호 입력으로도 뚫림)
+    if (inputDigits.length !== 4 || inputDigits !== lastFour) {
+      alert(`휴대전화 마지막 4자리를 정확히 입력해주세요 (관리자 등록 번호 ****-${lastFour})`);
       return;
     }
     setAccepting(true);

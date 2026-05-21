@@ -118,7 +118,7 @@ export default function AdminVillaAddPage() {
       const { data } = await supabase
         .from('villas')
         .select('id, name, address, admin_id, admins(name)')
-        .or(`name.ilike.%${n}%,address.ilike.%${address.trim() || n}%`)
+        .or(`name.ilike.%${n.replace(/[,()%*]/g, ' ')}%,address.ilike.%${(address.trim() || n).replace(/[,()%*]/g, ' ')}%`)
         .limit(8);
       const rows = (data ?? []) as unknown as { id: string; name: string; address: string; admin_id: string; admins: { name: string | null } | null }[];
       // 본인 빌라 중복 (이미 내가 등록한 같은 이름/주소) — 실수 방지

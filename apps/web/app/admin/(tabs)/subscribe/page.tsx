@@ -74,7 +74,14 @@ export default function AdminSubscribePage() {
       const subId = (subRow as { id: string }).id;
 
       const rows = items.map(i => ({ subscription_id: subId, villa_id: i.villa.id, plan: i.plan, price: i.price }));
-      await supabase.from('subscription_items').insert(rows);
+      const { error: itemsErr } = await supabase.from('subscription_items').insert(rows);
+      if (itemsErr) {
+        // 항목 생성 실패 시 방금 만든 구독 롤백 — item 없는 구독(결제 0원) 방지
+        await supabase.from('subscriptions').delete().eq('id', subId);
+        alert('구독 항목 생성 실패: ' + itemsErr.message);
+        setProcessing(false);
+        return;
+      }
 
       if (bk.stub) {
         alert(`✓ 카드 등록 완료 (테스트 모드)\n\n${TRIAL_DAYS}일 무료 체험이 시작되었습니다.\n체험 종료 후 매월 ${formatKRW(mrr)}이 자동 결제됩니다.\n(운영키 셋업 후 실제 카드 등록)`);

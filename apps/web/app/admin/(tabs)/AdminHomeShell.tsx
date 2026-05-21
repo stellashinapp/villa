@@ -143,7 +143,7 @@ export default function AdminHomeShell() {
     return <div className="min-h-screen flex items-center justify-center text-[14px] text-[#9CA3AF]">불러오는 중…</div>;
   }
 
-  const trialDays = sub?.trial_ends_at ? Math.floor((new Date(sub.trial_ends_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : null;
+  const trialDays = sub?.trial_ends_at ? Math.max(0, Math.ceil((new Date(sub.trial_ends_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24))) : null;
   const subLabel = sub?.status === 'active' ? '활성' : sub?.status === 'trialing' ? `무료체험 D-${trialDays ?? '-'}` : sub?.status === 'past_due' ? '결제 실패' : '구독 미가입';
 
   // 첫 빌라 (banner 용)

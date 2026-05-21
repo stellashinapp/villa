@@ -51,7 +51,7 @@ export default function AdminSettingsPage() {
     router.replace('/');
   }
 
-  const trialDays = sub?.trial_ends_at ? Math.floor((new Date(sub.trial_ends_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : null;
+  const trialDays = sub?.trial_ends_at ? Math.max(0, Math.ceil((new Date(sub.trial_ends_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24))) : null;
   const subLabel = sub?.status === 'active' ? '활성' : sub?.status === 'trialing' ? `무료체험 D-${trialDays ?? '-'}` : sub?.status === 'past_due' ? '결제 실패' : sub?.status === 'pending_cancel' ? '해지 예정' : sub?.status === 'cancelled' ? '해지됨' : '구독 미가입';
   const isSuper = profile?.role === 'super';
 
