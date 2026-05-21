@@ -14,6 +14,9 @@ const NAV_ITEMS = [
   { href: '/settings', icon: '⚙️', label: '설정', group: 'SYSTEM' },
 ];
 
+// 사이드바/레이아웃은 Tailwind 커스텀 테마 컴파일 상태와 무관하게 항상 보이도록 인라인 스타일 사용.
+const SIDEBAR_W = 240;
+
 export default function ChromeShell({
   children,
   viewer,
@@ -29,26 +32,53 @@ export default function ChromeShell({
   }, {});
 
   return (
-    <div className="flex min-h-screen">
-      <aside className="w-60 bg-sidebarBg border-r border-sidebarBorder fixed top-0 left-0 bottom-0 overflow-y-auto z-10">
-        <div className="px-5 pt-6 pb-5 border-b border-sidebarBorder">
-          <h1 className="text-base font-extrabold text-white tracking-tight">빌라톡 어드민</h1>
-          <span className="text-[10px] text-sidebarTextMuted tracking-[2px] font-semibold">VILLATOLK ADMIN</span>
+    <div style={{ display: 'flex', minHeight: '100vh' }}>
+      {/* 사이드바 hover 효과는 인라인으로 불가 → 작은 전역 스타일 */}
+      <style>{`.vt-nav-link:hover{background:rgba(255,255,255,.07);color:#fff!important}`}</style>
+
+      <aside
+        style={{
+          width: SIDEBAR_W,
+          background: '#1B2A4A',
+          borderRight: '1px solid #2E4A7A',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          bottom: 0,
+          overflowY: 'auto',
+          zIndex: 20,
+        }}
+      >
+        <div style={{ padding: '24px 20px 20px', borderBottom: '1px solid #2E4A7A' }}>
+          <h1 style={{ fontSize: 16, fontWeight: 800, color: '#fff', letterSpacing: '-0.01em', margin: 0 }}>빌라톡 어드민</h1>
+          <span style={{ fontSize: 10, color: '#7889A5', letterSpacing: '2px', fontWeight: 600 }}>VILLATOLK ADMIN</span>
         </div>
 
-        <nav className="px-3 py-3">
+        <nav style={{ padding: 12 }}>
           {Object.entries(groups).map(([group, items]) => (
-            <div key={group} className="mb-3">
-              <div className="text-[10px] font-bold text-sidebarTextMuted tracking-[1.5px] px-2 pt-3 pb-2">
+            <div key={group} style={{ marginBottom: 12 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: '#7889A5', letterSpacing: '1.5px', padding: '12px 8px 8px' }}>
                 {group}
               </div>
               {items.map(item => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-sidebarText hover:bg-white/[.06] hover:text-sidebarTextActive transition-all"
+                  className="vt-nav-link"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    padding: '10px 12px',
+                    borderRadius: 8,
+                    fontSize: 14,
+                    fontWeight: 500,
+                    color: '#B0BED0',
+                    textDecoration: 'none',
+                    transition: 'background .15s, color .15s',
+                  }}
                 >
-                  <span className="w-[18px] text-center text-base">{item.icon}</span>
+                  <span style={{ width: 18, textAlign: 'center', fontSize: 16 }}>{item.icon}</span>
                   {item.label}
                 </Link>
               ))}
@@ -57,22 +87,35 @@ export default function ChromeShell({
         </nav>
       </aside>
 
-      <main className="flex-1 ml-60 min-h-screen bg-bg">
-        <header className="h-[60px] border-b border-border flex items-center justify-between px-7 bg-surface sticky top-0 z-5">
-          <span className="text-[15px] font-bold text-t1">빌라톡 어드민</span>
-          <div className="flex items-center gap-3">
+      <main style={{ flex: 1, marginLeft: SIDEBAR_W, minHeight: '100vh', background: '#F5F6FA' }}>
+        <header
+          style={{
+            height: 60,
+            borderBottom: '1px solid #E8EBF0',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '0 28px',
+            background: '#fff',
+            position: 'sticky',
+            top: 0,
+            zIndex: 5,
+          }}
+        >
+          <span style={{ fontSize: 15, fontWeight: 700, color: '#1A1D26' }}>빌라톡 어드민</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             {viewer && (
-              <span className="text-xs text-t3">
-                <span className="font-semibold text-t2">{viewer}</span>
+              <span style={{ fontSize: 12, color: '#8A93A6' }}>
+                <span style={{ fontWeight: 600, color: '#4A5160' }}>{viewer}</span>
                 {superAdmin && (
-                  <span className="ml-1.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-warnL text-warn">슈퍼</span>
+                  <span style={{ marginLeft: 6, padding: '2px 6px', borderRadius: 4, fontSize: 10, fontWeight: 700, background: '#FEF3C7', color: '#B45309' }}>슈퍼</span>
                 )}
               </span>
             )}
             <LogoutButton />
           </div>
         </header>
-        <div className="p-6">{children}</div>
+        <div style={{ padding: 24 }}>{children}</div>
       </main>
     </div>
   );
