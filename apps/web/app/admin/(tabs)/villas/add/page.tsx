@@ -18,7 +18,7 @@ type UnitRow = { ho: string; tempId: string };
 declare global {
   interface Window {
     daum?: {
-      Postcode: new (options: { oncomplete: (data: { address: string; roadAddress?: string }) => void; onclose?: () => void }) => { open: () => void };
+      Postcode: new (options: { oncomplete: (data: { address: string; roadAddress?: string }) => void; onclose?: () => void; theme?: Record<string, string> }) => { open: () => void };
     };
   }
 }
@@ -191,6 +191,12 @@ export default function AdminVillaAddPage() {
       return;
     }
     new window.daum.Postcode({
+      // 카카오 주소검색 팝업 강조색(예시 주소 등 파랑)을 키컬러로 통일
+      theme: {
+        emphTextColor: '#2B2BEE',
+        queryTextColor: '#0F2242',
+        outlineColor: '#2B2BEE',
+      },
       oncomplete: (data) => {
         setAddress(data.roadAddress || data.address);
       },
@@ -448,7 +454,7 @@ export default function AdminVillaAddPage() {
                     onClick={applyAutoGenerate}
                     className="text-[14px] text-[#2B2BEE] font-bold hover:underline"
                   >
-                    ✏️ 직접 편집
+                    직접 편집
                   </button>
                 ) : (
                   <button

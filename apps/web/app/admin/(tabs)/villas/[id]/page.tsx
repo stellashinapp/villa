@@ -205,7 +205,7 @@ export default function AdminVillaDetailPage() {
             <div className="flex-1 min-w-0">
               <h1 className="text-[26px] font-black text-[#0F2242]">{villa.name}</h1>
             </div>
-            <button onClick={startEditBasic} className="text-[15px] text-[#2B2BEE] font-bold ml-3 flex-shrink-0 mt-1">✏️ 편집</button>
+            <button onClick={startEditBasic} className="text-[15px] text-[#2B2BEE] font-bold ml-3 flex-shrink-0 mt-1">편집</button>
           </div>
         )}
       </div>
