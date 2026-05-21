@@ -93,6 +93,9 @@ serve(async (req) => {
         .limit(RECENT_LIMIT, { referencedTable: 'messages' })
         .order('created_at', { ascending: false, referencedTable: 'posts' })
         .limit(RECENT_LIMIT, { referencedTable: 'posts' })
+        // 청구서는 최근 12개월만 — 1년치 이상 쌓여도 로그인 페이로드 비대화 방지
+        .order('year_month', { ascending: false, referencedTable: 'bill_months' })
+        .limit(12, { referencedTable: 'bill_months' })
         .single();
       villa = villaData ?? null;
 

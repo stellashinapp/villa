@@ -84,7 +84,24 @@ serve(async (_req) => {
       const discount = volumeDiscount(items.length);
       const amount = Math.round(basePrice * (1 - discount));
 
-      const orderId = `sub_${sub.id}_${Date.now()}`;
+      // 멱등성: 이번 달 이미 성공한 구독결제가 있으면 중복 결제 방지 (cron 중복 실행/재시도 대비)
+      const now = new Date();
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+      const { data: alreadyPaid } = await supabase
+        .from('subscription_payments')
+        .select('id')
+        .eq('subscription_id', sub.id)
+        .eq('status', 'success')
+        .gte('created_at', monthStart)
+        .limit(1);
+      if (alreadyPaid && alreadyPaid.length > 0) {
+        results.push({ sub: sub.id, ok: true, error: 'skipped: already charged this month' });
+        continue;
+      }
+
+      // 결제월 기반 고정 orderId → 같은 달 재실행 시 동일 orderId 로 Toss 가 중복 결제 차단
+      const periodKey = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`;
+      const orderId = `sub_${sub.id}_${periodKey}`;
       const orderName = `빌라톡 구독료 (빌라 ${items.length}개)`;
 
       const tossRes = await fetch(`https://api.tosspayments.com/v1/billing/${sub.billing_key}`, {
