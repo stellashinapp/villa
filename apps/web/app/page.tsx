@@ -6,41 +6,10 @@ export default function HomePage() {
       <div className="flex-1 flex flex-col justify-between px-5 pt-16 pb-8 w-full max-w-sm mx-auto">
         {/* Hero — 로고 + 일러스트 */}
         <div className="flex-1 flex flex-col items-center justify-center pb-8">
-          {/* 빌라 일러스트 (SVG) */}
+          {/* 빌라 일러스트 (브랜드 로고) */}
           <div className="mb-6">
-            <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-              {/* 왼쪽 빌라 */}
-              <path d="M16 100 L16 56 L40 36 L40 100 Z" fill="#8B9BFA" stroke="#2B2BEE" strokeWidth="2" strokeLinejoin="round"/>
-              <path d="M16 56 L40 36 L48 42 L24 62 Z" fill="#B5C2FD" stroke="#2B2BEE" strokeWidth="2" strokeLinejoin="round"/>
-              <rect x="22" y="64" width="6" height="8" fill="#2B2BEE" rx="1"/>
-              <rect x="22" y="78" width="6" height="8" fill="#2B2BEE" rx="1"/>
-              <rect x="30" y="70" width="6" height="8" fill="#2B2BEE" rx="1"/>
-              <rect x="30" y="84" width="6" height="10" fill="#2B2BEE" rx="1"/>
-
-              {/* 가운데 빌라 (큰) */}
-              <path d="M40 100 L40 44 L76 16 L76 100 Z" fill="#2B2BEE" stroke="#1C1CC9" strokeWidth="2" strokeLinejoin="round"/>
-              <path d="M40 44 L76 16 L86 24 L50 52 Z" fill="#6B6BF5" stroke="#1C1CC9" strokeWidth="2" strokeLinejoin="round"/>
-              <rect x="48" y="56" width="8" height="10" fill="white" rx="1"/>
-              <rect x="60" y="56" width="8" height="10" fill="white" rx="1"/>
-              <rect x="48" y="72" width="8" height="10" fill="white" rx="1"/>
-              <rect x="60" y="72" width="8" height="10" fill="white" rx="1"/>
-              <rect x="54" y="86" width="8" height="14" fill="white" rx="1"/>
-
-              {/* 오른쪽 빌라 */}
-              <path d="M76 100 L76 60 L100 40 L100 100 Z" fill="#8B9BFA" stroke="#2B2BEE" strokeWidth="2" strokeLinejoin="round"/>
-              <path d="M76 60 L100 40 L108 46 L84 66 Z" fill="#B5C2FD" stroke="#2B2BEE" strokeWidth="2" strokeLinejoin="round"/>
-              <rect x="82" y="68" width="6" height="8" fill="#2B2BEE" rx="1"/>
-              <rect x="82" y="82" width="6" height="8" fill="#2B2BEE" rx="1"/>
-              <rect x="90" y="74" width="6" height="8" fill="#2B2BEE" rx="1"/>
-              <rect x="90" y="88" width="6" height="10" fill="#2B2BEE" rx="1"/>
-
-              {/* 말풍선 */}
-              <circle cx="92" cy="22" r="8" fill="#2B2BEE"/>
-              <path d="M88 28 L86 32 L90 30 Z" fill="#2B2BEE"/>
-              <circle cx="89" cy="22" r="1" fill="white"/>
-              <circle cx="92" cy="22" r="1" fill="white"/>
-              <circle cx="95" cy="22" r="1" fill="white"/>
-            </svg>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo-source.png" alt="빌라톡" width={156} height={149} className="select-none" />
           </div>
 
           {/* 로고 텍스트 */}
