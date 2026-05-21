@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import ResidentPageHeader from '@/components/ResidentPageHeader';
 import Icon from '@/components/Icon';
@@ -37,6 +37,9 @@ export default function ResidentCommunityPage() {
 
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const [replyOpen, setReplyOpen] = useState<string | null>(null);
@@ -62,6 +65,24 @@ export default function ResidentCommunityPage() {
     setLoading(false);
   }
 
+  async function onPickImage(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // 같은 파일 재선택 가능하도록 초기화
+    if (!file || !s) return;
+    if (!/^image\/(jpeg|png|webp)$/.test(file.type)) { alert('JPG/PNG/WEBP 이미지만 첨부할 수 있습니다'); return; }
+    if (file.size > 5 * 1024 * 1024) { alert('5MB 이하 이미지만 첨부할 수 있습니다'); return; }
+    setUploading(true);
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+    const path = `${s.villaId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error } = await supabase.storage.from('community-images').upload(path, file, {
+      contentType: file.type, upsert: false,
+    });
+    if (error) { setUploading(false); alert('사진 업로드 실패: ' + error.message); return; }
+    const { data } = supabase.storage.from('community-images').getPublicUrl(path);
+    setImageUrl(data.publicUrl);
+    setUploading(false);
+  }
+
   async function submitPost(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim() || !body.trim()) { alert('제목과 내용을 입력하세요'); return; }
@@ -69,11 +90,11 @@ export default function ResidentCommunityPage() {
     setSubmitting(true);
     const { error } = await supabase.from('posts').insert({
       villa_id: s.villaId, unit_id: unitId, resident_id: s.id,
-      title: title.trim(), body: body.trim(), likes: 0,
+      title: title.trim(), body: body.trim(), image_url: imageUrl, likes: 0,
     });
     setSubmitting(false);
     if (error) { alert('등록 실패: ' + error.message); return; }
-    setTitle(''); setBody('');
+    setTitle(''); setBody(''); setImageUrl(null);
     if (s) await load(s.villaId);
   }
 
@@ -100,11 +121,20 @@ export default function ResidentCommunityPage() {
             className="w-full bg-white border border-[#E8EBF0] rounded-xl px-4 py-3 text-[15px] text-[#0F2242] outline-none focus:border-[#2B2BEE] focus:ring-2 focus:ring-[#2B2BEE]/15 transition" required />
           <textarea value={body} onChange={e => setBody(e.target.value)} placeholder="내용을 입력하세요" rows={4} maxLength={1000}
             className="w-full bg-white border border-[#E8EBF0] rounded-xl px-4 py-3 text-[15px] text-[#0F2242] outline-none focus:border-[#2B2BEE] focus:ring-2 focus:ring-[#2B2BEE]/15 transition resize-none" required />
-          <button type="button" disabled
-            className="inline-flex items-center gap-1.5 bg-white border border-[#E8EBF0] text-[#9CA3AF] text-[13px] font-bold px-3 py-2 rounded-xl">
-            <Icon name="camera" size={15} color="#9CA3AF" /> 사진 첨부
-          </button>
-          <button type="submit" disabled={submitting}
+          <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={onPickImage} />
+          {imageUrl ? (
+            <div className="relative">
+              <img src={imageUrl} alt="첨부 사진" className="rounded-xl max-h-48 w-full object-cover border border-[#E8EBF0]" />
+              <button type="button" onClick={() => setImageUrl(null)}
+                className="absolute top-2 right-2 bg-black/55 text-white text-[12px] font-bold w-7 h-7 rounded-full">×</button>
+            </div>
+          ) : (
+            <button type="button" disabled={uploading} onClick={() => fileRef.current?.click()}
+              className="inline-flex items-center gap-1.5 bg-white border border-[#E8EBF0] text-[#2B2BEE] text-[13px] font-bold px-3 py-2 rounded-xl disabled:opacity-50">
+              <Icon name="camera" size={15} color="#2B2BEE" /> {uploading ? '업로드 중…' : '사진 첨부'}
+            </button>
+          )}
+          <button type="submit" disabled={submitting || uploading}
             className="w-full bg-[#2B2BEE] text-white py-3.5 rounded-xl text-[15px] font-bold hover:bg-[#1C1CC9] disabled:opacity-50 transition">
             {submitting ? '등록 중…' : '글 등록'}
           </button>

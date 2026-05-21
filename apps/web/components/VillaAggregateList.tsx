@@ -116,9 +116,12 @@ export default function VillaAggregateList({ kind }: { kind: Kind }) {
         }));
       } else { // parking
         const { data: parks } = await supabase.from('parking')
-          .select('vehicle_type, units!inner(villa_id)').in('units.villa_id', villaIds);
+          .select('vehicle_type, expires_at, units!inner(villa_id)').in('units.villa_id', villaIds);
+        const today = new Date().toISOString().slice(0, 10);
         const cnt: Record<string, number> = {}, visitor: Record<string, number> = {};
-        ((parks ?? []) as unknown as { vehicle_type: string | null; units: { villa_id: string } }[]).forEach(p => {
+        ((parks ?? []) as unknown as { vehicle_type: string | null; expires_at: string | null; units: { villa_id: string } }[]).forEach(p => {
+          // 종료일 지난 방문차량은 집계에서 제외 (목록 자동 정리와 동일 기준)
+          if (p.vehicle_type === 'visitor' && p.expires_at && p.expires_at.slice(0, 10) < today) return;
           const vid = p.units.villa_id;
           cnt[vid] = (cnt[vid] ?? 0) + 1;
           if (p.vehicle_type === 'visitor') visitor[vid] = (visitor[vid] ?? 0) + 1;

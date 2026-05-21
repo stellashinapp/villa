@@ -273,12 +273,14 @@ export default function AdminVillaBillsPage() {
   }
 
   async function changeStatus(m: BillMonth, status: string) {
-    const labels: Record<string, string> = { published: '고지', closed: '마감', draft: '작성중' };
+    const labels: Record<string, string> = { published: '작성 완료', closed: '마감', draft: '작성중' };
     if (status === 'published') {
       const total = totalOf(m);
       if (total <= 0) { alert('금액이 0원입니다. 항목 또는 세대별 금액을 먼저 입력하세요.'); return; }
+      if (!confirm('작성을 완료할까요?\n\n완료하면 입주민 앱에 청구 내역이 공개되고 납부가 가능해집니다.\n실제 고지 알림 발송은 다음 화면의 "관리비 고지 발송" 버튼으로 진행합니다.')) return;
+    } else {
+      if (!confirm(`'${labels[status]}' 로 변경할까요?`)) return;
     }
-    if (!confirm(`'${labels[status]}' 로 변경할까요?`)) return;
     await supabase.from('bill_months').update({ status }).eq('id', m.id);
     if (status === 'published') {
       const existing = payments.filter(p => p.bill_month_id === m.id).map(p => p.unit_id);
@@ -617,7 +619,7 @@ export default function AdminVillaBillsPage() {
                   {/* 상태 전환 버튼 */}
                   {m.status === 'draft' && (
                     <div className="flex gap-2 mt-4">
-                      <button onClick={() => changeStatus(m, 'published')} className="flex-1 bg-[#2B2BEE] text-white py-2.5 rounded-xl text-[14px] font-bold hover:bg-[#1C1CC9] transition">고지 발송</button>
+                      <button onClick={() => changeStatus(m, 'published')} className="flex-1 bg-[#2B2BEE] text-white py-2.5 rounded-xl text-[14px] font-bold hover:bg-[#1C1CC9] transition">작성 완료</button>
                       <button onClick={() => removeMonth(m.id)} className="px-3 bg-white border border-[#FF3B30]/30 text-[#FF3B30] py-2.5 rounded-xl text-[14px] font-bold">삭제</button>
                     </div>
                   )}

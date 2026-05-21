@@ -30,7 +30,9 @@ serve(async (req) => {
     const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 
     const normalizedPhone = phone.replace(/\D/g, '');
-    const normalizedHo = String(ho).trim().replace(/호$/, '');
+    // 호실 정규화: 공백 제거 + 끝의 '호' 제거 (저장값 "101호" ↔ 입력 "101" 모두 매칭)
+    const normHo = (s: string) => String(s ?? '').trim().replace(/\s+/g, '').replace(/호$/, '');
+    const normalizedHo = normHo(ho);
 
     // 1) 빌라 검색 — 정확 매칭 우선, 그 다음 부분 매칭
     const { data: exactVillas } = await supabase
@@ -52,9 +54,10 @@ serve(async (req) => {
 
     const villa = villas[0];
 
-    // 2) 호실 매칭
-    const { data: unit } = await supabase
-      .from('units').select('id, ho_number').eq('villa_id', villa.id).eq('ho_number', normalizedHo).maybeSingle();
+    // 2) 호실 매칭 — 저장 형식("101호")과 입력("101")이 달라도 정규화 비교로 매칭
+    const { data: villaUnits } = await supabase
+      .from('units').select('id, ho_number').eq('villa_id', villa.id);
+    const unit = (villaUnits ?? []).find(u => normHo(u.ho_number) === normalizedHo);
     if (!unit) {
       return ok({ error: { code: 'UNIT_NOT_FOUND', message: `${normalizedHo}호가 등록되어 있지 않습니다. 관리자에게 호실 등록을 요청해주세요.` } }, 404);
     }

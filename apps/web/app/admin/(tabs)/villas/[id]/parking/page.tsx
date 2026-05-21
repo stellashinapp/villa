@@ -16,6 +16,13 @@ type Parking = {
   units: { ho_number: string } | null;
 };
 
+// 방문차량은 종료일이 지나면 목록에서 자동 제외 (DB 정리 cron 의 최대 1시간 지연 보완)
+function isExpiredVisitor(p: { vehicle_type: string | null; expires_at: string | null }) {
+  if (p.vehicle_type !== 'visitor' || !p.expires_at) return false;
+  const today = new Date().toISOString().slice(0, 10);
+  return p.expires_at.slice(0, 10) < today;
+}
+
 export default function AdminVillaParkingPage() {
   const params = useParams<{ id: string }>();
   const villaId = params.id;
@@ -43,7 +50,7 @@ export default function AdminVillaParkingPage() {
         .order('created_at', { ascending: false }),
       supabase.from('units').select('id, ho_number').eq('villa_id', villaId).order('ho_number'),
     ]);
-    setItems((pdata ?? []) as unknown as Parking[]);
+    setItems(((pdata ?? []) as unknown as Parking[]).filter(p => !isExpiredVisitor(p)));
     setUnits((udata ?? []) as Unit[]);
     setLoading(false);
   }

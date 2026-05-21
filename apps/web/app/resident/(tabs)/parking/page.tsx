@@ -13,6 +13,13 @@ type ParkingEntry = {
 
 type Session = { villaId: string; villaName: string; ho: string; name: string };
 
+// 방문차량은 종료일이 지나면 목록에서 자동 제외 (DB 정리 cron 의 최대 1시간 지연 보완)
+function isExpiredVisitor(p: { vehicle_type: string | null; expires_at: string | null }) {
+  if (p.vehicle_type !== 'visitor' || !p.expires_at) return false;
+  const today = new Date().toISOString().slice(0, 10);
+  return p.expires_at.slice(0, 10) < today;
+}
+
 export default function ResidentParkingPage() {
   const [s, setS] = useState<Session | null>(null);
   const [unitId, setUnitId] = useState<string | null>(null);
@@ -42,7 +49,9 @@ export default function ResidentParkingPage() {
     const { data } = await supabase.from('parking')
       .select('id, unit_id, plate_number, vehicle_type, memo, expires_at, units!inner(ho_number, villa_id)')
       .eq('units.villa_id', sess.villaId).order('created_at', { ascending: false });
-    setList((data ?? []) as unknown as (ParkingEntry & { units: { ho_number: string } | null })[]);
+    const rows = ((data ?? []) as unknown as (ParkingEntry & { units: { ho_number: string } | null })[])
+      .filter(p => !isExpiredVisitor(p));
+    setList(rows);
     setLoading(false);
   }
 
