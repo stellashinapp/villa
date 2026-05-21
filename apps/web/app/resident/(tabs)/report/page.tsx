@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import ResidentPageHeader from '@/components/ResidentPageHeader';
 import Icon from '@/components/Icon';
@@ -39,6 +39,9 @@ export default function ResidentReportPage() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [text, setText] = useState('');
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const raw = sessionStorage.getItem('villatolk:resident');
@@ -60,17 +63,35 @@ export default function ResidentReportPage() {
     setLoading(false);
   }
 
+  async function onPickImage(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file || !s) return;
+    if (!/^image\/(jpeg|png|webp)$/.test(file.type)) { alert('JPG/PNG/WEBP 이미지만 첨부할 수 있습니다'); return; }
+    if (file.size > 5 * 1024 * 1024) { alert('5MB 이하 이미지만 첨부할 수 있습니다'); return; }
+    setUploading(true);
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+    const path = `${s.villaId}/report-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error } = await supabase.storage.from('community-images').upload(path, file, {
+      contentType: file.type, upsert: false,
+    });
+    if (error) { setUploading(false); alert('사진 업로드 실패: ' + error.message); return; }
+    const { data } = supabase.storage.from('community-images').getPublicUrl(path);
+    setImageUrl(data.publicUrl);
+    setUploading(false);
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!text.trim()) { alert('내용을 입력해 주세요'); return; }
     if (!s) return;
     setSubmitting(true);
     const { error } = await supabase.from('messages').insert({
-      resident_id: s.id, villa_id: s.villaId, text: text.trim(), category: 'other', is_read: false,
+      resident_id: s.id, villa_id: s.villaId, text: text.trim(), image_url: imageUrl, category: 'other', is_read: false,
     });
     setSubmitting(false);
     if (error) { alert('등록 실패: ' + error.message); return; }
-    setText('');
+    setText(''); setImageUrl(null);
     if (s) await loadMessages(s.id);
   }
 
@@ -85,11 +106,20 @@ export default function ResidentReportPage() {
         <form onSubmit={submit} className="bg-[#E9E9FD] rounded-xl p-4 space-y-3 mb-6">
           <textarea value={text} onChange={e => setText(e.target.value)} placeholder="내용을 입력하세요" rows={4} maxLength={500}
             className="w-full bg-white border border-[#E8EBF0] rounded-xl px-4 py-3 text-[15px] text-[#0F2242] outline-none focus:border-[#2B2BEE] focus:ring-2 focus:ring-[#2B2BEE]/15 transition resize-none" required />
-          <button type="button" disabled
-            className="inline-flex items-center gap-1.5 bg-white border border-[#E8EBF0] text-[#9CA3AF] text-[13px] font-bold px-3 py-2 rounded-xl">
-            <Icon name="camera" size={15} color="#9CA3AF" /> 사진 첨부
-          </button>
-          <button type="submit" disabled={submitting}
+          <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={onPickImage} />
+          {imageUrl ? (
+            <div className="relative">
+              <img src={imageUrl} alt="첨부 사진" className="rounded-xl max-h-48 w-full object-cover border border-[#E8EBF0]" />
+              <button type="button" onClick={() => setImageUrl(null)}
+                className="absolute top-2 right-2 bg-black/55 text-white text-[12px] font-bold w-7 h-7 rounded-full">×</button>
+            </div>
+          ) : (
+            <button type="button" disabled={uploading} onClick={() => fileRef.current?.click()}
+              className="inline-flex items-center gap-1.5 bg-white border border-[#E8EBF0] text-[#2B2BEE] text-[13px] font-bold px-3 py-2 rounded-xl disabled:opacity-50">
+              <Icon name="camera" size={15} color="#2B2BEE" /> {uploading ? '업로드 중…' : '사진 첨부'}
+            </button>
+          )}
+          <button type="submit" disabled={submitting || uploading}
             className="w-full bg-[#2B2BEE] text-white py-3.5 rounded-xl text-[15px] font-bold hover:bg-[#1C1CC9] disabled:opacity-50 transition">
             {submitting ? '전송 중…' : '보내기'}
           </button>
@@ -121,6 +151,7 @@ export default function ResidentReportPage() {
                       </span>
                     </div>
                     <p className="text-[14px] text-[#0F2242] leading-relaxed whitespace-pre-wrap">{m.text}</p>
+                    {m.image_url && <img src={m.image_url} alt="첨부 사진" className="mt-2.5 rounded-xl max-h-56 object-cover w-full border border-[#F0F2F5]" />}
                     {replies.length > 0 && (
                       <div className="mt-3 space-y-2">
                         {replies.map(r => (

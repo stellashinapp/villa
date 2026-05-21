@@ -25,7 +25,7 @@ type UnpaidBill = { label: string; amount: number };
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
   active: { label: '거주중', color: 'bg-[#E9E9FD] text-[#2B2BEE]' },
-  pending: { label: '승인대기', color: 'bg-[#E9E9FD] text-[#2B2BEE]' },
+  pending: { label: '신청중', color: 'bg-[#FEF3C7] text-[#B45309]' },
   pending_moveout: { label: '이사대기', color: 'bg-[#E9E9FD] text-[#2B2BEE]' },
   moved_out: { label: '이사완료', color: 'bg-[#F5F6FA] text-[#9CA3AF]' },
   rejected: { label: '거절됨', color: 'bg-[#FEE8E7] text-[#FF3B30]' },
@@ -271,9 +271,9 @@ export default function AdminVillaResidentsPage() {
                 즉시 등록
               </button>
             </div>
-            <p className="text-[12px] text-[#9CA3AF] mt-1.5">
+            <p className="text-[12px] text-[#9CA3AF] mt-1.5 leading-relaxed">
               {addMode === 'invite'
-                ? '입주민이 카카오톡 링크로 가입 — 본인이 정보 확인 후 활성'
+                ? '입주민에게 보낼 가입 링크를 만듭니다. 카카오톡·문자로 전달하면, 입주민이 링크를 눌러 앱에서 본인 정보를 확인하고 직접 가입합니다. (앱 설치 없이 바로 사용)'
                 : '관리자가 정보 입력 → 입주민으로 즉시 등록·활성. 입주민은 바로 이름+전화번호로 로그인 가능합니다.'}
             </p>
           </div>

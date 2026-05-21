@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import AdminTopBar from '@/components/AdminTopBar';
+import Icon from '@/components/Icon';
 
 type Reply = {
   id: string;
@@ -18,6 +19,7 @@ type Message = {
   unit_id: string | null;
   resident_id: string | null;
   text: string;
+  image_url: string | null;
   category: string | null;
   is_read: boolean;
   created_at: string;
@@ -76,7 +78,7 @@ export default function AdminInboxPage() {
     const { data, error } = await supabase
       .from('messages')
       .select(`
-        id, villa_id, unit_id, resident_id, text, category, is_read, created_at,
+        id, villa_id, unit_id, resident_id, text, image_url, category, is_read, created_at,
         villas(name),
         residents(name, units(ho_number)),
         message_replies(id, text, author_type, author_name, created_at)
@@ -139,8 +141,8 @@ export default function AdminInboxPage() {
           <p className="text-[15px] text-[#9CA3AF]">{error}</p>
         </div>
       ) : messages.length === 0 ? (
-        <div className="text-center mt-20">
-          <div className="text-5xl mb-3">✉️</div>
+        <div className="bg-white rounded-xl p-8 border border-[#F0F2F5] text-center mt-4">
+          <div className="w-12 h-12 rounded-xl bg-[#E9E9FD] flex items-center justify-center mx-auto mb-2"><Icon name="message" size={26} color="#2B2BEE" filled /></div>
           <p className="text-[17px] font-bold text-[#0F2242] mb-1">받은 메시지가 없습니다</p>
           <p className="text-[15px] text-[#9CA3AF]">입주민 신고가 오면 여기에 표시됩니다</p>
         </div>
@@ -175,6 +177,7 @@ export default function AdminInboxPage() {
                   </span>
                 </div>
                 <p className="text-[15px] text-[#0F2242] leading-[20px] whitespace-pre-wrap">{m.text}</p>
+                {m.image_url && <img src={m.image_url} alt="첨부 사진" className="mt-2.5 rounded-xl max-h-64 object-cover w-full border border-[#E8EBF0]" />}
 
                 {adminReplies.length > 0 && (
                   <div className="mt-3 pt-3 border-t border-[#E8EBF0] space-y-2">

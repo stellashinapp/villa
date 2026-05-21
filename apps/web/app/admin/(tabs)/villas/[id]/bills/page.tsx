@@ -574,8 +574,8 @@ export default function AdminVillaBillsPage() {
                           </div>
                           <div className="flex gap-2 mb-3">
                             <input value={bulkAmount} onChange={e => setBulkAmount(e.target.value)} inputMode="numeric" placeholder="예: 100000 (모든 세대 일괄 적용)"
-                              className="flex-1 bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-[15px] outline-none focus:border-[#2B2BEE] focus:ring-2 focus:ring-[#2B2BEE]/15 transition" />
-                            <button onClick={() => applyBulk(m)} className="bg-[#2B2BEE] text-white px-4 rounded-xl text-[14px] font-bold hover:bg-[#1C1CC9] transition">적용</button>
+                              className="flex-1 min-w-0 bg-white border border-[#E8EBF0] rounded-xl px-3 py-2.5 text-[15px] outline-none focus:border-[#2B2BEE] focus:ring-2 focus:ring-[#2B2BEE]/15 transition" />
+                            <button onClick={() => applyBulk(m)} className="shrink-0 whitespace-nowrap bg-[#2B2BEE] text-white px-5 py-2.5 rounded-xl text-[14px] font-bold hover:bg-[#1C1CC9] transition">적용</button>
                           </div>
                         </>
                       )}

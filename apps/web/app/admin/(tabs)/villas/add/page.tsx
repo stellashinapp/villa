@@ -85,7 +85,8 @@ export default function AdminVillaAddPage() {
       if (!a) return;
       const ar = a as { id: string; name: string | null; phone: string | null };
       setAdminId(ar.id);
-      setAdminName(ar.name);
+      // 이름이 비어있으면 이메일(아이디)로 표시 (?? 는 빈 문자열을 못 걸러서 || 사용)
+      setAdminName(ar.name?.trim() || user.email || null);
       setAdminPhone(ar.phone);
 
       // 내 빌라 개수 + 계좌 정보 (있는 가장 최근 1건)

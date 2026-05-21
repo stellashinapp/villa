@@ -74,7 +74,6 @@ export default function AdminHomeShell() {
 
       const villaIds = vs.map(v => v.id);
       const totalUnits = vs.reduce((s, v) => s + (v.total_units ?? 0), 0);
-      const thisYM = new Date().toISOString().slice(0, 7);
 
       const [
         { count: activeResCount }, { count: pendingAppCount }, { count: pendingMoveCount },
@@ -88,13 +87,15 @@ export default function AdminHomeShell() {
           .in('units.villa_id', villaIds).eq('status', 'pending_moveout'),
         supabase.from('messages').select('*', { count: 'exact', head: true })
           .in('villa_id', villaIds).eq('is_read', false),
+        // 발행(published)된 회차 전부 — 최신 연-월 우선 (현재 달이 아닌 미래/지난 달 발행분도 홈에 표시)
         supabase.from('bill_months').select('id, villa_id, year_month, label, billing_mode, per_unit_amounts, bill_items(amount)')
-          .in('villa_id', villaIds).eq('year_month', thisYM).eq('status', 'published'),
+          .in('villa_id', villaIds).eq('status', 'published').order('year_month', { ascending: false }),
       ]);
 
       const billByVilla: Record<string, { label: string; itemTotal: number; bmId: string }> = {};
       ((thisMonthBills ?? []) as unknown as { id: string; villa_id: string; label: string | null; year_month: string; billing_mode: string | null; per_unit_amounts: Record<string, number> | null; bill_items: { amount: number }[] }[])
         .forEach(bm => {
+          if (billByVilla[bm.villa_id]) return; // 이미 더 최근 회차가 담김 (year_month desc 정렬)
           const itemTotal = bm.billing_mode === 'per_unit'
             ? Object.values(bm.per_unit_amounts ?? {}).reduce((s, v) => s + (v ?? 0), 0)
             : (bm.bill_items ?? []).reduce((s, i) => s + i.amount, 0);
