@@ -28,8 +28,10 @@ jobs:
 
       - name: Build admin-web (standalone)
         env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          # NEXT_PUBLIC_* 는 빌드 시점에 코드에 inline 됨 — 시크릿 누락 시 undefined 가 박혀
+          # createClient 가 throw(500) 하므로, 공개 키(publishable)는 리터럴로 고정한다.
+          NEXT_PUBLIC_SUPABASE_URL: 'https://tdgieeupxxalwxikdxji.supabase.co'
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: 'sb_publishable_1Ey6yq_QITDQ76SzEwljPQ_x37wLGly'
         run: npm run build --workspace=apps/admin-web
 
       - name: Package deploy artifact
