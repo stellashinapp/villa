@@ -88,16 +88,19 @@ export default function AdminHomeShell() {
           .in('units.villa_id', villaIds).eq('status', 'pending_moveout'),
         supabase.from('messages').select('*', { count: 'exact', head: true })
           .in('villa_id', villaIds).eq('is_read', false),
-        supabase.from('bill_months').select('id, villa_id, year_month, label, bill_items(amount)')
+        supabase.from('bill_months').select('id, villa_id, year_month, label, billing_mode, per_unit_amounts, bill_items(amount)')
           .in('villa_id', villaIds).eq('year_month', thisYM).eq('status', 'published'),
       ]);
 
       const billByVilla: Record<string, { label: string; itemTotal: number; bmId: string }> = {};
-      ((thisMonthBills ?? []) as unknown as { id: string; villa_id: string; label: string | null; year_month: string; bill_items: { amount: number }[] }[])
+      ((thisMonthBills ?? []) as unknown as { id: string; villa_id: string; label: string | null; year_month: string; billing_mode: string | null; per_unit_amounts: Record<string, number> | null; bill_items: { amount: number }[] }[])
         .forEach(bm => {
+          const itemTotal = bm.billing_mode === 'per_unit'
+            ? Object.values(bm.per_unit_amounts ?? {}).reduce((s, v) => s + (v ?? 0), 0)
+            : (bm.bill_items ?? []).reduce((s, i) => s + i.amount, 0);
           billByVilla[bm.villa_id] = {
             label: bm.label ?? `${bm.year_month} 관리비`,
-            itemTotal: (bm.bill_items ?? []).reduce((s, i) => s + i.amount, 0),
+            itemTotal,
             bmId: bm.id,
           };
         });

@@ -157,7 +157,11 @@ export default function ResidentBillsShell() {
     return <div className="min-h-screen flex items-center justify-center text-[14px] text-[#9CA3AF]">불러오는 중…</div>;
   }
 
-  const currentMonth = months.find(m => m.status === 'published') ?? months[0];
+  const nowYm = new Date().toISOString().slice(0, 7);
+  const currentMonth =
+    months.find(m => m.year_month === nowYm && m.status === 'published') ??
+    months.find(m => m.status === 'published') ??
+    months[0];
   const pastMonths = months.filter(m => m.id !== currentMonth?.id);
   const currentPay = currentMonth ? paymentFor(currentMonth.id) : undefined;
   const myAmt = currentMonth ? myAmount(currentMonth) : 0;
