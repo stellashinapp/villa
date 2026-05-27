@@ -1,0 +1,40 @@
+# 빌라톡 iOS 빌드 (Capacitor → App Store / TestFlight)
+# Codemagic 클라우드 맥에서 .ipa 빌드 + 제출. 맥 불필요.
+# 사전준비: Codemagic UI 에 App Store Connect API 키를 'VillatalkASC' 이름으로 등록.
+workflows:
+  ios-villatolk:
+    name: 빌라톡 iOS (Capacitor)
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    integrations:
+      app_store_connect: VillatalkASC   # ← Codemagic UI에 등록한 ASC API 키 이름
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: store.villtalk.app
+      vars:
+        XCODE_PROJECT: "apps/web/ios/App/App.xcodeproj"
+        XCODE_SCHEME: "App"
+      node: 20
+      xcode: latest
+    scripts:
+      - name: npm 설치 (모노레포 루트)
+        script: npm ci
+      - name: Capacitor iOS 동기화
+        script: |
+          cd apps/web
+          npx cap sync ios
+      - name: 코드 서명 프로파일 적용
+        script: xcode-project use-profiles
+      - name: iOS .ipa 빌드
+        script: |
+          xcode-project build-ipa \
+            --project "$XCODE_PROJECT" \
+            --scheme "$XCODE_SCHEME"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true   # 빌드 성공 시 TestFlight 자동 업로드
