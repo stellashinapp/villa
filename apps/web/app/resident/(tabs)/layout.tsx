@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Icon, { type IconName } from '@/components/Icon';
+import { registerPush } from '@/lib/push';
 
 type ResidentSession = {
   id: string; name: string; phone: string; ho: string;
@@ -33,7 +34,10 @@ export default function ResidentTabsLayout({ children }: { children: React.React
       if (sessionStorage.getItem('villatolk:resident-verified') !== '1') {
         router.replace('/resident/verify'); setSession(null); return;
       }
-      setSession(JSON.parse(raw) as ResidentSession);
+      const parsed = JSON.parse(raw) as ResidentSession;
+      setSession(parsed);
+      // 네이티브 앱이면 푸시 등록 (웹에선 무시)
+      void registerPush({ type: 'resident', id: parsed.id });
     } catch {
       router.replace('/resident/login'); setSession(null);
     }

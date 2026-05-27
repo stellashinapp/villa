@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>빌라톡</title>
+  <style>
+    html, body { margin: 0; height: 100%; background: #F5F6FA; font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; }
+    .wrap { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; color: #0F2242; }
+    .logo { width: 120px; height: 120px; }
+    .msg { font-size: 15px; color: #6B7280; }
+    .retry { margin-top: 8px; padding: 12px 22px; background: #2B2BEE; color: #fff; border: 0; border-radius: 12px; font-size: 15px; font-weight: 700; }
+    .spinner { width: 26px; height: 26px; border: 3px solid #DCDCFB; border-top-color: #2B2BEE; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <img class="logo" src="icon.png" alt="빌라톡" onerror="this.style.display='none'" />
+    <div class="spinner" id="spin"></div>
+    <div class="msg" id="msg">빌라톡에 연결하는 중…</div>
+    <button class="retry" id="retry" style="display:none" onclick="location.href='https://app.villtalk.store'">다시 시도</button>
+  </div>
+  <script>
+    // server.url 이 정상이면 이 화면은 거의 안 보임. 오프라인/지연 시 폴백.
+    setTimeout(function () {
+      var msg = document.getElementById('msg');
+      var spin = document.getElementById('spin');
+      var retry = document.getElementById('retry');
+      if (msg) msg.textContent = '인터넷 연결을 확인해주세요.';
+      if (spin) spin.style.display = 'none';
+      if (retry) retry.style.display = 'block';
+    }, 8000);
+  </script>
+</body>
+</html>

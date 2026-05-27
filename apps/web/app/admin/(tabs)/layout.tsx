@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { registerPush } from '@/lib/push';
 import Icon, { type IconName } from '@/components/Icon';
 
 const TABS: { href: string; label: string; icon: IconName }[] = [
@@ -26,6 +27,8 @@ export default function AdminTabsLayout({ children }: { children: React.ReactNod
         return;
       }
       setAuthChecked(true);
+      // 네이티브 앱이면 푸시 등록 (웹에선 무시)
+      void registerPush({ type: 'admin', authId: user.id });
     })();
   }, [pathname, router]);
 

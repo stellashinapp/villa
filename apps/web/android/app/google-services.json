@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "986948353787",
+    "project_id": "villatalk",
+    "storage_bucket": "villatalk.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:986948353787:android:572c61953150a0f9fd3a5e",
+        "android_client_info": {
+          "package_name": "store.villtalk.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAJF48RFBNGuPrATHWTN4JxnlypJ4c6y-I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
