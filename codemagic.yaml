@@ -51,16 +51,28 @@ workflows:
           print(f"  총 {deleted}개 삭제")
           PY
 
-          echo "=== 2. 인증서 private key 생성 (Codemagic CLI 가 .p12 저장에 필요) ==="
-          CERT_KEY="$CM_BUILD_DIR/cert_key.pem"
-          openssl genrsa -out "$CERT_KEY" 2048 2>/dev/null
-          ls -la "$CERT_KEY"
+          echo "=== 2. 옛 Distribution 인증서 정리 (private key 없는 고아 인증서 제거) ==="
+          app-store-connect certificates list --type IOS_DISTRIBUTION --json > /tmp/certs.json 2>/dev/null || echo '[]' > /tmp/certs.json
+          python3 - <<'PY'
+          import json, subprocess
+          try:
+              data = json.load(open('/tmp/certs.json'))
+              items = data if isinstance(data, list) else data.get('data', [])
+          except Exception:
+              items = []
+          print(f"  발견된 IOS_DISTRIBUTION 인증서: {len(items)}개")
+          for c in items:
+              cid = c.get('id')
+              if cid:
+                  name = (c.get('attributes') or {}).get('name', '?')
+                  print(f"  revoke: {name} (id={cid})")
+                  subprocess.run(['app-store-connect','certificates','delete', cid], check=False)
+          PY
 
-          echo "=== 3. 새 인증서 + 프로파일 발급 (App ID 현재 capability = Push 포함) ==="
+          echo "=== 3. 새 인증서 + 프로파일 자동 발급 (private key 자동생성, App ID Push 포함) ==="
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
-            --create \
-            --certificate-key-path "$CERT_KEY"
+            --create
 
           echo "=== 3. 인증서 키체인 + 프로젝트 패치 ==="
           keychain add-certificates
