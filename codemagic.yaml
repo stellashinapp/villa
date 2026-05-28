@@ -51,10 +51,16 @@ workflows:
           print(f"  총 {deleted}개 삭제")
           PY
 
-          echo "=== 2. 새 프로파일 발급 (App ID 현재 capability = Push 포함) ==="
+          echo "=== 2. 인증서 private key 생성 (Codemagic CLI 가 .p12 저장에 필요) ==="
+          CERT_KEY="$CM_BUILD_DIR/cert_key.pem"
+          openssl genrsa -out "$CERT_KEY" 2048 2>/dev/null
+          ls -la "$CERT_KEY"
+
+          echo "=== 3. 새 인증서 + 프로파일 발급 (App ID 현재 capability = Push 포함) ==="
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
-            --create
+            --create \
+            --certificate-key-path "$CERT_KEY"
 
           echo "=== 3. 인증서 키체인 + 프로젝트 패치 ==="
           keychain add-certificates
