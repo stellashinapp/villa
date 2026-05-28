@@ -27,14 +27,6 @@ export default function ResidentLoginPage() {
             입주 신청 (신규 입주민)
           </Link>
 
-          <div className="mt-6 bg-[#E9E9FD] border border-[#2B2BEE]/15 rounded-xl px-4 py-3 text-center">
-            <p className="text-[12px] text-[#6B7280] mb-1">데모 계정</p>
-            <p className="text-[13px] text-[#0F2242] font-bold">
-              아이디: <span className="text-[#2B2BEE]">김테스트1</span>
-              {' / '}
-              비밀번호: <span className="text-[#2B2BEE]">010-9999-1111</span>
-            </p>
-          </div>
         </div>
       </div>
 
