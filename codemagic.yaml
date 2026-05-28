@@ -25,14 +25,39 @@ workflows:
         script: |
           cd apps/web
           npx cap sync ios
-      - name: 코드 서명 — 인증서·프로파일 자동 발급/가져오기
+      - name: 코드 서명 — 옛 프로파일 정리 후 새로 발급
         script: |
+          set -e
           keychain initialize
+
+          echo "=== 1. 기존 IOS_APP_STORE 프로파일 정리 (Push 없이 캐시된 것 제거) ==="
+          app-store-connect profiles list --json > /tmp/profiles.json 2>/dev/null || echo '[]' > /tmp/profiles.json
+          python3 - <<'PY'
+          import json, subprocess, os
+          bundle = os.environ['BUNDLE_ID']
+          try:
+              data = json.load(open('/tmp/profiles.json'))
+              items = data if isinstance(data, list) else data.get('data', [])
+          except Exception:
+              items = []
+          deleted = 0
+          for p in items:
+              a = p.get('attributes', {})
+              if a.get('profileType') == 'IOS_APP_STORE' and bundle in (a.get('name','') + (a.get('bundleId') or '')):
+                  pid = p.get('id')
+                  print(f"  delete: {a.get('name')} (id={pid})")
+                  subprocess.run(['app-store-connect','profiles','delete', pid], check=False)
+                  deleted += 1
+          print(f"  총 {deleted}개 삭제")
+          PY
+
+          echo "=== 2. 새 프로파일 발급 (App ID 현재 capability = Push 포함) ==="
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
             --create
+
+          echo "=== 3. 인증서 키체인 + 프로젝트 패치 ==="
           keychain add-certificates
-          # iOS 프로젝트 폴더에서 실행해야 xcode-project 가 .xcodeproj 를 정확히 찾고 패치함
           cd apps/web/ios/App
           xcode-project use-profiles
       - name: iOS .ipa 빌드
