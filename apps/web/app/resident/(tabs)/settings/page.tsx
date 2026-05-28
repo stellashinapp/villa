@@ -40,7 +40,7 @@ export default function ResidentSettingsPage() {
 
   return (
     <div className="bg-[#F5F6FA] min-h-screen">
-      <header className="bg-white px-5 pt-3 pb-3 sticky top-0 z-30 border-b border-[#F0F2F5]">
+      <header className="bg-white px-5 pt-3 pb-3 border-b border-[#F0F2F5]">
         <p className="text-[10px] font-bold text-[#9CA3AF] tracking-widest">{session?.villaName}</p>
         <h1 className="text-[18px] font-extrabold text-[#0F2242] mt-0.5">내정보</h1>
       </header>

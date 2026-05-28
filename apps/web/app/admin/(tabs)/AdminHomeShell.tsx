@@ -151,32 +151,7 @@ export default function AdminHomeShell() {
 
   return (
     <div className="bg-[#F5F6FA] min-h-screen">
-      {/* 상단 헤더 — 아파트아이 스타일 */}
-      <header className="bg-white px-5 pt-3 pb-3 sticky top-0 z-30 border-b border-[#F0F2F5]">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <span className="text-[#2B2BEE] text-[20px] font-black">✦</span>
-            <h1 className="text-[18px] font-black text-[#0F2242]">빌라톡</h1>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link href="/admin/inbox" className="relative">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-              </svg>
-              {agg.unreadMessages > 0 && (
-                <span className="absolute -top-1 -right-1 bg-[#FF3B30] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                  {agg.unreadMessages > 9 ? '9+' : agg.unreadMessages}
-                </span>
-              )}
-            </Link>
-            <Link href="/admin/settings">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" />
-              </svg>
-            </Link>
-          </div>
-        </div>
-      </header>
+      {/* 상단 브랜드 헤더는 admin/(tabs)/layout.tsx 에서 항상 고정 표시 — 여기선 페이지 본문만 */}
 
       <div className="px-5 pb-8 max-w-screen-sm mx-auto">
         {/* Welcome — 인사 */}
