@@ -57,7 +57,6 @@ export default function ResidentCommunityPage() {
   useEffect(() => { if (s) load(s.villaId); }, [s]);
 
   async function load(villaId: string) {
-    setLoading(true);
     const { data } = await supabase.from('posts')
       .select('id, title, body, image_url, likes, created_at, residents(name, units(ho_number)), comments(id, text, created_at, residents(name, units(ho_number)))')
       .eq('villa_id', villaId).order('created_at', { ascending: false });

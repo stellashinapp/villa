@@ -63,7 +63,6 @@ export default function AdminVillaBillsPage() {
   useEffect(() => { if (villaId) load(); }, [villaId]);
 
   async function load() {
-    setLoading(true);
     const [{ data: bms }, { data: us }, { data: rs }, { data: villaRow }] = await Promise.all([
       supabase.from('bill_months')
         .select('id, year_month, label, due_date, status, billing_mode, per_unit_amounts, created_at, bill_items(id, name, amount)')

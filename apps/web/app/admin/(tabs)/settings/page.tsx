@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import { getCurrentAdmin } from '@/lib/admin-cache';
 import Icon from '@/components/Icon';
 import AdminTopBar from '@/components/AdminTopBar';
 
@@ -25,10 +26,7 @@ export default function AdminSettingsPage() {
 
   useEffect(() => {
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data: adminRow } = await supabase
-        .from('admins').select('id, name, phone, email, role').eq('auth_id', user.id).maybeSingle();
+      const adminRow = await getCurrentAdmin();
       setProfile(adminRow as Profile | null);
 
       if (adminRow) {

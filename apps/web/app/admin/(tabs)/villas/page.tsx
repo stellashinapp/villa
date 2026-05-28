@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import { getCurrentAdmin } from '@/lib/admin-cache';
 import Icon from '@/components/Icon';
 import AdminTopBar from '@/components/AdminTopBar';
 
@@ -33,12 +34,9 @@ export default function AdminVillasPage() {
   useEffect(() => { load(); }, []);
 
   async function load() {
-    setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    const { data: adminRow } = await supabase.from('admins').select('id').eq('auth_id', user.id).maybeSingle();
-    if (!adminRow) return;
-    const adminId = (adminRow as { id: string }).id;
+    const admin = await getCurrentAdmin();
+    if (!admin) return;
+    const adminId = admin.id;
 
     const { data: vs, error: vErr } = await supabase
       .from('villas')

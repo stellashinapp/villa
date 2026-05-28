@@ -63,7 +63,6 @@ export default function ResidentBillsShell() {
   }, [router]);
 
   async function load(s: Resident) {
-    setLoading(true);
     const { data: unitData } = await supabase.from('units').select('id').eq('villa_id', s.villaId).eq('ho_number', s.ho).maybeSingle();
     const uid = (unitData as { id: string } | null)?.id ?? null;
     setUnitId(uid);

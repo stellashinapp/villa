@@ -45,7 +45,6 @@ export default function ResidentParkingPage() {
   useEffect(() => { if (s) load(s); }, [s]);
 
   async function load(sess: Session) {
-    setLoading(true);
     const { data } = await supabase.from('parking')
       .select('id, unit_id, plate_number, vehicle_type, memo, expires_at, units!inner(ho_number, villa_id)')
       .eq('units.villa_id', sess.villaId).order('created_at', { ascending: false });

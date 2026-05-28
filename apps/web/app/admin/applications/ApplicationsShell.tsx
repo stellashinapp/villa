@@ -37,7 +37,6 @@ export default function ApplicationsShell() {
   const [busy, setBusy] = useState<string | null>(null); // 처리 중인 residentId
 
   async function load() {
-    setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.replace('/admin/login'); return; }
 

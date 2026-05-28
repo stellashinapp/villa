@@ -37,7 +37,6 @@ export default function AdminVillaMessagesPage() {
   useEffect(() => { load(); }, [villaId]);
 
   async function load() {
-    setLoading(true);
     const { data } = await supabase
       .from('messages')
       .select(`id, text, category, is_read, created_at,

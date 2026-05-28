@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { getCurrentAdmin } from '@/lib/admin-cache';
 import AdminTopBar from '@/components/AdminTopBar';
 import Icon from '@/components/Icon';
 
@@ -51,16 +52,8 @@ export default function AdminInboxPage() {
   }, []);
 
   async function load() {
-    setLoading(true);
     // 현재 admin 가 소유한 villa 들의 메시지
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { data: adminRow } = await supabase
-      .from('admins')
-      .select('id')
-      .eq('auth_id', user.id)
-      .maybeSingle();
+    const adminRow = await getCurrentAdmin();
     if (!adminRow) return;
 
     const { data: villas } = await supabase
@@ -98,14 +91,9 @@ export default function AdminInboxPage() {
   async function submitReply(messageId: string) {
     if (!replyText.trim()) return;
     setSubmitting(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    const { data: adminRow } = await supabase
-      .from('admins')
-      .select('name, email')
-      .eq('auth_id', user.id)
-      .maybeSingle();
-    const authorName = (adminRow as { name?: string; email?: string })?.name ?? (adminRow as { email?: string })?.email ?? '관리자';
+    const adminRow = await getCurrentAdmin();
+    if (!adminRow) return;
+    const authorName = adminRow.name ?? adminRow.email ?? '관리자';
 
     const { error } = await supabase.from('message_replies').insert({
       message_id: messageId,

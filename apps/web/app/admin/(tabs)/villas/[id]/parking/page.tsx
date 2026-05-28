@@ -41,7 +41,6 @@ export default function AdminVillaParkingPage() {
   useEffect(() => { load(); }, [villaId]);
 
   async function load() {
-    setLoading(true);
     const [{ data: pdata }, { data: udata }] = await Promise.all([
       supabase
         .from('parking')

@@ -67,7 +67,6 @@ export default function AdminVillaDetailPage() {
   useEffect(() => { if (villaId) load(); }, [villaId]);
 
   async function load() {
-    setLoading(true);
     const thisYM = new Date().toISOString().slice(0, 7);
 
     const [

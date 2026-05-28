@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import { getCurrentAdmin } from '@/lib/admin-cache';
 import AdminTopBar from '@/components/AdminTopBar';
 import { registerBillingKey, isTossLive } from '@/lib/payments';
 import { planFor, calcMRR, calcRawTotal, discountRate, formatKRW, TRIAL_DAYS } from '@villatolk/shared';
@@ -29,12 +30,9 @@ export default function AdminSubscribePage() {
   useEffect(() => { void load(); }, []);
 
   async function load() {
-    setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { router.replace('/admin/login'); return; }
-    const { data: a } = await supabase.from('admins').select('id, name').eq('auth_id', user.id).maybeSingle();
+    const a = await getCurrentAdmin();
     if (!a) { router.replace('/admin/login'); return; }
-    const aid = (a as { id: string; name: string | null }).id;
+    const aid = a.id;
     setAdminId(aid);
     setAdminName((a as { name: string | null }).name ?? '');
 

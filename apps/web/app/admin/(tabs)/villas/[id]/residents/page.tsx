@@ -144,7 +144,6 @@ export default function AdminVillaResidentsPage() {
   useEffect(() => { load(); }, [villaId]);
 
   async function load() {
-    setLoading(true);
     const [{ data: resData }, { data: unitsData }] = await Promise.all([
       supabase
         .from('residents')

@@ -27,7 +27,6 @@ export default function AdminVillaNoticesPage() {
   useEffect(() => { load(); }, [villaId]);
 
   async function load() {
-    setLoading(true);
     const { data } = await supabase
       .from('notices')
       .select('id, title, body, is_pinned, created_at')

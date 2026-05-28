@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import { getCurrentAdmin } from '@/lib/admin-cache';
 import Icon, { type IconName } from '@/components/Icon';
 
 type Profile = { id: string; name: string | null; email: string };
@@ -52,14 +53,10 @@ export default function AdminHomeShell() {
 
   useEffect(() => {
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { router.replace('/admin/login'); return; }
-
-      const { data: adminRow } = await supabase
-        .from('admins').select('id, name, email').eq('auth_id', user.id).maybeSingle();
+      const adminRow = await getCurrentAdmin();
       if (!adminRow) { await supabase.auth.signOut(); router.replace('/admin/login'); return; }
       setProfile(adminRow as Profile);
-      const adminId = (adminRow as { id: string }).id;
+      const adminId = adminRow.id;
 
       const [{ data: villasData }, { data: subData }] = await Promise.all([
         supabase.from('villas').select('id, name, total_units, address')
