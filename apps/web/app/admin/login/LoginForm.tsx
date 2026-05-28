@@ -39,7 +39,7 @@ export default function LoginForm({ next }: { next: string }) {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <div>
-        <label className="block text-[13px] font-bold text-[#0F2242] mb-1.5">아이디</label>
+        <label className="block text-[13px] font-bold text-[#0F2242] mb-1.5">이메일</label>
         <input
           type="email"
           required
@@ -47,7 +47,7 @@ export default function LoginForm({ next }: { next: string }) {
           autoFocus
           value={email}
           onChange={e => setEmail(e.target.value)}
-          placeholder="admin"
+          placeholder="example@email.com"
           className="w-full bg-white border border-[#E8EBF0] rounded-xl px-4 py-3.5 text-[15px] text-[#0F2242] outline-none focus:border-[#2B2BEE] focus:ring-2 focus:ring-[#2B2BEE]/15 transition"
         />
       </div>
