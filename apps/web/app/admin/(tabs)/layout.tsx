@@ -40,23 +40,10 @@ export default function AdminTabsLayout({ children }: { children: React.ReactNod
     <div
       className="min-h-screen bg-[#F5F6FA]"
       style={{
-        paddingTop: 'calc(env(safe-area-inset-top) + 52px)',
+        paddingTop: 'env(safe-area-inset-top)',
         paddingBottom: 'calc(88px + env(safe-area-inset-bottom))',
       }}
     >
-      {/* 고정 브랜드 헤더 — 모든 관리자 탭 페이지에 항상 좌측 빌라톡 노출 */}
-      <header
-        className="fixed top-0 left-0 right-0 bg-white z-40 border-b border-[#F0F2F5]"
-        style={{ paddingTop: 'env(safe-area-inset-top)' }}
-      >
-        <div className="max-w-screen-sm mx-auto h-[52px] px-5 flex items-center justify-between">
-          <Link href="/admin" className="flex items-center gap-1.5">
-            <span className="text-[#2B2BEE] text-[20px] font-black leading-none">✦</span>
-            <span className="text-[18px] font-black text-[#0F2242] leading-none">빌라톡</span>
-          </Link>
-        </div>
-      </header>
-
       {children}
 
       <nav
