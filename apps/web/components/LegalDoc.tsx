@@ -16,12 +16,12 @@ export default function LegalDoc({
   return (
     <div className="min-h-screen bg-[#F5F6FA]">
       <header
-        className="bg-white px-5 pb-4 border-b border-[#F0F2F5]"
-        style={{ paddingTop: 'calc(1rem + env(safe-area-inset-top))' }}
+        className="bg-white px-5 pb-5 border-b border-[#F0F2F5]"
+        style={{ paddingTop: 'calc(2.25rem + env(safe-area-inset-top))' }}
       >
         <div className="max-w-screen-sm mx-auto">
           <h1 className="text-[22px] font-black text-[#0F2242] leading-tight">{title}</h1>
-          <p className="text-[12px] text-[#9CA3AF] mt-1">시행일 {updatedAt}</p>
+          <p className="text-[12px] text-[#9CA3AF] mt-1.5">시행일 {updatedAt}</p>
         </div>
       </header>
 
