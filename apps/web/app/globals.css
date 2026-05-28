@@ -11,12 +11,36 @@
   --safe-bottom: env(safe-area-inset-bottom);
 }
 
-html, body {
-  background: #F5F6FA;
+/* 페이지 전환 시 html/body 백그라운드가 살짝이라도 흰색으로 보이지 않게 강제 */
+html {
+  background: #F5F6FA !important;
+  color-scheme: light;
+}
+body {
+  background: #F5F6FA !important;
   color: #1A1D26;
   font-family: var(--font-noto);
 }
 * { -webkit-tap-highlight-color: transparent; }
+
+/* 페이지 간 부드러운 cross-fade — Chrome/Android WebView 111+ 지원 */
+@view-transition {
+  navigation: auto;
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.18s;
+  animation-timing-function: ease-out;
+}
+/* 깜박임이 없는 매끄러운 fade-through */
+::view-transition-old(root) {
+  animation-name: vt-fade-out;
+}
+::view-transition-new(root) {
+  animation-name: vt-fade-in;
+}
+@keyframes vt-fade-out { to { opacity: 0; } }
+@keyframes vt-fade-in { from { opacity: 0; } }
 
 /* 약관·정책 문서 본문 */
 .legal-body h2 { font-size: 15px; font-weight: 800; color: #0F2242; margin: 18px 0 6px; }
