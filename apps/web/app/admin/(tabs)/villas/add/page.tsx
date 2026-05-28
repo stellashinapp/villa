@@ -696,6 +696,33 @@ export default function AdminVillaAddPage() {
         </p>
       </form>
 
+      {/* 주소검색 인앱 모달 (Capacitor 앱에서도 외부브라우저로 안 빠지고 작동) */}
+      {postcodeOpen && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center"
+          onClick={() => setPostcodeOpen(false)}
+        >
+          <div
+            className="bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl overflow-hidden flex flex-col"
+            style={{ height: 'min(560px, 85vh)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[#F0F2F5] flex-shrink-0">
+              <h3 className="text-[16px] font-bold text-[#0F2242]">주소 검색</h3>
+              <button
+                type="button"
+                onClick={() => setPostcodeOpen(false)}
+                className="text-[14px] font-bold text-[#6B7280] px-2 py-1"
+                aria-label="닫기"
+              >
+                닫기 ✕
+              </button>
+            </div>
+            <div ref={postcodeRef} className="flex-1 overflow-hidden" />
+          </div>
+        </div>
+      )}
+
       <style jsx>{`
         .input {
           width: 100%;
