@@ -37,11 +37,20 @@ export default function AdminTabsLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F6FA] pb-[88px]">
+    <div
+      className="min-h-screen bg-[#F5F6FA]"
+      style={{
+        paddingTop: 'env(safe-area-inset-top)',
+        paddingBottom: 'calc(88px + env(safe-area-inset-bottom))',
+      }}
+    >
       {children}
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#F0F2F5] z-50 h-[72px] pt-2 pb-3 shadow-[0_-2px_8px_rgba(0,0,0,0.04)]">
-        <div className="max-w-screen-sm mx-auto h-full flex">
+      <nav
+        className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#F0F2F5] z-50 shadow-[0_-2px_8px_rgba(0,0,0,0.04)]"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      >
+        <div className="max-w-screen-sm mx-auto h-[72px] pt-2 pb-3 flex">
           {TABS.map(tab => {
             const active = tab.href === '/admin' ? pathname === '/admin' : pathname === tab.href || pathname.startsWith(tab.href + '/');
             return (

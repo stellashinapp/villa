@@ -2,7 +2,13 @@ import Link from 'next/link';
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#EAEAFE] via-[#F2F2FE] to-white">
+    <div
+      className="min-h-screen flex flex-col bg-gradient-to-b from-[#EAEAFE] via-[#F2F2FE] to-white"
+      style={{
+        paddingTop: 'env(safe-area-inset-top)',
+        paddingBottom: 'env(safe-area-inset-bottom)',
+      }}
+    >
       <div className="flex-1 flex flex-col justify-between px-5 pt-16 pb-8 w-full max-w-sm mx-auto">
         {/* Hero — 로고 + 일러스트 */}
         <div className="flex-1 flex flex-col items-center justify-center pb-8">
