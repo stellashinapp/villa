@@ -1,5 +1,6 @@
 const path = require('path');
 
+// 재배포 트리거 (데모계정 제거·좌측 브랜드 고정 반영, 2026-05-28)
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
