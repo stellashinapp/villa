@@ -24,8 +24,7 @@ const EDGE_FUNCTIONS = [
   { name: 'confirm-payment', purpose: '단건 결제 confirm (토스 API)' },
   { name: 'issue-billing-key', purpose: '토스 빌링키 발급 + subscriptions UPDATE/INSERT' },
   { name: 'payment-webhook', purpose: '토스 webhook 수신 → subscription_payments INSERT' },
-  { name: 'push-notify', purpose: '입주민 푸시 알림 전송 (Expo Push)' },
-  { name: 'register-dummy-card', purpose: '더미카드 등록 (테스트용, 실토스 우회)' },
+  { name: 'push-notify', purpose: '입주민 푸시 알림 전송 (Expo Push + FCM v1 자동 분기)' },
   { name: 'resident-login', purpose: '입주민 휴대폰 인증 + 세션 발급' },
   { name: 'transfer-villa', purpose: '빌라 관리자 이전 (소유권 변경)' },
 ];
