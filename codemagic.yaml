@@ -69,10 +69,16 @@ workflows:
                   subprocess.run(['app-store-connect','certificates','delete', cid], check=False)
           PY
 
-          echo "=== 3. 새 인증서 + 프로파일 자동 발급 (private key 자동생성, App ID Push 포함) ==="
+          echo "=== 3. 인증서용 private key 생성 (CLI 가 .p12 저장에 필요) ==="
+          CERT_KEY=/tmp/cert_key.pem
+          openssl genrsa -out "$CERT_KEY" 2048 2>/dev/null
+          ls -la "$CERT_KEY"
+
+          echo "=== 4. 새 인증서 + 프로파일 자동 발급 (key 명시 전달, App ID Push 포함) ==="
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
-            --create
+            --create \
+            --certificate-key=@file:"$CERT_KEY"
 
           echo "=== 3. 인증서 키체인 + 프로젝트 패치 ==="
           keychain add-certificates
