@@ -33,7 +33,7 @@ export default function AdminTabsLayout({ children }: { children: React.ReactNod
   }, [pathname, router]);
 
   if (!authChecked) {
-    return <div className="min-h-screen bg-[#F5F6FA] flex items-center justify-center"><p className="text-[14px] text-[#9CA3AF]">불러오는 중…</p></div>;
+    return null;
   }
 
   return (

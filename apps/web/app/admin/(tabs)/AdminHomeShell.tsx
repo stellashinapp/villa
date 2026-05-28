@@ -140,7 +140,7 @@ export default function AdminHomeShell() {
   }, [router]);
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center text-[14px] text-[#9CA3AF]">불러오는 중…</div>;
+    return null;
   }
 
   const trialDays = sub?.trial_ends_at ? Math.max(0, Math.ceil((new Date(sub.trial_ends_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24))) : null;

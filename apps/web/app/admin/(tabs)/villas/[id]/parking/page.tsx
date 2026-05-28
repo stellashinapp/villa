@@ -134,7 +134,7 @@ export default function AdminVillaParkingPage() {
         </form>
       )}
 
-      {loading ? <p className="text-center text-sm text-[#9CA3AF] mt-10">불러오는 중…</p>
+      {loading ? null
         : items.length === 0 ? (
           <div className="text-center mt-10">
             <p className="text-[17px] font-bold text-[#0F2242]">등록된 차량이 없습니다</p>

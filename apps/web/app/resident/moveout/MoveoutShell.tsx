@@ -52,7 +52,7 @@ export default function MoveoutShell() {
     }
   }
 
-  if (!resident) return <div className="min-h-screen flex items-center justify-center text-t3">불러오는 중…</div>;
+  if (!resident) return null;
 
   if (submitted) {
     return (

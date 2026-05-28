@@ -336,7 +336,7 @@ export default function AdminVillaResidentsPage() {
           : '이사 신청(이사대기) · 이사 완료된 세대를 관리합니다. 이사 확정 시 관리비 정산을 먼저 확인하세요.'}
       </p>
 
-      {loading ? <p className="text-center text-[14px] text-[#9CA3AF] mt-10">불러오는 중…</p>
+      {loading ? null
         : visible.length === 0 ? (
           <div className="bg-white border border-[#F0F2F5] rounded-xl p-8 text-center">
             <p className="text-[15px] font-bold text-[#0F2242]">{mode === 'movein' ? '입주민이 없습니다' : '이주 내역이 없습니다'}</p>

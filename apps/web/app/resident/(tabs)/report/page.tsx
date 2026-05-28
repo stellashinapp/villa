@@ -95,7 +95,7 @@ export default function ResidentReportPage() {
     if (s) await loadMessages(s.id);
   }
 
-  if (!s) return <div className="min-h-screen flex items-center justify-center text-[14px] text-[#9CA3AF]">불러오는 중…</div>;
+  if (!s) return null;
 
   return (
     <>
@@ -127,7 +127,7 @@ export default function ResidentReportPage() {
 
         <h2 className="text-[15px] font-extrabold text-[#0F2242] mb-3">대화 내역</h2>
 
-        {loading ? <p className="text-center text-[14px] text-[#9CA3AF] mt-10">불러오는 중…</p>
+        {loading ? null
           : error ? <p className="text-center text-[14px] text-[#FF3B30] mt-10">오류: {error}</p>
           : messages.length === 0 ? (
             <div className="bg-white rounded-xl p-8 border border-[#F0F2F5] text-center">

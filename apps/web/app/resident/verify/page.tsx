@@ -40,7 +40,7 @@ export default function ResidentVerifyPage() {
   }
 
   if (!s) {
-    return <div className="min-h-screen bg-[#F5F6FA] flex items-center justify-center"><p className="text-[14px] text-[#9CA3AF]">불러오는 중…</p></div>;
+    return null;
   }
 
   const phoneFmt = s.phone.replace(/(\d{3})(\d{3,4})(\d{4})/, '$1-$2-$3');

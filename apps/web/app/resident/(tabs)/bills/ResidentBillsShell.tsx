@@ -154,7 +154,7 @@ export default function ResidentBillsShell() {
   }
 
   if (loading || !resident) {
-    return <div className="min-h-screen flex items-center justify-center text-[14px] text-[#9CA3AF]">불러오는 중…</div>;
+    return null;
   }
 
   const nowYm = new Date().toISOString().slice(0, 7);

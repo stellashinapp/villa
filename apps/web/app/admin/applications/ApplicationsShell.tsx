@@ -94,7 +94,7 @@ export default function ApplicationsShell() {
     await load();
   }
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-t3">불러오는 중…</div>;
+  if (loading) return null;
 
   const applications = rows.filter(r => r.status === 'pending');
   const moveouts = rows.filter(r => r.status === 'pending_moveout');

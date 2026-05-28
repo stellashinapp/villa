@@ -114,7 +114,7 @@ export default function AdminVillasPage() {
       />
       <div className="px-5 pt-4 pb-8 max-w-screen-sm mx-auto">
 
-      {loading ? <p className="text-center text-[16px] text-[#9CA3AF] mt-20">불러오는 중…</p>
+      {loading ? null
         : error ? <p className="text-center text-[16px] text-[#FF3B30] mt-20">오류: {error}</p>
         : cards.length === 0 ? (
           <Link href="/admin/villas/add" className="block bg-white border border-dashed border-[#2B2BEE]/30 rounded-xl p-8 text-center mt-10 hover:bg-[#E9E9FD]">

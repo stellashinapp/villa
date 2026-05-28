@@ -370,7 +370,7 @@ export default function AdminVillaBillsPage() {
         </form>
       )}
 
-      {loading ? <p className="text-center text-[15px] text-[#9CA3AF] mt-10">불러오는 중…</p>
+      {loading ? null
         : months.length === 0 ? (
           <button
             type="button"

@@ -170,7 +170,7 @@ export default function AdminVillaDetailPage() {
     setEditingExpose(false); await load();
   }
 
-  if (loading) return <div className="px-5 pt-6 text-center text-[16px] text-[#9CA3AF]">불러오는 중…</div>;
+  if (loading) return null;
   if (error) return <div className="px-5 pt-6 text-center text-[16px] text-[#FF3B30]">오류: {error}</div>;
   if (!villa) return <div className="px-5 pt-6 text-center text-[16px] text-[#9CA3AF]">빌라를 찾을 수 없습니다</div>;
 

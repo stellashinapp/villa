@@ -76,7 +76,7 @@ export default function ResidentParkingPage() {
     if (s) await load(s);
   }
 
-  if (!s) return <div className="min-h-screen flex items-center justify-center text-[14px] text-[#9CA3AF]">불러오는 중…</div>;
+  if (!s) return null;
 
   const myVehicles = list.filter(v => v.units?.ho_number === s.ho);
   const residentList = list.filter(v => v.vehicle_type === 'resident');
@@ -138,7 +138,7 @@ export default function ResidentParkingPage() {
           </form>
         )}
 
-        {loading ? <p className="text-center text-[14px] text-[#9CA3AF] mt-10">불러오는 중…</p> : (
+        {loading ? null : (
           <>
             {myVehicles.length === 0 ? (
               <div className="bg-white rounded-xl p-6 border border-[#F0F2F5] text-center mb-6">

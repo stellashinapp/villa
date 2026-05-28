@@ -108,7 +108,7 @@ export default function ResidentCommunityPage() {
     if (s) await load(s.villaId);
   }
 
-  if (!s) return <div className="min-h-screen flex items-center justify-center text-[14px] text-[#9CA3AF]">불러오는 중…</div>;
+  if (!s) return null;
 
   return (
     <>
@@ -140,7 +140,7 @@ export default function ResidentCommunityPage() {
           </button>
         </form>
 
-        {loading ? <p className="text-center text-[14px] text-[#9CA3AF] mt-10">불러오는 중…</p>
+        {loading ? null
           : posts.length === 0 ? (
             <div className="bg-white rounded-xl p-8 border border-[#F0F2F5] text-center">
               <div className="w-12 h-12 rounded-xl bg-[#E9E9FD] flex items-center justify-center mx-auto mb-2"><Icon name="community" size={26} color="#2B2BEE" filled /></div>

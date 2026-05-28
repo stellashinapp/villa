@@ -76,7 +76,7 @@ export default function AdminVillaMessagesPage() {
       />
       <div className="px-5 pt-4 pb-8 max-w-screen-sm mx-auto">
 
-      {loading ? <p className="text-center text-sm text-[#9CA3AF] mt-10">불러오는 중…</p>
+      {loading ? null
         : messages.length === 0 ? (
           <div className="text-center mt-10">
             <p className="text-[17px] font-bold text-[#0F2242]">받은 메시지가 없습니다</p>

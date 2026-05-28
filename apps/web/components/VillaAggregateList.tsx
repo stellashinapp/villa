@@ -144,7 +144,7 @@ export default function VillaAggregateList({ kind }: { kind: Kind }) {
 
       <div className="px-5 pt-4 pb-8 max-w-screen-sm mx-auto">
         {loading ? (
-          <p className="text-center text-[14px] text-[#9CA3AF] mt-10">불러오는 중…</p>
+          null
         ) : rows.length === 0 ? (
           <div className="bg-white border border-[#F0F2F5] rounded-xl p-8 text-center">
             <p className="text-[15px] font-bold text-[#0F2242]">등록된 빌라가 없습니다</p>

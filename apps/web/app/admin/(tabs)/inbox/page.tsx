@@ -134,7 +134,7 @@ export default function AdminInboxPage() {
       <div className="px-5 pt-4 pb-8 max-w-screen-sm mx-auto">
 
       {loading ? (
-        <p className="text-center text-sm text-[#9CA3AF] mt-20">불러오는 중…</p>
+        null
       ) : error ? (
         <div className="text-center mt-20">
           <p className="text-[17px] font-bold text-[#FF3B30] mb-1">오류</p>

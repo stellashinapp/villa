@@ -94,7 +94,7 @@ export default function AdminVillaNoticesPage() {
         </form>
       )}
 
-      {loading ? <p className="text-center text-sm text-[#9CA3AF] mt-10">불러오는 중…</p>
+      {loading ? null
         : notices.length === 0 ? (
           <div className="text-center mt-10">
             <p className="text-[17px] font-bold text-[#0F2242]">등록된 공지가 없습니다</p>

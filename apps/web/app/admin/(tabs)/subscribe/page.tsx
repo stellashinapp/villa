@@ -115,7 +115,7 @@ export default function AdminSubscribePage() {
 
   const trialDays = sub?.trial_ends_at ? Math.max(0, Math.ceil((new Date(sub.trial_ends_at).getTime() - Date.now()) / 86400000)) : null;
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-[14px] text-[#9CA3AF]">불러오는 중…</div>;
+  if (loading) return null;
 
   return (
     <>

@@ -53,14 +53,14 @@ export default function ResidentNoticesPage() {
     })();
   }, [s]);
 
-  if (!s) return <div className="min-h-screen flex items-center justify-center text-[14px] text-[#9CA3AF]">불러오는 중…</div>;
+  if (!s) return null;
 
   return (
     <>
       <ResidentPageHeader villaName={s.villaName} title="공지" ho={s.ho} name={s.name} />
 
       <div className="px-5 pt-4 pb-8 max-w-screen-sm mx-auto">
-        {loading ? <p className="text-center text-[14px] text-[#9CA3AF] mt-20">불러오는 중…</p>
+        {loading ? null
           : error ? <p className="text-center text-[14px] text-[#FF3B30] mt-20">오류: {error}</p>
           : notices.length === 0 ? (
             <div className="bg-white rounded-xl p-8 border border-[#F0F2F5] text-center">

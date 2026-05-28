@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import PwaRegister from '@/components/PwaRegister';
+import RouteProgress from '@/components/RouteProgress';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -35,6 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ko">
       <body className="font-sans bg-bg text-t1 min-h-screen">
+        <RouteProgress />
         {children}
         <PwaRegister />
       </body>
