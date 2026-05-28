@@ -32,9 +32,12 @@ function isPublic(pathname: string): boolean {
 export function middleware(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
 
-  // layout 에서 chrome 분기용. 모든 요청에 x-pathname 헤더 동봉.
-  function withPathHeader(res: NextResponse) {
-    res.headers.set('x-pathname', pathname);
+  // layout 에서 chrome 분기용. request header 로 전달해야 server component 의 headers() 가 읽음.
+  function withPathHeader(_res: NextResponse) {
+    const reqHeaders = new Headers(req.headers);
+    reqHeaders.set('x-pathname', pathname);
+    const res = NextResponse.next({ request: { headers: reqHeaders } });
+    res.headers.set('x-pathname', pathname); // (legacy 호환용으로 응답에도 함께 세팅)
     return res;
   }
 

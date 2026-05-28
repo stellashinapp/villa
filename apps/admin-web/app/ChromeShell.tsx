@@ -51,7 +51,7 @@ export default function ChromeShell({
       >
         <div style={{ padding: '24px 20px 20px', borderBottom: '1px solid #2E4A7A' }}>
           <h1 style={{ fontSize: 16, fontWeight: 800, color: '#fff', letterSpacing: '-0.01em', margin: 0 }}>빌라톡 어드민</h1>
-          <span style={{ fontSize: 10, color: '#7889A5', letterSpacing: '2px', fontWeight: 600 }}>VILLATOLK ADMIN</span>
+          <span style={{ fontSize: 10, color: '#7889A5', letterSpacing: '2px', fontWeight: 600, display: 'block', marginTop: 2 }}>VILLATOLK ADMIN · v.0529</span>
         </div>
 
         <nav style={{ padding: 12 }}>
