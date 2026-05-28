@@ -372,11 +372,15 @@ export default function AdminVillaBillsPage() {
 
       {loading ? <p className="text-center text-[15px] text-[#9CA3AF] mt-10">불러오는 중…</p>
         : months.length === 0 ? (
-          <div className="bg-white border border-[#F0F2F5] rounded-xl p-8 text-center mt-2">
+          <button
+            type="button"
+            onClick={() => setShowNew(true)}
+            className="w-full bg-white border border-[#F0F2F5] rounded-xl p-8 text-center mt-2 hover:border-[#2B2BEE]/30 hover:bg-[#F8FAFF] active:bg-[#E9E9FD]/50 transition cursor-pointer"
+          >
             <div className="w-12 h-12 rounded-xl bg-[#E9E9FD] flex items-center justify-center mx-auto mb-2"><Icon name="bills" size={26} color="#2B2BEE" filled /></div>
             <p className="text-[16px] font-bold text-[#0F2242]">등록된 관리비 고지가 없습니다</p>
-            <p className="text-[14px] text-[#9CA3AF] mt-1">＋ 새 고지로 시작하세요</p>
-          </div>
+            <p className="text-[14px] text-[#2B2BEE] mt-1 font-bold">＋ 눌러서 새 고지 시작하기</p>
+          </button>
         ) : (
           <>
           {/* 장기수선충당금 적립 잔액 — 빌라 내 모인 금액 */}
