@@ -106,9 +106,9 @@ export default function AdminSettingsPage() {
         <Section title="구독">
           <Row label="상태" value={subLabel} valueClassName={sub?.status === 'past_due' ? 'text-[#FF3B30]' : sub?.status === 'trialing' ? 'text-[#2B2BEE]' : ''} />
           <Row label="등록 카드" value={sub?.card_last4 ? `${sub.card_brand ?? 'CARD'} •••• ${sub.card_last4}` : '미등록'} />
-          <a href="/admin/subscribe" className="block mt-2 bg-[#2B2BEE] text-white text-center py-2.5 rounded-xl text-[14px] font-bold">
+          <Link href="/admin/subscribe" className="block mt-2 bg-[#2B2BEE] text-white text-center py-2.5 rounded-xl text-[14px] font-bold">
             {sub ? '구독 관리' : '구독 시작하기'}
-          </a>
+          </Link>
         </Section>
 
         {/* 약관 */}
