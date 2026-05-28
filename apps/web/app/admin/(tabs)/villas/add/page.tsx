@@ -42,7 +42,6 @@ export default function AdminVillaAddPage() {
   const [duplicates, setDuplicates] = useState<DuplicateCandidate[]>([]);
   const [ownDuplicate, setOwnDuplicate] = useState<DuplicateCandidate | null>(null);
   const [duplicateChecking, setDuplicateChecking] = useState(false);
-  const [forceProceed, setForceProceed] = useState(false);
 
   // 관리자 연락처 노출 + 특이사항
   const [exposeAdminContact, setExposeAdminContact] = useState(false);
@@ -259,8 +258,8 @@ export default function AdminVillaAddPage() {
       return;
     }
 
-    if (duplicates.length > 0 && !forceProceed) {
-      setError('비슷한 이름·주소의 빌라가 이미 등록되어 있습니다. 아래 안내 확인 후 체크해주세요.');
+    if (duplicates.length > 0) {
+      setError('이미 다른 관리자가 등록한 빌라입니다. 같은 빌라엔 1명의 관리자만 등록 가능 — 관리권 이전이 필요하면 본사로 문의해주세요(villatolk@andnew.kr).');
       return;
     }
 
@@ -379,25 +378,6 @@ export default function AdminVillaAddPage() {
           <p className="text-[14px] text-[#6B7280] mb-2 leading-relaxed">
             ① 아래 숫자만 채우면 호실이 자동 생성됩니다. ② 필요 시 직접 편집·추가하세요.
           </p>
-
-          {/* 간편 입력 — 층당 호실 프리셋 칩 */}
-          <div className="mb-1">
-            <p className="text-[13px] font-bold text-[#6B7280] mb-1.5">층당 호실 빠른 선택</p>
-            <div className="flex gap-1.5 flex-wrap">
-              {['1', '2', '3', '4', '6'].map(n => (
-                <button
-                  key={n}
-                  type="button"
-                  onClick={() => { setUnitsPerFloor(n); setAutoLocked(true); }}
-                  className={`px-3 py-1.5 rounded-full text-[14px] font-bold border transition ${
-                    unitsPerFloor === n ? 'bg-[#2B2BEE] text-white border-[#2B2BEE]' : 'bg-white text-[#6B7280] border-[#E8EBF0]'
-                  }`}
-                >
-                  {n}개
-                </button>
-              ))}
-            </div>
-          </div>
 
           <div className="grid grid-cols-3 gap-2">
             <Field label="지상 총 호실">
@@ -576,19 +556,13 @@ export default function AdminVillaAddPage() {
                   </li>
                 ))}
               </ul>
-              <p className="text-[13px] text-[#6B7280] leading-relaxed mb-2">
-                같은 빌라라면 <strong>기존 관리자에게 위임 요청</strong> 또는{' '}
-                <a href="mailto:villatolk@andnew.kr" className="text-[#2B2BEE] underline">본사 (villatolk@andnew.kr)</a> 에 권한 이전 요청을 해주세요.
+              <p className="text-[13px] text-[#6B7280] leading-relaxed mb-1">
+                <strong>같은 빌라엔 1명의 관리자만 등록 가능</strong>합니다.
               </p>
-              <label className="flex items-start gap-2 text-[14px] text-[#0F2242] cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={forceProceed}
-                  onChange={e => setForceProceed(e.target.checked)}
-                  className="mt-0.5 w-4 h-4 flex-shrink-0"
-                />
-                <span>위 빌라와 <strong>다른 빌라</strong>이며, 본인이 정당한 관리자임을 확인합니다.</span>
-              </label>
+              <p className="text-[13px] text-[#6B7280] leading-relaxed">
+                관리권 이전이 필요하면{' '}
+                <a href="mailto:villatolk@andnew.kr" className="text-[#2B2BEE] underline">본사 (villatolk@andnew.kr)</a> 로 문의해주세요.
+              </p>
             </div>
           )}
         </Section>
