@@ -24,8 +24,14 @@ workflows:
         script: |
           cd apps/web
           npx cap sync ios
-      - name: 코드 서명 프로파일 적용
-        script: xcode-project use-profiles
+      - name: 코드 서명 — 인증서·프로파일 자동 발급/가져오기
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files "store.villtalk.app" \
+            --type IOS_APP_STORE \
+            --create
+          keychain add-certificates
+          xcode-project use-profiles
       - name: iOS .ipa 빌드
         script: |
           xcode-project build-ipa \
