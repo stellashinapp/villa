@@ -6,7 +6,10 @@ export const dynamic = 'force-dynamic';
 export default function ResidentSignupPage() {
   return (
     <div className="min-h-screen flex flex-col">
-      <div className="bg-navy text-white px-5 pt-12 pb-10">
+      <div
+        className="bg-navy text-white px-5 pb-10"
+        style={{ paddingTop: 'calc(3rem + env(safe-area-inset-top))' }}
+      >
         <p className="text-xs text-white/40 tracking-widest font-bold mb-1">입주 신청</p>
         <h1 className="text-2xl font-extrabold leading-tight">{'살고 있는 빌라·호실로\n신청해 주세요'}</h1>
         <p className="text-xs text-white/50 mt-3 leading-relaxed">

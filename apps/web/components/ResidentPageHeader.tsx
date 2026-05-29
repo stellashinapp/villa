@@ -25,7 +25,10 @@ export default function ResidentPageHeader({
   }
 
   return (
-    <header className="bg-white px-5 pt-4 pb-4 border-b border-[#F0F2F5]">
+    <header
+      className="bg-white px-5 pb-4 border-b border-[#F0F2F5]"
+      style={{ paddingTop: 'calc(1rem + env(safe-area-inset-top))' }}
+    >
       <div className="max-w-screen-sm mx-auto flex items-start justify-between">
         <div>
           <p className="text-[13px] font-bold text-[#2B2BEE]">{villaName}</p>

@@ -5,7 +5,10 @@ export const dynamic = 'force-dynamic';
 
 export default function AdminSignupPage() {
   return (
-    <div className="min-h-screen flex flex-col px-5">
+    <div
+      className="min-h-screen flex flex-col px-5"
+      style={{ paddingTop: 'env(safe-area-inset-top)' }}
+    >
       <div className="pt-12 pb-6" />
 
       <div className="flex-1 flex flex-col justify-center pb-16">

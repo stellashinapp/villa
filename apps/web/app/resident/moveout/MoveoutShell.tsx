@@ -95,7 +95,10 @@ export default function MoveoutShell() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <div className="bg-navy text-white px-5 pt-12 pb-8">
+      <div
+        className="bg-navy text-white px-5 pb-8"
+        style={{ paddingTop: 'calc(3rem + env(safe-area-inset-top))' }}
+      >
         <h1 className="text-xl font-extrabold">이주 신청</h1>
         <p className="text-xs text-white/60 mt-2">
           {resident.villaName} {resident.ho}호 {resident.name}님

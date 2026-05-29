@@ -126,7 +126,10 @@ export default function InviteAcceptPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F6FA] px-5 py-8">
+    <div
+      className="min-h-screen bg-[#F5F6FA] px-5 pb-8"
+      style={{ paddingTop: 'calc(2rem + env(safe-area-inset-top))' }}
+    >
       <div className="max-w-sm mx-auto">
         <div className="text-center mb-6">
           <div className="text-5xl mb-3">💌</div>
