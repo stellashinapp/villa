@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import { getCurrentAdmin } from '@/lib/admin-cache';
 import AdminTopBar from '@/components/AdminTopBar';
@@ -165,7 +166,11 @@ export default function AdminInboxPage() {
                   </span>
                 </div>
                 <p className="text-[15px] text-[#0F2242] leading-[20px] whitespace-pre-wrap">{m.text}</p>
-                {m.image_url && <img src={m.image_url} alt="첨부 사진" className="mt-2.5 rounded-xl max-h-64 object-cover w-full border border-[#E8EBF0]" />}
+                {m.image_url && (
+                  <div className="mt-2.5 relative w-full aspect-[4/3] max-h-64 rounded-xl overflow-hidden border border-[#E8EBF0]">
+                    <Image src={m.image_url} alt="첨부 사진" fill className="object-cover" sizes="(max-width:640px) 100vw, 640px" />
+                  </div>
+                )}
 
                 {adminReplies.length > 0 && (
                   <div className="mt-3 pt-3 border-t border-[#E8EBF0] space-y-2">

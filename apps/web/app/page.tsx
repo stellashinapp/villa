@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function HomePage() {
   return (
@@ -14,12 +15,12 @@ export default function HomePage() {
         <div className="flex-1 flex flex-col items-center justify-center pb-8">
           {/* 빌라 일러스트 (브랜드 로고) */}
           <div className="mb-6">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src="/logo-source.png"
               alt="빌라톡"
               width={156}
               height={149}
+              priority
               className="select-none w-[156px] h-auto block"
             />
           </div>

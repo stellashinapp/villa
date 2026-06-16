@@ -7,8 +7,8 @@ android {
         applicationId "store.villtalk.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 2
-        versionName "1.0.1"
+        versionCode 3
+        versionName "1.0.2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -29,9 +29,15 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            // R8 활성화 — 코드 압축 + 리소스 제거 + 난독화 (AAB 약 30% 감소)
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
+            // 네이티브 디버그 기호 포함 — Play Console 충돌 분석용
+            ndk {
+                debugSymbolLevel 'SYMBOL_TABLE'
+            }
         }
     }
 }

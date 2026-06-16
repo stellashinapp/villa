@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import ResidentPageHeader from '@/components/ResidentPageHeader';
 import Icon from '@/components/Icon';
@@ -122,10 +123,10 @@ export default function ResidentCommunityPage() {
             className="w-full bg-white border border-[#E8EBF0] rounded-xl px-4 py-3 text-[15px] text-[#0F2242] outline-none focus:border-[#2B2BEE] focus:ring-2 focus:ring-[#2B2BEE]/15 transition resize-none" required />
           <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={onPickImage} />
           {imageUrl ? (
-            <div className="relative">
-              <img src={imageUrl} alt="첨부 사진" className="rounded-xl max-h-48 w-full object-cover border border-[#E8EBF0]" />
+            <div className="relative w-full aspect-[4/3] max-h-48 rounded-xl overflow-hidden border border-[#E8EBF0]">
+              <Image src={imageUrl} alt="첨부 사진" fill className="object-cover" sizes="(max-width:640px) 100vw, 640px" />
               <button type="button" onClick={() => setImageUrl(null)}
-                className="absolute top-2 right-2 bg-black/55 text-white text-[12px] font-bold w-7 h-7 rounded-full">×</button>
+                className="absolute top-2 right-2 bg-black/55 text-white text-[12px] font-bold w-7 h-7 rounded-full z-10">×</button>
             </div>
           ) : (
             <button type="button" disabled={uploading} onClick={() => fileRef.current?.click()}
@@ -163,7 +164,11 @@ export default function ResidentCommunityPage() {
                     </div>
                     <h3 className="text-[16px] font-extrabold text-[#0F2242] mb-1.5">{post.title}</h3>
                     <p className="text-[14px] text-[#6B7280] leading-relaxed whitespace-pre-wrap">{post.body}</p>
-                    {post.image_url && <img src={post.image_url} alt="" className="mt-3 rounded-xl max-h-64 object-cover w-full" />}
+                    {post.image_url && (
+                      <div className="mt-3 relative w-full aspect-[4/3] max-h-64 rounded-xl overflow-hidden">
+                        <Image src={post.image_url} alt="" fill className="object-cover" sizes="(max-width:640px) 100vw, 640px" />
+                      </div>
+                    )}
 
                     <div className="flex gap-4 mt-3 pt-3 border-t border-[#F0F2F5] text-[12px] text-[#FF3B30]">
                       <span>❤️ {post.likes ?? 0}</span>
