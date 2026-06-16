@@ -21,6 +21,9 @@ tsconfig.tsbuildinfo
 *.orig.*
 web-build/
 
+# Ops scripts (one-off seeders)
+seed_demo_reviewer.mjs
+
 # Environment
 .env
 .env.local

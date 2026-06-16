@@ -5,17 +5,23 @@ export default function HomePage() {
     <div
       className="min-h-screen flex flex-col bg-gradient-to-b from-[#EAEAFE] via-[#F2F2FE] to-white"
       style={{
-        paddingTop: 'env(safe-area-inset-top)',
-        paddingBottom: 'env(safe-area-inset-bottom)',
+        paddingTop: 'calc(2.5rem + env(safe-area-inset-top))',
+        paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))',
       }}
     >
-      <div className="flex-1 flex flex-col justify-between px-5 pt-16 pb-8 w-full max-w-sm mx-auto">
+      <div className="flex-1 flex flex-col justify-between px-5 pb-8 w-full max-w-sm mx-auto">
         {/* Hero — 로고 + 일러스트 */}
         <div className="flex-1 flex flex-col items-center justify-center pb-8">
           {/* 빌라 일러스트 (브랜드 로고) */}
           <div className="mb-6">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo-source.png" alt="빌라톡" width={156} height={149} className="select-none" />
+            <img
+              src="/logo-source.png"
+              alt="빌라톡"
+              width={156}
+              height={149}
+              className="select-none w-[156px] h-auto block"
+            />
           </div>
 
           {/* 로고 텍스트 */}
