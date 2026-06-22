@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Image from 'next/image';
 
 export default function HomePage() {
   return (
@@ -11,31 +10,19 @@ export default function HomePage() {
       }}
     >
       <div className="flex-1 flex flex-col justify-between px-5 pb-8 w-full max-w-sm mx-auto">
-        {/* Hero — 로고 + 일러스트 */}
+        {/* Hero — 텍스트 중심 (상단 이미지 제거됨) */}
         <div className="flex-1 flex flex-col items-center justify-center pb-8">
-          {/* 빌라 일러스트 (브랜드 로고) */}
-          <div className="mb-6">
-            <Image
-              src="/logo-source.png"
-              alt="빌라톡"
-              width={156}
-              height={149}
-              priority
-              className="select-none w-[156px] h-auto block"
-            />
-          </div>
-
           {/* 로고 텍스트 */}
-          <h1 className="text-[44px] font-black tracking-tight mb-3">
+          <h1 className="text-[52px] font-black tracking-tight mb-4">
             <span className="text-[#0F2242]">Villa</span>
             <span className="text-[#2B2BEE] ml-2">Talk</span>
           </h1>
 
           {/* 서브 카피 */}
-          <p className="text-[13px] text-[#6B7280] text-center leading-relaxed">
+          <p className="text-[14px] text-[#6B7280] text-center leading-relaxed">
             관리자와 입주민 모두를 위한
           </p>
-          <p className="text-[15px] font-bold text-[#0F2242] text-center mt-0.5">
+          <p className="text-[16px] font-bold text-[#0F2242] text-center mt-0.5">
             스마트 공동 관리 서비스
           </p>
         </div>
@@ -61,6 +48,8 @@ export default function HomePage() {
             <a href="/legal/terms" target="_blank" rel="noreferrer" className="hover:text-[#6B7280]">이용약관</a>
             <span className="text-[#D1D5DB]">·</span>
             <a href="/legal/privacy" target="_blank" rel="noreferrer" className="hover:text-[#6B7280]">개인정보처리방침</a>
+            <span className="text-[#D1D5DB]">·</span>
+            <a href="/legal/refund" target="_blank" rel="noreferrer" className="hover:text-[#6B7280]">환불규정</a>
           </div>
           <p className="text-center text-[11px] text-[#9CA3AF]">© 주식회사 더줌웍스 (TheZoomWorks)</p>
         </div>

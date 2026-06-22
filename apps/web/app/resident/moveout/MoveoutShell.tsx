@@ -24,7 +24,7 @@ export default function MoveoutShell() {
   const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
-    const r = sessionStorage.getItem('villatolk:resident');
+    const r = localStorage.getItem('villatolk:resident');
     if (!r) { router.replace('/resident/login'); return; }
     setResident(JSON.parse(r));
   }, [router]);

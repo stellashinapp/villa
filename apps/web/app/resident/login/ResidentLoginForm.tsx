@@ -42,7 +42,7 @@ export default function ResidentLoginForm() {
         return;
       }
       const payload = data as ResidentResult;
-      sessionStorage.setItem('villatolk:resident', JSON.stringify({
+      localStorage.setItem('villatolk:resident', JSON.stringify({
         id: payload.resident.id,
         name: payload.resident.name,
         phone: payload.resident.phone,
@@ -51,7 +51,7 @@ export default function ResidentLoginForm() {
         villaName: payload.resident.units.villas.name,
         villaAddress: payload.resident.units.villas.address,
       }));
-      sessionStorage.setItem('villatolk:resident-data', JSON.stringify({ villa: payload.villa, payments: payload.payments }));
+      localStorage.setItem('villatolk:resident-data', JSON.stringify({ villa: payload.villa, payments: payload.payments }));
       router.replace('/resident/verify');
     } catch (err) {
       setError(err instanceof Error ? err.message : '네트워크 오류');

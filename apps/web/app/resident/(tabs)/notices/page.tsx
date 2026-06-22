@@ -33,7 +33,7 @@ export default function ResidentNoticesPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const raw = sessionStorage.getItem('villatolk:resident');
+    const raw = localStorage.getItem('villatolk:resident');
     if (!raw) return;
     setS(JSON.parse(raw) as Session);
   }, []);

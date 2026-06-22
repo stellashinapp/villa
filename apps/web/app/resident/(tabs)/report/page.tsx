@@ -45,7 +45,7 @@ export default function ResidentReportPage() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const raw = sessionStorage.getItem('villatolk:resident');
+    const raw = localStorage.getItem('villatolk:resident');
     if (!raw) return;
     setS(JSON.parse(raw) as Session);
   }, []);

@@ -55,7 +55,7 @@ export default function ResidentBillsShell() {
   const [hasBillingKey, setHasBillingKey] = useState(false);
 
   useEffect(() => {
-    const raw = sessionStorage.getItem('villatolk:resident');
+    const raw = localStorage.getItem('villatolk:resident');
     if (!raw) { router.replace('/resident/login'); return; }
     const s = JSON.parse(raw) as Resident;
     setResident(s);

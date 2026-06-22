@@ -18,8 +18,8 @@ export default function ResidentPageHeader({
   function logout() {
     if (!confirm('로그아웃 하시겠습니까?')) return;
     try {
-      sessionStorage.removeItem('villatolk:resident');
-      sessionStorage.removeItem('villatolk:resident-data');
+      localStorage.removeItem('villatolk:resident');
+      localStorage.removeItem('villatolk:resident-data');
     } catch {}
     router.replace('/resident/login');
   }

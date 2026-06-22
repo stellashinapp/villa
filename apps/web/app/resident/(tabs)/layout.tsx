@@ -28,10 +28,10 @@ export default function ResidentTabsLayout({ children }: { children: React.React
 
   useEffect(() => {
     try {
-      const raw = sessionStorage.getItem('villatolk:resident');
+      const raw = localStorage.getItem('villatolk:resident');
       if (!raw) { router.replace('/resident/login'); setSession(null); return; }
       // 본인확인 게이트 강제 — verify 거치지 않고 직접 진입 차단
-      if (sessionStorage.getItem('villatolk:resident-verified') !== '1') {
+      if (localStorage.getItem('villatolk:resident-verified') !== '1') {
         router.replace('/resident/verify'); setSession(null); return;
       }
       const parsed = JSON.parse(raw) as ResidentSession;

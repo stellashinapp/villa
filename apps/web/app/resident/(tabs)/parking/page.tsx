@@ -34,7 +34,7 @@ export default function ResidentParkingPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    const raw = sessionStorage.getItem('villatolk:resident');
+    const raw = localStorage.getItem('villatolk:resident');
     if (!raw) return;
     const sess = JSON.parse(raw) as Session;
     setS(sess);

@@ -80,7 +80,7 @@ export default function InviteAcceptPage() {
     await supabase.from('resident_invitations').update({ accepted_at: new Date().toISOString() }).eq('id', inv.id);
 
     // 3. 자동 로그인 — sessionStorage 에 저장
-    sessionStorage.setItem('villatolk:resident', JSON.stringify({
+    localStorage.setItem('villatolk:resident', JSON.stringify({
       id: (resRow as { id: string }).id,
       name: inv.name,
       phone: inv.phone,
@@ -96,7 +96,7 @@ export default function InviteAcceptPage() {
         body: { name: inv.name, phone: inv.phone },
       });
       if (data) {
-        sessionStorage.setItem('villatolk:resident-data', JSON.stringify({
+        localStorage.setItem('villatolk:resident-data', JSON.stringify({
           villa: (data as { villa: unknown }).villa ?? null,
           payments: (data as { payments: unknown[] }).payments ?? [],
         }));

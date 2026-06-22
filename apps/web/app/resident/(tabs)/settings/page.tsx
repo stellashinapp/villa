@@ -18,10 +18,10 @@ export default function ResidentSettingsPage() {
   const [accountNum, setAccountNum] = useState<string | null>(null);
 
   useEffect(() => {
-    const raw = sessionStorage.getItem('villatolk:resident');
+    const raw = localStorage.getItem('villatolk:resident');
     if (!raw) return;
     setSession(JSON.parse(raw) as ResidentSession);
-    const dataRaw = sessionStorage.getItem('villatolk:resident-data');
+    const dataRaw = localStorage.getItem('villatolk:resident-data');
     if (dataRaw) {
       try {
         const d = JSON.parse(dataRaw) as VillaData;
@@ -33,8 +33,8 @@ export default function ResidentSettingsPage() {
 
   function handleLogout() {
     if (!confirm('로그아웃 하시겠습니까?')) return;
-    sessionStorage.removeItem('villatolk:resident');
-    sessionStorage.removeItem('villatolk:resident-data');
+    localStorage.removeItem('villatolk:resident');
+    localStorage.removeItem('villatolk:resident-data');
     router.replace('/');
   }
 

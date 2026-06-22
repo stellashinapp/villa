@@ -17,7 +17,7 @@ export default function ResidentVerifyPage() {
 
   useEffect(() => {
     try {
-      const raw = sessionStorage.getItem('villatolk:resident');
+      const raw = localStorage.getItem('villatolk:resident');
       if (!raw) { router.replace('/resident/login'); setS(null); return; }
       setS(JSON.parse(raw) as ResidentSession);
     } catch {
@@ -26,15 +26,15 @@ export default function ResidentVerifyPage() {
   }, [router]);
 
   function confirm() {
-    try { sessionStorage.setItem('villatolk:resident-verified', '1'); } catch {}
+    try { localStorage.setItem('villatolk:resident-verified', '1'); } catch {}
     router.replace('/resident/bills');
   }
 
   function reject() {
     try {
-      sessionStorage.removeItem('villatolk:resident');
-      sessionStorage.removeItem('villatolk:resident-data');
-      sessionStorage.removeItem('villatolk:resident-verified');
+      localStorage.removeItem('villatolk:resident');
+      localStorage.removeItem('villatolk:resident-data');
+      localStorage.removeItem('villatolk:resident-verified');
     } catch {}
     router.replace('/resident/login');
   }
