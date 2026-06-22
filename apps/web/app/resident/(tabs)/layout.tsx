@@ -59,6 +59,7 @@ export default function ResidentTabsLayout({ children }: { children: React.React
       {children}
 
       <nav
+        data-tabbar
         className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#F0F2F5] z-50 shadow-[0_-2px_8px_rgba(0,0,0,0.04)]"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >

@@ -23,6 +23,18 @@ body {
 }
 * { -webkit-tap-highlight-color: transparent; }
 
+/* 키보드 노출 시 입력 필드 focus → 자동 스크롤 여유 확보
+   (탭바 88px + safe-area + 키보드 위에서 최소 여백) */
+html { scroll-padding-bottom: calc(120px + env(safe-area-inset-bottom)); }
+input:focus, textarea:focus, select:focus { scroll-margin-bottom: calc(120px + env(safe-area-inset-bottom)); }
+
+/* fixed bottom 탭바 — 키보드 노출 감지 시 자동 숨김
+   (KeyboardWatcher 가 visualViewport 로 정확히 감지 + 보조: max-height) */
+html[data-keyboard-open="1"] [data-tabbar] { display: none !important; }
+@media (max-height: 500px) {
+  [data-tabbar] { display: none !important; }
+}
+
 /* 페이지 간 부드러운 cross-fade — Chrome/Android WebView 111+ 지원 */
 @view-transition {
   navigation: auto;

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import PwaRegister from '@/components/PwaRegister';
 import RouteProgress from '@/components/RouteProgress';
+import KeyboardWatcher from '@/components/KeyboardWatcher';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -30,6 +31,9 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: 'cover',
+  // 키보드 노출 시 viewport 자체가 줄어들어 fixed bottom 탭바가
+  // 자동으로 키보드 위에 정렬됨 (본문에 끼어드는 현상 차단)
+  interactiveWidget: 'resizes-content',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -37,6 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ko">
       <body className="font-sans bg-bg text-t1 min-h-screen">
         <RouteProgress />
+        <KeyboardWatcher />
         {children}
         <PwaRegister />
       </body>
