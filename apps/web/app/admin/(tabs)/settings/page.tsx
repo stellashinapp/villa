@@ -82,7 +82,7 @@ export default function AdminSettingsPage() {
                 <Icon name="villa" size={24} color="#FFFFFF" filled />
               </span>
               <div className="flex-1">
-                <p className="text-[15px] font-extrabold text-[#0F2242]">앤뉴 본사 콘솔</p>
+                <p className="text-[15px] font-extrabold text-[#0F2242]">더줌웍스 본사 콘솔</p>
                 <p className="text-[12px] text-[#6B7280] mt-0.5">전체 빌라·관리자·결제·구독 관리 (super 전용)</p>
                 <p className="text-[10px] text-[#9CA3AF] mt-0.5">villatolk-admin.vercel.app</p>
               </div>
@@ -127,7 +127,7 @@ export default function AdminSettingsPage() {
           로그아웃
         </button>
 
-        <p className="text-center mt-5 text-[11px] text-[#9CA3AF]">ANDNEW 2026</p>
+        <p className="text-center mt-5 text-[11px] text-[#9CA3AF]">TheZoomWorks 2026</p>
       </div>
     </div>
   );

@@ -19,7 +19,7 @@ export default async function LoginPage({
           <h2 className="text-base font-bold mb-5">본사 콘솔 로그인</h2>
           <LoginForm next={sp.next ?? '/'} error={sp.error} />
           <p className="text-[11px] text-t3 mt-5 leading-relaxed">
-            본 시스템은 빌라톡(앤뉴) 본사 직원 전용입니다.
+            본 시스템은 빌라톡(주식회사 더줌웍스) 본사 직원 전용입니다.
             <br />접근 기록은 개인정보보호법 제29조에 따라 1년 이상 보관됩니다.
           </p>
         </div>

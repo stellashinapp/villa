@@ -35,7 +35,7 @@ export default function LegalDoc({
           <Link href="/legal/privacy" className="hover:text-[#2B2BEE]">개인정보 처리방침</Link>
           <Link href="/legal/refund" className="hover:text-[#2B2BEE]">환불규정</Link>
         </div>
-        <p className="text-center text-[11px] text-[#9CA3AF] mt-3">주식회사 더줌웍스 (ANDNEW) · 2026</p>
+        <p className="text-center text-[11px] text-[#9CA3AF] mt-3">주식회사 더줌웍스 (TheZoomWorks) · 2026</p>
       </div>
     </div>
   );

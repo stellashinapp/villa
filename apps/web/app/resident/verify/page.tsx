@@ -83,7 +83,7 @@ export default function ResidentVerifyPage() {
         </div>
       </div>
 
-      <p className="text-center text-[11px] text-[#9CA3AF] py-5">ANDNEW · TheZoomWorks · 2026</p>
+      <p className="text-center text-[11px] text-[#9CA3AF] py-5">TheZoomWorks · 빌라톡 · 2026</p>
     </div>
   );
 }

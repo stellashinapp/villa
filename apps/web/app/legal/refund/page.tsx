@@ -62,7 +62,7 @@ export default function RefundPage() {
       <p>구독은 언제든지 해지할 수 있으며, 해지 시 다음 결제일부터 요금이 청구되지 않습니다. 해지 후에도 이미 결제된 구독 기간 동안에는 서비스를 계속 이용할 수 있습니다.</p>
 
       <h2>문의</h2>
-      <p>주식회사 더줌웍스 (ANDNEW)<br />
+      <p>주식회사 더줌웍스 (TheZoomWorks) · 빌라톡 운영<br />
       서울특별시 송파구 송파대로 111 · villatolk@andnew.kr</p>
     </LegalDoc>
   );

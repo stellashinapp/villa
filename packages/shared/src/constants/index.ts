@@ -56,10 +56,10 @@ export const BILL_STATUS_LABELS: Record<string, string> = {
 // 앱 설정
 // ==============================
 
-export const APP_NAME = 'ANDNEW';
+export const APP_NAME = 'TheZoomWorks';
 export const APP_NAME_KR = '빌라톡';
 export const COMPANY_NAME = '주식회사 더줌웍스';
-export const COMPANY_NAME_EN = 'ANDNEW';
+export const COMPANY_NAME_EN = 'TheZoomWorks';
 
 export const TRIAL_DAYS = 30;
 export const BILLING_RETRY_DAYS = [3, 7] as const;

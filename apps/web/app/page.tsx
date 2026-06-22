@@ -62,7 +62,7 @@ export default function HomePage() {
             <span className="text-[#D1D5DB]">·</span>
             <a href="/legal/privacy" target="_blank" rel="noreferrer" className="hover:text-[#6B7280]">개인정보처리방침</a>
           </div>
-          <p className="text-center text-[11px] text-[#9CA3AF]">© 앤뉴 (ANDNEW)</p>
+          <p className="text-center text-[11px] text-[#9CA3AF]">© 주식회사 더줌웍스 (TheZoomWorks)</p>
         </div>
       </div>
     </div>

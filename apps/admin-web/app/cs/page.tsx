@@ -299,7 +299,7 @@ export default async function CSPage({
           </div>
           <div className="bg-bg border border-border rounded-lg px-4 py-3">
             <div className="text-[11px] text-t3 font-medium mb-1">사업자·개인정보 보호책임자</div>
-            <div className="font-semibold text-t1">앤뉴 (ANDNEW) · 신경아</div>
+            <div className="font-semibold text-t1">주식회사 더줌웍스 (TheZoomWorks) · 신경아</div>
             <div className="text-[11px] text-t3 mt-0.5">서울 송파구 송파대로 111</div>
           </div>
         </div>

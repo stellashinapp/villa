@@ -109,7 +109,7 @@ export default function ResidentSettingsPage() {
           로그아웃
         </button>
 
-        <p className="text-center mt-5 text-[11px] text-[#9CA3AF]">ANDNEW 2026</p>
+        <p className="text-center mt-5 text-[11px] text-[#9CA3AF]">TheZoomWorks 2026</p>
       </div>
     </div>
   );
